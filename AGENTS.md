@@ -49,20 +49,25 @@ Phase 1 scaffold is accepted.
 Phase 2 Protocol Contract is accepted.
 Phase 3 Local Server is accepted.
 Phase 4 TUI Shell is accepted.
+Phase 5 Storage is accepted.
 
-Current work is Phase 5: Storage, unless the user explicitly says otherwise.
+Current work is Phase 6: Core Runtime, unless the user explicitly says otherwise.
 
-Phase 5 scope:
+Phase 6 scope:
 
-1. Inspect only the relevant Phase 5 docs and storage scaffold before changing files.
-2. Implement the local persistence foundation in packages/storage using SQLite + Drizzle.
-3. Add storage-owned schema, migrations, connection setup, and repository APIs required by the accepted data model docs.
-4. Keep durable state ownership inside packages/storage.
-5. Add package-local tests or verification scripts only when supported by the existing package structure.
-6. Wire exports/build config only as needed for packages/storage to typecheck and build.
-7. Preserve existing protocol, SDK, server, and TUI behavior unless a minimal compile-time integration is required.
+1. Inspect only the relevant Phase 6 docs and packages/core scaffold before changing files.
+2. Create the core runtime skeleton in packages/core.
+3. Implement SessionRunner.
+4. Implement ContextBuilder.
+5. Implement ModelRouter.
+6. Add ToolRegistry integration for the read-only tool path only.
+7. Add EventPublisher integration so runtime events can stream through the existing server/TUI path.
+8. Add RunLedger integration so runtime lifecycle, model calls, tool calls, permission flow, and errors can be recorded.
+9. Add run abort/cancellation support.
+10. Support prompt → model path → assistant response flow.
+11. Support prompt → read-only tool path → response flow at the orchestration level.
 
-Phase 5 must not implement core runtime orchestration, tool execution, shell execution, model adapters, TUI features, permission policy decisions, diff application, or token-health runtime.
+Phase 6 must not implement Phase 7 read/grep/glob tool bodies, Phase 8 permission engine policy, shell execution, file mutation, diff application, token-health runtime, cache runtime, planner runtime, model-provider-specific UI, database table definitions, or new TUI features.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
