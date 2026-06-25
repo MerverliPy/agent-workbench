@@ -51,29 +51,30 @@ Phase 3 Local Server is accepted.
 Phase 4 TUI Shell is accepted.
 Phase 5 Storage is accepted.
 Phase 6 Core Runtime is accepted.
+Phase 7 Read-Only Tools is accepted.
 
-Current work is Phase 7: Read-Only Tools, unless the user explicitly says otherwise.
+Current work is Phase 8: Permission Engine, unless the user explicitly says otherwise.
 
-Phase 7 scope:
+Phase 8 scope:
 
-1. Inspect only the relevant Phase 7 docs, packages/tools, packages/core integration points, and adjacent cache/storage/event surfaces before changing files.
-2. Implement the initial read-only tools in packages/tools:
-   - read
-   - grep
-   - glob
-3. Implement structured tool inputs.
-4. Implement structured tool results.
-5. Add tool input schema validation.
-6. Add tool-result compression and truncation hooks for large outputs.
-7. Respect sensitive paths and project-root boundaries.
-8. Add cache integration for read/grep/glob where supported by the existing package structure.
-9. Ensure read-only tool calls are recorded in the run ledger.
-10. Ensure read-only tool calls remain visible through the existing runtime event/server/TUI path.
-11. Wire tool registration into the existing Phase 6 ToolRegistry/Core runtime path only as needed.
+1. Inspect only the relevant Phase 8 docs, packages/permissions, packages/protocol permission schemas, packages/storage permission persistence, packages/events permission events, and packages/core permission integration points before changing files.
+2. Implement the centralized permission engine in packages/permissions.
+3. Support exactly these deterministic decision classes:
+   - allow
+   - ask
+   - deny
+4. Define permission request schemas.
+5. Define permission decision schemas.
+6. Add permission request and permission decision events.
+7. Persist permission requests and permission decisions using the existing storage architecture.
+8. Ensure risky operations can be routed through permission evaluation before execution.
+9. Ensure permission requests and decisions are recorded in the run ledger.
+10. Ensure the TUI remains a renderer only and does not decide permission policy.
+11. Keep the permission engine backend-owned and deterministic.
 
-Phase 7 must not implement file mutation tools, write/edit/apply_patch, shell execution, permission engine policy, diff application, token-health runtime, planner runtime, model-provider-specific UI, database table definitions, or unrelated TUI features.
+Phase 8 must not implement file mutation tools, write/edit/apply_patch, shell execution, diff application, PTY support, token-health runtime, planner runtime, model-provider-specific UI, unrelated TUI features, or broad future-phase behavior.
 
-Read-only tools must not mutate project state.
+Do not let route handlers, tools, shell code, or TUI code bypass the permission engine.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
