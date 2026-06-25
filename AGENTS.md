@@ -27,6 +27,7 @@ Architecture Boundaries
 * packages/core: agent runtime orchestration.
 * packages/protocol: Zod schemas, route contracts, shared protocol types.
 * packages/sdk: typed client for protocol/API/SSE.
+* packages/events: shared event names, event helpers, and event-streaming types only.
 * packages/storage: SQLite/Drizzle persistence.
 * packages/permissions: permission policy/evaluation.
 * packages/tools: tool definitions and execution adapters.
@@ -45,16 +46,20 @@ Current Phase
 
 Phase 0 is complete.
 Phase 1 scaffold is accepted.
-Current work is Phase 2: Protocol Contract.
+Phase 2 Protocol Contract is accepted.
 
-Phase 2 scope:
+Current work is Phase 3: Local Server, unless the user explicitly says otherwise.
 
-1. Implement packages/protocol.
-2. Implement packages/sdk skeleton.
-3. Define Zod schemas before server routes.
-4. Add route contracts before server implementation.
+Phase 3 scope:
 
-Do not implement server routes, TUI screens, core runtime, tools, storage schema, permission engine, model adapters, shell runner, or diff engine until protocol/SDK contracts exist.
+1. Implement the local HTTP/SSE server control plane in apps/server.
+2. Use packages/protocol route contracts and schemas as the source of truth.
+3. Validate request params, query, body, and responses through protocol schemas.
+4. Return structured error envelopes.
+5. Add localhost-only default binding.
+6. Add health/info routes and SSE plumbing needed for later runtime phases.
+
+Do not implement TUI screens, core runtime, tools, storage schema, permission engine, model adapters, shell runner, diff engine, or token-health runtime unless the active phase explicitly allows it.
 
 Protocol Rules
 
@@ -76,6 +81,16 @@ Prefer explicit schemas for:
 Export inferred TypeScript types from schemas. Avoid duplicated hand-written protocol types when z.infer is enough.
 
 Use stable names. Avoid speculative abstractions.
+
+Route contracts must distinguish pathParams, query, body, response, and errors.
+
+Server and SDK code must consume protocol contracts instead of duplicating DTOs.
+
+SDK successful responses must be validated, not cast.
+
+OpenAPI generation must preserve path params, query params, request bodies, error responses, and SSE media types.
+
+SSE parsing must validate event envelopes and must not silently swallow malformed events.
 
 Safety Model
 
@@ -138,12 +153,12 @@ If a command is unavailable because scripts are not defined yet, report that cle
 
 Git Discipline
 
-Keep Phase 2 commits narrow.
+Keep commits narrow and phase-scoped.
 
-Recommended commit shape:
+Do not mix unrelated server, TUI, runtime, storage, tools, shell, model, or UI work into the active phase.
 
-* protocol schemas/contracts
-* SDK skeleton
-* tests/types if added
+Before committing:
 
-Do not mix unrelated server/TUI/runtime work into Phase 2 commits.
+1. Confirm changed files match the active phase.
+2. Run the narrowest relevant checks.
+3. Confirm git status --short contains only intentional changes.
