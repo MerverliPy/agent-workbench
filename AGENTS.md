@@ -52,29 +52,41 @@ Phase 4 TUI Shell is accepted.
 Phase 5 Storage is accepted.
 Phase 6 Core Runtime is accepted.
 Phase 7 Read-Only Tools is accepted.
+Phase 8 Permission Engine is accepted.
 
-Current work is Phase 8: Permission Engine, unless the user explicitly says otherwise.
+Current work is Phase 9: File Mutation Tools, unless the user explicitly says otherwise.
 
-Phase 8 scope:
+Phase 9 scope:
 
-1. Inspect only the relevant Phase 8 docs, packages/permissions, packages/protocol permission schemas, packages/storage permission persistence, packages/events permission events, and packages/core permission integration points before changing files.
-2. Implement the centralized permission engine in packages/permissions.
-3. Support exactly these deterministic decision classes:
-   - allow
-   - ask
-   - deny
-4. Define permission request schemas.
-5. Define permission decision schemas.
-6. Add permission request and permission decision events.
-7. Persist permission requests and permission decisions using the existing storage architecture.
-8. Ensure risky operations can be routed through permission evaluation before execution.
-9. Ensure permission requests and decisions are recorded in the run ledger.
-10. Ensure the TUI remains a renderer only and does not decide permission policy.
-11. Keep the permission engine backend-owned and deterministic.
+1. Inspect only the relevant Phase 9 docs, decisions, packages/tools, packages/diff, packages/core tool-dispatch integration points, packages/permissions mutation policy integration, packages/storage ledger/change persistence, packages/events mutation/diff events, packages/cache invalidation integration, apps/server route integration points, and apps/tui diff/permission rendering points before changing files.
+2. Implement controlled file mutation tools through the backend runtime/tool path, not through TUI or direct server route writes.
+3. Implement exactly these file mutation tools unless repository docs require narrower names:
+   - write
+   - edit
+   - apply_patch
+   - diff_preview
+   - revert_last_change
+4. Use patch-first mutation wherever possible.
+5. Create a diff preview before any mutation can be applied.
+6. Support dry-run preview for file mutation.
+7. Require permission evaluation before applying mutation.
+8. Ensure edit/write/apply_patch default to ask unless deterministic policy denies them.
+9. Ensure deny prevents mutation execution.
+10. Ensure no mutation bypasses the permission engine.
+11. Ensure no mutation bypasses diff preview.
+12. Record mutation proposals, diff previews, permission decisions, applied mutations, failed mutations, and revert attempts in the run ledger where the existing architecture supports it.
+13. Persist file mutation metadata using the existing storage architecture where required by the docs.
+14. Invalidate read/search cache entries affected by file mutation.
+15. Keep the TUI renderer-only: it may display diff previews, dry-run results, permission prompts, mutation status, and ledger entries, but it must not write files or decide policy.
+16. Keep server route handlers thin: they may expose protocol/API surfaces, but must not directly write files or apply patches outside the core/tool/permission/diff path.
+17. Keep packages/diff responsible for patch preview/apply/revert mechanics.
+18. Keep packages/tools responsible for tool definitions and execution adapters.
+19. Keep packages/permissions responsible for allow/ask/deny decisions only.
+20. Keep packages/core responsible for orchestrating tool execution, permission gates, events, and ledger integration.
 
-Phase 8 must not implement file mutation tools, write/edit/apply_patch, shell execution, diff application, PTY support, token-health runtime, planner runtime, model-provider-specific UI, unrelated TUI features, or broad future-phase behavior.
+Phase 9 must not implement shell execution, bash tools, PTY support, token-health runtime, broad planner runtime, agent modes, model-provider-specific UI, unrelated TUI features, or broad future-phase behavior.
 
-Do not let route handlers, tools, shell code, or TUI code bypass the permission engine.
+Do not let model output, TUI code, route handlers, tools, or diff utilities bypass permission checks or diff preview.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
