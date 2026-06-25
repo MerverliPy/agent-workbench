@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared display formatting, theme tokens, and non-authoritative UI helpers."
+}

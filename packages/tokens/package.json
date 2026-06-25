@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Context budget calculation, truncation, summarization, compaction, and relevance ranking."
+}

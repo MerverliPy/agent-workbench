@@ -1,0 +1,538 @@
+# 04 — Implementation Phase Checklist
+
+Status: Phase 0 — Planning Docs  
+Document type: agent-ready implementation checklist  
+Scope: phases 0 through 12, dependencies, gates, and forbidden shortcuts
+
+## 1. Purpose
+
+This document defines the required implementation order for `agent-workbench`.
+
+Future agents must follow this phase order. Do not skip ahead to later-phase implementation unless the current phase explicitly allows it.
+
+## 2. Phase List
+
+```text
+Phase 0  Planning docs
+Phase 1  Workspace scaffold
+Phase 2  Protocol contract
+Phase 3  Local server
+Phase 4  TUI shell
+Phase 5  Storage
+Phase 6  Core runtime
+Phase 7  Read-only tools
+Phase 8  Permission engine
+Phase 9  File mutation tools
+Phase 10 Shell execution
+Phase 11 Agent modes
+Phase 12 Token health
+```
+
+## 3. Phase 0 — Planning Docs
+
+### Purpose
+
+Create agent-ready documentation only.
+
+### Required Outputs
+
+```text
+README.md
+docs/00_PROJECT_INTENT.md
+docs/01_TECH_STACK_DECISION.md
+docs/02_ARCHITECTURE.md
+docs/03_BACKEND_FRONTEND_BOUNDARY.md
+docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
+docs/05_PERMISSION_MODEL.md
+docs/06_SECURITY_MODEL.md
+docs/07_API_CONTRACT_PLAN.md
+docs/08_DATA_MODEL_PLAN.md
+docs/09_AGENT_MODEL.md
+docs/10_TOOL_RUNTIME_MODEL.md
+docs/11_TOKEN_HEALTH_MODEL.md
+docs/12_TUI_UX_MODEL.md
+docs/13_RUN_LEDGER_MODEL.md
+docs/14_DRY_RUN_MODEL.md
+docs/15_CACHE_MODEL.md
+docs/16_TESTING_STRATEGY.md
+docs/17_RISK_REGISTER.md
+docs/18_PHASE_EXIT_GATES.md
+docs/19_TARGET_REPO_TREE.md
+decisions/*.md
+```
+
+### Forbidden
+
+```text
+package.json
+bun.lock
+apps/
+packages/
+src/
+tests/
+scripts/
+runtime code
+placeholder implementation files
+```
+
+### Exit Gate
+
+```text
+[ ] All Phase 0 docs exist.
+[ ] All decisions are captured as ADRs.
+[ ] No functional files exist.
+[ ] Phase 1 scaffold is fully documented.
+```
+
+## 4. Phase 1 — Workspace Scaffold
+
+### Purpose
+
+Create the monorepo structure.
+
+### Required Outputs
+
+```text
+apps/cli
+apps/server
+apps/tui
+packages/protocol
+packages/sdk
+packages/core
+packages/events
+packages/storage
+packages/config
+packages/permissions
+packages/tools
+packages/models
+packages/shell
+packages/diff
+packages/tokens
+packages/cache
+packages/planner
+packages/ui
+```
+
+### Requirements
+
+```text
+[ ] Create root package management files.
+[ ] Create TypeScript config.
+[ ] Create package boundaries.
+[ ] Create empty package shells only as needed.
+[ ] Add boundary-checking approach.
+```
+
+### Exit Gate
+
+```text
+[ ] No package has overlapping ownership.
+[ ] TUI cannot import forbidden packages.
+[ ] Core remains UI-agnostic.
+[ ] Server remains route/control-plane focused.
+```
+
+## 5. Phase 2 — Protocol Contract
+
+### Purpose
+
+Define schemas before implementation.
+
+### Required Outputs
+
+```text
+packages/protocol/src/schemas/*
+packages/protocol/src/routes/*
+packages/protocol/src/openapi/*
+packages/sdk contract plan
+```
+
+### Requirements
+
+```text
+[ ] Define session schema.
+[ ] Define message schema.
+[ ] Define tool call schema.
+[ ] Define tool result schema.
+[ ] Define permission request schema.
+[ ] Define permission decision schema.
+[ ] Define event schema.
+[ ] Define error envelope schema.
+[ ] Define config schema.
+[ ] Define token-health schema.
+```
+
+### Exit Gate
+
+```text
+[ ] Zod schemas exist before route handlers.
+[ ] OpenAPI generation path exists.
+[ ] SDK generation or typed SDK plan exists.
+[ ] Errors use one envelope format.
+```
+
+## 6. Phase 3 — Local Server
+
+### Purpose
+
+Build local control plane.
+
+### Requirements
+
+```text
+[ ] Create Hono app.
+[ ] Bind localhost by default.
+[ ] Add health route.
+[ ] Add SSE event route.
+[ ] Add session route placeholders backed by protocol.
+[ ] Add config/provider/file/permission/tool/TUI/auth route groups.
+[ ] Add structured error middleware.
+[ ] Add request ID middleware.
+[ ] Add localhost-only middleware.
+```
+
+### Exit Gate
+
+```text
+[ ] Server can run without TUI.
+[ ] Server validates requests.
+[ ] Server exposes event stream.
+[ ] Server does not own core runtime internals.
+```
+
+## 7. Phase 4 — TUI Shell
+
+### Purpose
+
+Build terminal shell without agent logic.
+
+### Requirements
+
+```text
+[ ] Initialize OpenTUI + SolidJS app.
+[ ] Render chat-first layout.
+[ ] Add message timeline.
+[ ] Add prompt editor.
+[ ] Add status bar.
+[ ] Add session sidebar.
+[ ] Add command palette.
+[ ] Add permission modal placeholder.
+[ ] Add diff viewer placeholder.
+[ ] Add run ledger panel placeholder.
+[ ] Add token-health panel placeholder.
+[ ] Connect to server through SDK.
+[ ] Subscribe to SSE events.
+```
+
+### Exit Gate
+
+```text
+[ ] TUI renders without core runtime.
+[ ] TUI connects to local server.
+[ ] TUI can submit prompt request.
+[ ] TUI does not execute tools.
+[ ] TUI does not access storage directly.
+```
+
+## 8. Phase 5 — Storage
+
+### Purpose
+
+Add local durable state.
+
+### Requirements
+
+```text
+[ ] Define SQLite path policy.
+[ ] Add Drizzle schema.
+[ ] Add sessions table.
+[ ] Add messages table.
+[ ] Add tool_calls table.
+[ ] Add permission_requests table.
+[ ] Add permission_decisions table.
+[ ] Add run_ledger table.
+[ ] Add file_changes table.
+[ ] Add config_snapshots table.
+[ ] Add summaries table.
+[ ] Add cache_entries table.
+```
+
+### Exit Gate
+
+```text
+[ ] Sessions survive restart.
+[ ] Messages survive restart.
+[ ] Ledger records are queryable.
+[ ] Secrets are not stored in plaintext by default.
+```
+
+## 9. Phase 6 — Core Runtime
+
+### Purpose
+
+Create session runner and model/tool loop skeleton.
+
+### Requirements
+
+```text
+[ ] Create SessionRunner.
+[ ] Create ContextBuilder.
+[ ] Create ModelRouter.
+[ ] Create ToolRegistry integration.
+[ ] Create EventPublisher integration.
+[ ] Create RunLedger integration.
+[ ] Add run abort/cancellation.
+[ ] Support prompt → read-only tools → response flow.
+```
+
+### Exit Gate
+
+```text
+[ ] Core runs without TUI dependency.
+[ ] Prompt reaches model path.
+[ ] Read-only tool path can be invoked.
+[ ] Events stream to server/TUI.
+[ ] Runs can be aborted.
+```
+
+## 10. Phase 7 — Read-Only Tools
+
+### Purpose
+
+Add safe codebase inspection.
+
+### Required Tools
+
+```text
+read
+grep
+glob
+```
+
+### Requirements
+
+```text
+[ ] Implement structured tool inputs.
+[ ] Implement structured tool results.
+[ ] Add result compression.
+[ ] Add tool-result truncation hooks.
+[ ] Add ledger records.
+[ ] Add cache integration.
+```
+
+### Exit Gate
+
+```text
+[ ] Tools cannot mutate state.
+[ ] Large results are compressed.
+[ ] Tool calls are visible in TUI.
+[ ] Tool calls are recorded in ledger.
+```
+
+## 11. Phase 8 — Permission Engine
+
+### Purpose
+
+Centralize safety policy.
+
+### Requirements
+
+```text
+[ ] Implement allow.
+[ ] Implement ask.
+[ ] Implement deny.
+[ ] Add tool-level rules.
+[ ] Add path-level rules.
+[ ] Add command-level rules.
+[ ] Add agent-level rules.
+[ ] Add permission request events.
+[ ] Persist permission decisions.
+```
+
+### Exit Gate
+
+```text
+[ ] Denied actions cannot execute.
+[ ] Ask-gated actions pause runtime.
+[ ] TUI can approve/deny but not decide policy.
+[ ] Permissions are recorded in ledger.
+```
+
+## 12. Phase 9 — File Mutation Tools
+
+### Purpose
+
+Add controlled file changes.
+
+### Required Tools
+
+```text
+write
+edit
+apply_patch
+diff_preview
+revert_last_change
+```
+
+### Requirements
+
+```text
+[ ] Use patch-first mutation.
+[ ] Create diff preview before apply.
+[ ] Require approval by default.
+[ ] Record file changes.
+[ ] Support dry-run preview.
+```
+
+### Exit Gate
+
+```text
+[ ] No mutation bypasses permissions.
+[ ] No mutation bypasses diff preview.
+[ ] Mutations are ledgered.
+[ ] Revert path exists where possible.
+```
+
+## 13. Phase 10 — Shell Execution
+
+### Purpose
+
+Add controlled command execution.
+
+### Requirements
+
+```text
+[ ] Implement simple command runner.
+[ ] Add timeout.
+[ ] Add abort.
+[ ] Add working directory controls.
+[ ] Add stdout/stderr streaming.
+[ ] Add risk classifier.
+[ ] Add command permission evaluation.
+[ ] Add dry-run command preview.
+[ ] Add PTY design doc only.
+```
+
+### Exit Gate
+
+```text
+[ ] Shell cannot run without permission check.
+[ ] Destructive commands are denied or ask-gated.
+[ ] Output streams as events.
+[ ] Commands are ledgered.
+[ ] Long-running commands can be aborted.
+```
+
+## 14. Phase 11 — Agent Modes
+
+### Purpose
+
+Add primary agent modes.
+
+### Required Agents
+
+```text
+Build
+Plan
+```
+
+### Requirements
+
+```text
+[ ] Define Build agent.
+[ ] Define Plan agent.
+[ ] Add agent selector in TUI.
+[ ] Add agent-specific permissions.
+[ ] Store prompts as versioned config.
+[ ] Do not add subagents yet.
+```
+
+### Exit Gate
+
+```text
+[ ] Build and Plan are selectable.
+[ ] Agent permissions are explicit.
+[ ] No subagent delegation exists.
+[ ] Agents cannot bypass permissions.
+```
+
+## 15. Phase 12 — Token Health
+
+### Purpose
+
+Keep long sessions usable.
+
+### Requirements
+
+```text
+[ ] Add context budget calculator.
+[ ] Add tool-output truncation.
+[ ] Add session summarization.
+[ ] Add compaction suggestions.
+[ ] Add relevance ranking.
+[ ] Add token-health panel.
+[ ] Add user-approved compaction.
+```
+
+### Exit Gate
+
+```text
+[ ] Token-health status is visible.
+[ ] Oversized tool outputs are controlled.
+[ ] Compaction is suggested, not hidden.
+[ ] Important facts are preserved in summaries.
+```
+
+## 16. Cross-Phase Rules
+
+Do not:
+
+```text
+[ ] Implement code in Phase 0.
+[ ] Implement routes before schemas.
+[ ] Implement TUI execution logic.
+[ ] Implement mutation before permissions.
+[ ] Implement shell before permissions.
+[ ] Implement subagents before Build/Plan.
+[ ] Implement automatic compaction without visibility.
+```
+
+## 17. Phase Completion Status
+
+| Phase | Name | Status |
+|---:|---|---|
+| 0 | Planning Docs | In progress |
+| 1 | Workspace Scaffold | Not started |
+| 2 | Protocol Contract | Not started |
+| 3 | Local Server | Not started |
+| 4 | TUI Shell | Not started |
+| 5 | Storage | Not started |
+| 6 | Core Runtime | Not started |
+| 7 | Read-Only Tools | Not started |
+| 8 | Permission Engine | Not started |
+| 9 | File Mutation Tools | Not started |
+| 10 | Shell Execution | Not started |
+| 11 | Agent Modes | Not started |
+| 12 | Token Health | Not started |
+
+## 18. Agent Instructions
+
+Future agents must:
+
+1. Identify current phase before acting.
+2. Check phase exit gates before moving forward.
+3. Refuse to create later-phase files early unless explicitly instructed.
+4. Record uncertainty.
+5. Avoid hidden implementation assumptions.
+6. Preserve the stack and boundaries.
+
+## 19. Validation Checklist
+
+```text
+[ ] Every phase has a purpose.
+[ ] Every phase has requirements.
+[ ] Every phase has an exit gate.
+[ ] Phase order is explicit.
+[ ] Forbidden shortcuts are listed.
+[ ] Current status is clear.
+```

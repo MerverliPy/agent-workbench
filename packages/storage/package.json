@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/storage",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SQLite/Drizzle schema, migrations, and repositories."
+}

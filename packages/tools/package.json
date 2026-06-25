@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tool registry and tool definitions. Execution remains permission-gated."
+}

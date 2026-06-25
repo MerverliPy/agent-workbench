@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent runtime orchestration, session runner, context builder, and model/tool loop."
+}

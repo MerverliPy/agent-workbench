@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CLI entrypoint package. Owns process startup and command routing only."
+}

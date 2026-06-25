@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local HTTP/SSE control plane package. Owns routes, middleware, and server lifecycle only."
+}

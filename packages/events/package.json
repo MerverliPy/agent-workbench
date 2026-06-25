@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/events",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Internal event bus, event definitions, and SSE encoding support."
+}

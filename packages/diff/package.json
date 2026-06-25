@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/diff",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Patch preview, patch apply/revert, file snapshots, and file dry-run support."
+}

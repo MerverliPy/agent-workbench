@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/shell",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Simple command runner, command parsing, risk classification, timeout, and abort behavior."
+}

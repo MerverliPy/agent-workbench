@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/permissions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Allow/ask/deny policy engine and risk evaluators."
+}

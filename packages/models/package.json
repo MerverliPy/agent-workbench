@@ -1,0 +1,7 @@
+{
+  "name": "@agent-workbench/models",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Model provider adapters, model router, stream normalization, and usage metadata."
+}
