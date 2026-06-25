@@ -14,13 +14,11 @@ import type { ToolCallRequest, ToolCallResult } from "./types";
  *  - If the tool is NOT registered, return a structured error result so the
  *    model/tool loop can inform the model and continue gracefully.
  *
- * NOTE — Phase 8 permission check location:
- *   Before calling executor.execute() below a permission check will be
- *   inserted (packages/permissions). The check will evaluate the tool call
- *   against the active session's policy and may return "ask" (pause the run
- *   and emit a permission request event) or "deny" (return a denied error
- *   result without executing). For Phase 7 all registered read-only tool calls
- *   are treated as auto-allowed.
+ * Phase 8 note:
+ *   Permission evaluation happens upstream in SessionRunner.dispatchToolCalls()
+ *   before this dispatcher is called. By the time dispatch() is invoked, the
+ *   permission engine has already returned "allow" (or "ask" was approved).
+ *   This dispatcher assumes permission has been granted and executes directly.
  */
 export class ToolCallDispatcher {
   constructor(private readonly registry: ToolRegistry) {}

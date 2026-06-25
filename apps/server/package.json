@@ -15,6 +15,7 @@
     "@agent-workbench/core": "workspace:*",
     "@agent-workbench/events": "workspace:*",
     "@agent-workbench/models": "workspace:*",
+    "@agent-workbench/permissions": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "@agent-workbench/tools": "workspace:*",

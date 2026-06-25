@@ -20,6 +20,7 @@
         "@agent-workbench/core": "workspace:*",
         "@agent-workbench/events": "workspace:*",
         "@agent-workbench/models": "workspace:*",
+        "@agent-workbench/permissions": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/storage": "workspace:*",
         "@agent-workbench/tools": "workspace:*",
@@ -66,6 +67,7 @@
       "dependencies": {
         "@agent-workbench/events": "workspace:*",
         "@agent-workbench/models": "workspace:*",
+        "@agent-workbench/permissions": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/storage": "workspace:*",
         "@agent-workbench/tools": "workspace:*",
@@ -99,6 +101,13 @@
     "packages/permissions": {
       "name": "@agent-workbench/permissions",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+        "ulid": "^2.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/planner": {
       "name": "@agent-workbench/planner",

@@ -40,6 +40,22 @@ export class PermissionRepository {
       .all();
   }
 
+  listRequests(status?: string): PermissionRequestRow[] {
+    if (status !== undefined) {
+      return this.db
+        .select()
+        .from(permissionRequests)
+        .where(eq(permissionRequests.status, status))
+        .orderBy(asc(permissionRequests.createdAt))
+        .all();
+    }
+    return this.db
+      .select()
+      .from(permissionRequests)
+      .orderBy(asc(permissionRequests.createdAt))
+      .all();
+  }
+
   createRequest(data: PermissionRequestInsert): PermissionRequestRow {
     this.db.insert(permissionRequests).values(data).run();
     return this.findRequestById(data.id) as PermissionRequestRow;

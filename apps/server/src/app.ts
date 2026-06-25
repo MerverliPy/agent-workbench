@@ -7,6 +7,7 @@ import { requestIdMiddleware } from "./middleware/request-id";
 import { registerGlobalRoutes } from "./routes/global";
 import { registerSessionRoutes } from "./routes/session-routes";
 import { registerMessageRoutes } from "./routes/message-routes";
+import { registerPermissionRoutes } from "./routes/permission-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 
 export interface CreateAppOptions {
@@ -29,6 +30,7 @@ export function createApp(options: CreateAppOptions) {
 
   registerSessionRoutes(app, options.services);
   registerMessageRoutes(app, options.services);
+  registerPermissionRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

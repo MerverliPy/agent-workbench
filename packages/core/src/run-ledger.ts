@@ -7,6 +7,7 @@ const Category = {
   RUN: "run",
   MODEL: "model",
   TOOL: "tool",
+  PERMISSION: "permission",
   ERROR: "error",
 } as const;
 
@@ -16,6 +17,8 @@ const Actor = {
   AGENT: "agent",
   MODEL: "model",
   TOOL: "tool",
+  USER: "user",
+  POLICY: "policy",
 } as const;
 
 /**
@@ -190,6 +193,101 @@ export class RunLedger {
 
   recordError(summary: string, detail?: unknown): void {
     this.record("error", Category.ERROR, Actor.SYSTEM, summary, detail);
+  }
+
+  // ── Permissions (Phase 8) ─────────────────────────────────────────────────
+
+  /**
+   * Record that a permission request was created and sent to the user.
+   * Called by SessionRunner when the engine returns "ask".
+   */
+  recordPermissionRequested(
+    requestId: string,
+    toolName: string,
+    riskLevel: string
+  ): void {
+    this.record(
+      "permission.requested",
+      Category.PERMISSION,
+      Actor.SYSTEM,
+      `Permission requested for tool: ${toolName}`,
+      { requestId, toolName, riskLevel }
+    );
+  }
+
+  /**
+   * Record a permission decision (allow or deny).
+   *
+   * The server decision route also records permission.decided for user-submitted
+   * decisions. This method is called by SessionRunner only for policy-level
+   * auto-decisions (deny from engine without user prompt). The server route
+   * handles the user-submitted case to avoid duplicate ledger entries.
+   */
+  recordPermissionDecidedByPolicy(
+    requestId: string,
+    decision: string,
+    reason: string
+  ): void {
+    this.record(
+      "permission.decided",
+      Category.PERMISSION,
+      Actor.POLICY,
+      `Permission decided by policy: ${decision}`,
+      { requestId, decision, decidedBy: "policy", reason }
+    );
+  }
+
+  /**
+   * Record a policy-level deny (engine returned "deny" directly, no ask).
+   * Called by SessionRunner before blocking tool execution.
+   */
+  recordPermissionDeniedByPolicy(
+    requestId: string,
+    toolName: string,
+    reason: string
+  ): void {
+    this.record(
+      "permission.denied",
+      Category.PERMISSION,
+      Actor.POLICY,
+      `Tool denied by policy: ${toolName}`,
+      { requestId, toolName, reason }
+    );
+  }
+
+  /**
+   * Record a user-submitted deny (ask-gate resolved to deny).
+   * Called by SessionRunner after gate.waitForDecision() returns "deny".
+   */
+  recordPermissionDeniedByUser(
+    requestId: string,
+    toolName: string
+  ): void {
+    this.record(
+      "permission.denied",
+      Category.PERMISSION,
+      Actor.USER,
+      `Tool denied by user: ${toolName}`,
+      { requestId, toolName }
+    );
+  }
+
+  /**
+   * Record that a tool call was blocked (no execution).
+   * Supplements the existing recordToolCallFailed to specifically mark denial.
+   */
+  recordToolCallDenied(
+    toolCallId: string,
+    toolName: string,
+    reason: string
+  ): void {
+    this.record(
+      "tool.denied",
+      Category.TOOL,
+      Actor.POLICY,
+      `Tool call denied: ${toolName}`,
+      { toolCallId, toolName, reason }
+    );
   }
 
   // ── Internal ──────────────────────────────────────────────────────────────

@@ -78,9 +78,14 @@ export interface CoreDependencies {
   messageRepository: import("@agent-workbench/storage").MessageRepository;
   toolCallRepository: import("@agent-workbench/storage").ToolCallRepository;
   ledgerRepository: import("@agent-workbench/storage").LedgerRepository;
+  // Phase 8: permission persistence
+  permissionRepository: import("@agent-workbench/storage").PermissionRepository;
   eventBus: import("@agent-workbench/events").EventBus;
   toolRegistry: import("@agent-workbench/tools").ToolRegistry;
   modelProvider: import("@agent-workbench/models").ModelProvider;
+  // Phase 8: permission evaluation and ask-gate
+  permissionEngine: import("@agent-workbench/permissions").PermissionEngine;
+  permissionGate: import("@agent-workbench/permissions").PermissionGate;
 }
 
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */

@@ -4,7 +4,9 @@ import type {
   SessionRepository,
   MessageRepository,
   LedgerRepository,
+  PermissionRepository,
 } from "@agent-workbench/storage";
+import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 
 /** Per-request variables set by middleware. */
 export interface RequestContextVariables {
@@ -18,6 +20,10 @@ export interface ServerServices {
   readonly sessionRepository: SessionRepository;
   readonly messageRepository: MessageRepository;
   readonly ledgerRepository: LedgerRepository;
+  // Phase 8: permission engine services
+  readonly permissionRepository: PermissionRepository;
+  readonly permissionEngine: PermissionEngine;
+  readonly permissionGate: PermissionGate;
 }
 
 export type ServerAppBindings = {

@@ -1,16 +1,18 @@
 import type { JSX } from "@opentui/solid";
 import { onMount, onCleanup } from "solid-js";
 import { useKeyboard } from "@opentui/solid";
-import type { EventEnvelope } from "@agent-workbench/protocol";
+import type { EventEnvelope, PermissionRequest } from "@agent-workbench/protocol";
 import { sdk } from "./lib/sdk";
 import {
   setServerStatus,
   setServerError,
-  setPendingPermissions,
+  addPendingPermissionRequest,
+  removePendingPermissionRequest,
   appendMessage,
   appendSystemNotice,
   commandPaletteOpen,
   setCommandPaletteOpen,
+  setPermissionModalOpen,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -70,12 +72,30 @@ export function App(): JSX.Element {
     }
 
     if (type === "permission.requested") {
-      setPendingPermissions((n) => n + 1);
+      // The server embeds the full PermissionRequest in the payload so the TUI
+      // can render the modal without a follow-up API call.
+      // TUI does not evaluate the request — it only displays backend-provided data.
+      const payload = event.payload as Record<string, unknown>;
+      const req = payload["permissionRequest"] as PermissionRequest | undefined;
+      if (req !== undefined) {
+        addPendingPermissionRequest(req);
+        setPermissionModalOpen(true);
+      } else {
+        // Fallback: increment-only if payload shape is unexpected.
+        // This preserves backward compatibility during development.
+        setPermissionModalOpen(true);
+      }
       return;
     }
 
     if (type === "permission.decided") {
-      setPendingPermissions((n) => Math.max(0, n - 1));
+      const payload = event.payload as Record<string, unknown>;
+      const requestId = payload["requestId"] as string | undefined;
+      if (requestId !== undefined) {
+        removePendingPermissionRequest(requestId);
+      }
+      // Close modal when all pending requests are resolved.
+      // The modal component also derives visibility from pendingPermissionRequests().
       return;
     }
 

@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js";
+import type { PermissionRequest } from "@agent-workbench/protocol";
 
 /**
  * Placeholder session ID used while server session APIs return 501.
@@ -43,8 +44,38 @@ export const [serverError, setServerError] = createSignal<string | null>(null);
 
 export const [runStatus, setRunStatus] = createSignal<RunStatus>("idle");
 
-/** Count of unresolved permission requests received via SSE. */
-export const [pendingPermissions, setPendingPermissions] = createSignal(0);
+/**
+ * Phase 8: pending permission requests received via SSE.
+ * The modal displays the first item in this list.
+ * TUI renders data from this signal; it never computes allow/ask/deny.
+ */
+export const [pendingPermissionRequests, setPendingPermissionRequests] =
+  createSignal<PermissionRequest[]>([]);
+
+/** Derived count for backward compatibility with any existing readers. */
+export function pendingPermissions(): number {
+  return pendingPermissionRequests().length;
+}
+
+/**
+ * Add a permission request received from SSE to the pending queue.
+ * Called by App.tsx when a permission.requested event arrives.
+ */
+export function addPendingPermissionRequest(req: PermissionRequest): void {
+  setPendingPermissionRequests((prev) => {
+    // Avoid duplicates (re-delivery guard).
+    if (prev.some((r) => r.id === req.id)) return prev;
+    return [...prev, req];
+  });
+}
+
+/**
+ * Remove a permission request from the queue after it is decided.
+ * Called by App.tsx when a permission.decided event arrives.
+ */
+export function removePendingPermissionRequest(requestId: string): void {
+  setPendingPermissionRequests((prev) => prev.filter((r) => r.id !== requestId));
+}
 
 // ── Message timeline ──────────────────────────────────────────────────────
 

@@ -78,6 +78,50 @@ export class EventPublisher {
     this.publish(EventName.MESSAGE_CREATED, { messageId, role });
   }
 
+  // ── Permissions (Phase 8) ────────────────────────────────────────────────
+
+  publishPermissionRequested(
+    requestId: string,
+    toolName: string,
+    riskLevel: string,
+    reason?: string,
+    permissionRequest?: unknown
+  ): void {
+    // Include the full permission request object in the payload so the TUI
+    // can render the modal without a follow-up API call.
+    this.publish(EventName.PERMISSION_REQUESTED, {
+      requestId,
+      toolName,
+      riskLevel,
+      reason,
+      permissionRequest,
+    });
+  }
+
+  publishPermissionDecided(
+    requestId: string,
+    decision: string,
+    decidedBy?: string
+  ): void {
+    this.publish(EventName.PERMISSION_DECIDED, {
+      requestId,
+      decision,
+      decidedBy,
+    });
+  }
+
+  publishPermissionDenied(
+    requestId: string,
+    toolName: string,
+    reason?: string
+  ): void {
+    this.publish(EventName.PERMISSION_DENIED, {
+      requestId,
+      toolName,
+      reason,
+    });
+  }
+
   // ── Internal helper ─────────────────────────────────────────────────────────
 
   private publish(type: string, payload: unknown): void {

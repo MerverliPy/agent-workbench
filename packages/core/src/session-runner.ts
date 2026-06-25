@@ -29,9 +29,17 @@ const DEFAULT_MAX_ITERATIONS = 20;
  *  - Reads session.projectPath and passes it as projectRoot to each tool call
  *    via ToolExecutionContext.
  *
+ * Phase 8 change:
+ *  - Evaluates permissions before every tool execution via PermissionEngine.
+ *  - Deny: blocks execution, ledgers + emits permission.denied, updates tool_call to "denied".
+ *  - Ask: persists PermissionRequest, emits permission.requested, pauses on
+ *    PermissionGate, then continues (allow) or blocks (deny) after user decision.
+ *    The server decision route emits permission.decided and records the ledger
+ *    entry for user decisions. SessionRunner records permission.decided only for
+ *    policy-level denies to avoid duplicate entries.
+ *
  * Phase 6 constraints (unchanged):
  *  - Uses StubModelProvider by default — real providers are future phases.
- *  - Permission check is a TODO placeholder at the tool dispatch layer.
  *  - No token-health enforcement (Phase 12).
  *  - No agent-mode selection (Phase 11).
  */
@@ -367,6 +375,157 @@ export class SessionRunner {
       ledger.recordToolCallRequested(storageId, request.name);
       events.publishToolCallRequested(storageId, request.name);
 
+      // ── Phase 8: Permission evaluation ─────────────────────────────────
+      const targetPaths = extractTargetPaths(request.input);
+      const evalResult = this.deps.permissionEngine.evaluate({
+        toolName: request.name,
+        ...(targetPaths !== undefined ? { targetPaths } : {}),
+        // command is undefined in Phase 8 — bash tool not yet implemented
+        // agentId is undefined — agent modes not yet implemented (Phase 11)
+      });
+
+      if (evalResult.outcome === "deny") {
+        // Policy-level deny — block execution immediately.
+        const permReqId = ulid();
+        this.deps.toolCallRepository.update(storageId, {
+          status: "denied",
+          completedAt: new Date().toISOString(),
+          errorJson: JSON.stringify({ error: evalResult.reason }),
+        });
+
+        // Persist a minimal permission request record for auditability.
+        this.deps.permissionRepository.createRequest({
+          id: permReqId,
+          sessionId,
+          runId,
+          toolCallId: storageId,
+          agentId: null,
+          toolName: request.name,
+          riskLevel: evalResult.riskLevel,
+          reason: evalResult.reason,
+          targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
+          command: null,
+          diffSummaryJson: null,
+          dryRunSummaryJson: null,
+          status: "denied",
+          createdAt: new Date().toISOString(),
+          expiresAt: null,
+          metadataJson: null,
+        });
+
+        // Ledger the policy-level denial.
+        ledger.recordPermissionDeniedByPolicy(permReqId, request.name, evalResult.reason);
+        ledger.recordPermissionDecidedByPolicy(permReqId, "deny", evalResult.reason);
+        ledger.recordToolCallDenied(storageId, request.name, evalResult.reason);
+
+        events.publishPermissionDenied(permReqId, request.name, evalResult.reason);
+        events.publishToolCallFailed(storageId, request.name, `Permission denied: ${evalResult.reason}`);
+
+        results.push({
+          id: storageId,
+          modelCallId: request.modelCallId,
+          name: request.name,
+          result: null,
+          error: `Permission denied: ${evalResult.reason}`,
+        });
+        continue;
+      }
+
+      if (evalResult.outcome === "ask") {
+        // Ask-gated — suspend the run until the user decides.
+        const permReqId = ulid();
+        const now = new Date().toISOString();
+
+        // Build the full permission request payload (sent via SSE to TUI).
+        const permissionRequestPayload = {
+          id: permReqId,
+          sessionId,
+          runId,
+          toolCallId: storageId,
+          toolName: request.name,
+          riskLevel: evalResult.riskLevel,
+          reason: evalResult.reason,
+          targetPaths,
+          status: "pending",
+          createdAt: now,
+        };
+
+        // Persist the pending request.
+        this.deps.permissionRepository.createRequest({
+          id: permReqId,
+          sessionId,
+          runId,
+          toolCallId: storageId,
+          agentId: null,
+          toolName: request.name,
+          riskLevel: evalResult.riskLevel,
+          reason: evalResult.reason,
+          targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
+          command: null,
+          diffSummaryJson: null,
+          dryRunSummaryJson: null,
+          status: "pending",
+          createdAt: now,
+          expiresAt: null,
+          metadataJson: null,
+        });
+
+        // Update tool call status to permission_pending.
+        this.deps.toolCallRepository.update(storageId, { status: "permission_pending" });
+
+        // Ledger and emit.
+        ledger.recordPermissionRequested(permReqId, request.name, evalResult.riskLevel);
+        events.publishPermissionRequested(
+          permReqId,
+          request.name,
+          evalResult.riskLevel,
+          evalResult.reason,
+          permissionRequestPayload
+        );
+
+        // ── Pause: wait for the user's decision via PermissionGate ────────
+        const decision = await this.deps.permissionGate.waitForDecision(
+          permReqId,
+          signal
+        );
+
+        if (decision === "deny") {
+          // User denied (or run was aborted while waiting).
+          const deniedBy = signal.aborted ? "system" : "user";
+
+          this.deps.permissionRepository.updateRequest(permReqId, { status: "denied" });
+          this.deps.toolCallRepository.update(storageId, {
+            status: "denied",
+            completedAt: new Date().toISOString(),
+            errorJson: JSON.stringify({ error: "Permission denied by user." }),
+          });
+
+          // NOTE: The server decision route already recorded permission.decided
+          // and the ledger entry for user-submitted decisions. SessionRunner only
+          // records the tool-level outcome here (not a duplicate permission.decided).
+          ledger.recordToolCallDenied(storageId, request.name, "Permission denied by user.");
+          events.publishPermissionDenied(permReqId, request.name, "Denied by user.");
+          events.publishToolCallFailed(storageId, request.name, "Permission denied.");
+
+          results.push({
+            id: storageId,
+            modelCallId: request.modelCallId,
+            name: request.name,
+            result: null,
+            error: `Permission denied by ${deniedBy}.`,
+          });
+
+          if (signal.aborted) {
+            break;
+          }
+          continue;
+        }
+
+        // User approved — update request status, fall through to execution.
+        // (Server decision route already persisted the decision and emitted events.)
+        this.deps.permissionRepository.updateRequest(permReqId, { status: "approved" });
+      }
+
       // ── Dispatch ────────────────────────────────────────────────────────
       ledger.recordToolCallStarted(storageId, request.name);
       events.publishToolCallStarted(storageId, request.name);
@@ -420,4 +579,51 @@ export class SessionRunner {
 
     return results;
   }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Best-effort extraction of file paths from a tool call input.
+ *
+ * Inspects common path field names used by Phase 7 read-only tools.
+ * Returns undefined if input is not an object or has no recognisable path fields.
+ * Does not throw on unexpected input shapes.
+ */
+function extractTargetPaths(input: unknown): string[] | undefined {
+  if (input === null || typeof input !== "object") return undefined;
+
+  const obj = input as Record<string, unknown>;
+
+  // "path" field (read, grep tools)
+  if (typeof obj["path"] === "string") {
+    return [obj["path"]];
+  }
+
+  // "paths" field (hypothetical multi-path tool)
+  if (Array.isArray(obj["paths"])) {
+    const strs = (obj["paths"] as unknown[]).filter(
+      (p): p is string => typeof p === "string"
+    );
+    if (strs.length > 0) return strs;
+  }
+
+  // "pattern" field (glob tool) — pattern is not a literal path;
+  // extract any leading directory portion for path-rule checking.
+  if (typeof obj["pattern"] === "string") {
+    const pattern = obj["pattern"] as string;
+    // Extract directory prefix before any glob characters.
+    const globChars = /[*?[\]{}!]/;
+    if (!globChars.test(pattern)) {
+      // Fully literal path — treat as a path.
+      return [pattern];
+    }
+    const slashIdx = pattern.search(globChars);
+    const lastSlash = pattern.lastIndexOf("/", slashIdx);
+    if (lastSlash > 0) {
+      return [pattern.slice(0, lastSlash)];
+    }
+  }
+
+  return undefined;
 }

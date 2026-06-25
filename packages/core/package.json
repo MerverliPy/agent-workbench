@@ -22,6 +22,7 @@
     "@agent-workbench/events": "workspace:*",
     "@agent-workbench/tools": "workspace:*",
     "@agent-workbench/models": "workspace:*",
+    "@agent-workbench/permissions": "workspace:*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

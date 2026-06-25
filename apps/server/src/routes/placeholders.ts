@@ -1,19 +1,15 @@
 import type { Hono } from "hono";
 import {
   CreateTokenRoute,
-  DecidePermissionRoute,
   FocusRoute,
   GetAuthStatusRoute,
   GetConfigRoute,
   GetEffectiveConfigRoute,
-  GetEffectivePolicyRoute,
   GetFileDiffRoute,
   GetFileTreeRoute,
-  GetPermissionRequestRoute,
   GetProviderRoute,
   GetTuiStateRoute,
   ListFilesRoute,
-  ListPermissionRequestsRoute,
   ListProviderModelsRoute,
   ListProvidersRoute,
   ListToolsRoute,
@@ -29,8 +25,9 @@ import { createNotImplementedHandler } from "./helpers";
 /**
  * Routes that are not yet implemented and return 501.
  *
- * Session and message routes were removed from this list in Phase 6 and are
- * now handled by session-routes.ts and message-routes.ts respectively.
+ * Session and message routes were removed from this list in Phase 6.
+ * Permission routes were removed from this list in Phase 8 (now real handlers
+ * in permission-routes.ts).
  */
 interface PlaceholderRouteDefinition {
   readonly contract: RouteContract;
@@ -48,10 +45,6 @@ const placeholderRoutes: readonly PlaceholderRouteDefinition[] = [
   { contract: ReadFileRoute, routeName: "file.read" },
   { contract: GetFileDiffRoute, routeName: "file.diff" },
   { contract: GetFileTreeRoute, routeName: "file.tree" },
-  { contract: ListPermissionRequestsRoute, routeName: "permission.listRequests" },
-  { contract: GetPermissionRequestRoute, routeName: "permission.getRequest" },
-  { contract: DecidePermissionRoute, routeName: "permission.decide" },
-  { contract: GetEffectivePolicyRoute, routeName: "permission.getEffectivePolicy" },
   { contract: ListToolsRoute, routeName: "tool.list" },
   { contract: GetToolRoute, routeName: "tool.get" },
   { contract: PrefillPromptRoute, routeName: "tui.prefillPrompt" },

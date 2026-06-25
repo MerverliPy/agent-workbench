@@ -33,6 +33,17 @@ export const EventName = {
 
   // Message
   MESSAGE_CREATED: "message.created",
+
+  // Permission (Phase 8)
+  PERMISSION_REQUESTED: "permission.requested",
+  PERMISSION_DECIDED: "permission.decided",
+  PERMISSION_DENIED: "permission.denied",
+  /**
+   * Emitted when a pending permission request expires without a decision.
+   * Structurally defined in Phase 8; active timeout enforcement is
+   * PERM-EXPIRY: not implemented — see packages/permissions/src/gate.ts.
+   */
+  PERMISSION_EXPIRED: "permission.expired",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];
