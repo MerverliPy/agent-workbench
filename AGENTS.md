@@ -48,20 +48,23 @@ Phase 0 is complete.
 Phase 1 scaffold is accepted.
 Phase 2 Protocol Contract is accepted.
 Phase 3 Local Server is accepted.
+Phase 4 TUI Shell is accepted.
 
-Current work is Phase 4: TUI Shell, unless the user explicitly says otherwise.
+Current work is Phase 5: Storage, unless the user explicitly says otherwise.
 
-Phase 4 scope:
+Phase 5 scope:
 
-1. Implement the terminal TUI shell in apps/tui using OpenTUI + SolidJS.
-2. Render a chat-first layout: header, session sidebar, message timeline, prompt editor, status bar.
-3. Add command palette, permission modal placeholder, diff viewer placeholder, run ledger panel placeholder, and token-health panel placeholder.
-4. Connect to the local server through @agent-workbench/sdk.
-5. Subscribe to SSE events via sdk.events.connect().
-6. Handle Phase 3 placeholder routes returning HTTP 501 gracefully.
-7. Keep the TUI as a thin client — no tool execution, no file mutation, no model calls, no shell execution, no storage access, no permission policy.
+1. Inspect only the relevant Phase 5 docs and storage scaffold before changing files.
+2. Implement the local persistence foundation in packages/storage using SQLite + Drizzle.
+3. Add storage-owned schema, migrations, connection setup, and repository APIs required by the accepted data model docs.
+4. Keep durable state ownership inside packages/storage.
+5. Add package-local tests or verification scripts only when supported by the existing package structure.
+6. Wire exports/build config only as needed for packages/storage to typecheck and build.
+7. Preserve existing protocol, SDK, server, and TUI behavior unless a minimal compile-time integration is required.
 
-Do not implement core runtime, tools, storage schema, permission engine, model adapters, shell runner, diff engine, or token-health runtime unless the active phase explicitly allows it.
+Phase 5 must not implement core runtime orchestration, tool execution, shell execution, model adapters, TUI features, permission policy decisions, diff application, or token-health runtime.
+
+Do not implement future phases unless the active phase explicitly allows it.
 
 Protocol Rules
 
