@@ -1,10 +1,15 @@
-import type { ToolRegistry } from "@agent-workbench/tools";
+import type { ToolRegistry, ToolExecutionContext } from "@agent-workbench/tools";
 import type { ToolCallRequest, ToolCallResult } from "./types";
 
 /**
  * Dispatches tool calls requested by the model to registered tool executors.
  *
- * Phase 6 behaviour:
+ * Phase 7 change: `dispatch()` now receives a `ToolExecutionContext` built by
+ * `SessionRunner` and passes it through to `executor.execute()`. This allows
+ * tools to enforce project-root boundaries, use the cache, and be associated
+ * with audit records without needing direct storage access.
+ *
+ * Phase 6 behaviour (unchanged):
  *  - If the tool is registered, execute it and return the result.
  *  - If the tool is NOT registered, return a structured error result so the
  *    model/tool loop can inform the model and continue gracefully.
@@ -14,8 +19,8 @@ import type { ToolCallRequest, ToolCallResult } from "./types";
  *   inserted (packages/permissions). The check will evaluate the tool call
  *   against the active session's policy and may return "ask" (pause the run
  *   and emit a permission request event) or "deny" (return a denied error
- *   result without executing). For Phase 6 the check is absent and all
- *   registered tool calls are treated as auto-allowed.
+ *   result without executing). For Phase 7 all registered read-only tool calls
+ *   are treated as auto-allowed.
  */
 export class ToolCallDispatcher {
   constructor(private readonly registry: ToolRegistry) {}
@@ -24,11 +29,11 @@ export class ToolCallDispatcher {
    * Dispatch a single tool call.
    *
    * @param request  Parsed tool call from the model.
-   * @param signal   Abort signal forwarded to the executor.
+   * @param context  Execution context (sessionId, runId, toolCallId, projectRoot, signal).
    */
   async dispatch(
     request: ToolCallRequest,
-    signal?: AbortSignal
+    context: ToolExecutionContext
   ): Promise<ToolCallResult> {
     const tool = this.registry.lookup(request.name);
 
@@ -38,14 +43,14 @@ export class ToolCallDispatcher {
         modelCallId: request.modelCallId,
         name: request.name,
         result: null,
-        error: `Tool "${request.name}" is not registered. (Phase 7 will add read/grep/glob bodies.)`,
+        error: `Tool "${request.name}" is not registered.`,
       };
     }
 
     // TODO(Phase 8): Insert permission engine check here before execution.
 
     try {
-      const result = await tool.executor.execute(request.input, signal);
+      const result = await tool.executor.execute(request.input, context);
       return {
         id: request.id,
         modelCallId: request.modelCallId,

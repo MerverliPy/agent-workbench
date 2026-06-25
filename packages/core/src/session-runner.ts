@@ -7,6 +7,7 @@ import { ModelRouter } from "./model-router";
 import { ToolCallDispatcher } from "./tool-dispatcher";
 import { EventPublisher } from "./event-publisher";
 import { RunLedger } from "./run-ledger";
+import type { ToolExecutionContext } from "@agent-workbench/tools";
 
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
@@ -24,7 +25,11 @@ const DEFAULT_MAX_ITERATIONS = 20;
  *  - Enforce one active run per session.
  *  - Respect abort signals (external and self-generated).
  *
- * Phase 6 constraints:
+ * Phase 7 change:
+ *  - Reads session.projectPath and passes it as projectRoot to each tool call
+ *    via ToolExecutionContext.
+ *
+ * Phase 6 constraints (unchanged):
  *  - Uses StubModelProvider by default — real providers are future phases.
  *  - Permission check is a TODO placeholder at the tool dispatch layer.
  *  - No token-health enforcement (Phase 12).
@@ -118,6 +123,7 @@ export class SessionRunner {
       return await this.executeLoop(
         sessionId,
         runId,
+        session.projectPath,
         content,
         options.systemPrompt,
         maxIterations,
@@ -149,6 +155,7 @@ export class SessionRunner {
   private async executeLoop(
     sessionId: string,
     runId: string,
+    projectPath: string,
     userContent: string,
     systemPrompt: string | undefined,
     maxIterations: number,
@@ -258,6 +265,7 @@ export class SessionRunner {
       const toolCallResults = await this.dispatchToolCalls(
         sessionId,
         runId,
+        projectPath,
         kind.calls,
         signal,
         events,
@@ -324,6 +332,7 @@ export class SessionRunner {
   private async dispatchToolCalls(
     sessionId: string,
     runId: string,
+    projectPath: string,
     modelToolCalls: readonly import("@agent-workbench/models").ModelToolCall[],
     signal: AbortSignal,
     events: EventPublisher,
@@ -364,7 +373,16 @@ export class SessionRunner {
 
       this.deps.toolCallRepository.update(storageId, { status: "running" });
 
-      const result = await this.toolDispatcher.dispatch(request, signal);
+      // Build the execution context for Phase 7 tools.
+      const execContext: ToolExecutionContext = {
+        sessionId,
+        runId,
+        toolCallId: storageId,
+        projectRoot: projectPath,
+        signal,
+      };
+
+      const result = await this.toolDispatcher.dispatch(request, execContext);
 
       if (signal.aborted) {
         this.deps.toolCallRepository.update(storageId, {
