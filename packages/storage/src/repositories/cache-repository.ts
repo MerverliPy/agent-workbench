@@ -1,0 +1,64 @@
+import { eq, and, asc, isNull } from "drizzle-orm";
+import type { DrizzleBunSqliteDatabase } from "../types";
+import { cacheEntries } from "../schema";
+
+export type CacheEntryRow = typeof cacheEntries.$inferSelect;
+export type CacheEntryInsert = typeof cacheEntries.$inferInsert;
+
+export class CacheRepository {
+  constructor(private readonly db: DrizzleBunSqliteDatabase) {}
+
+  findById(id: string): CacheEntryRow | undefined {
+    const rows = this.db
+      .select()
+      .from(cacheEntries)
+      .where(eq(cacheEntries.id, id))
+      .limit(1)
+      .all();
+    return rows[0];
+  }
+
+  findByKey(
+    sessionId: string,
+    cacheType: string,
+    cacheKey: string
+  ): CacheEntryRow | undefined {
+    const rows = this.db
+      .select()
+      .from(cacheEntries)
+      .where(
+        and(
+          eq(cacheEntries.sessionId, sessionId),
+          eq(cacheEntries.cacheType, cacheType),
+          eq(cacheEntries.cacheKey, cacheKey),
+          isNull(cacheEntries.invalidatedAt)
+        )
+      )
+      .limit(1)
+      .all();
+    return rows[0];
+  }
+
+  listBySession(sessionId: string): CacheEntryRow[] {
+    return this.db
+      .select()
+      .from(cacheEntries)
+      .where(eq(cacheEntries.sessionId, sessionId))
+      .orderBy(asc(cacheEntries.createdAt))
+      .all();
+  }
+
+  create(data: CacheEntryInsert): CacheEntryRow {
+    this.db.insert(cacheEntries).values(data).run();
+    return this.findById(data.id) as CacheEntryRow;
+  }
+
+  invalidate(id: string): CacheEntryRow | undefined {
+    this.db
+      .update(cacheEntries)
+      .set({ invalidatedAt: new Date().toISOString() })
+      .where(eq(cacheEntries.id, id))
+      .run();
+    return this.findById(id);
+  }
+}
