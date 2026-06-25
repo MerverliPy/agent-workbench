@@ -53,40 +53,41 @@ Phase 5 Storage is accepted.
 Phase 6 Core Runtime is accepted.
 Phase 7 Read-Only Tools is accepted.
 Phase 8 Permission Engine is accepted.
+Phase 9 File Mutation Tools is accepted.
 
-Current work is Phase 9: File Mutation Tools, unless the user explicitly says otherwise.
+Current work is Phase 10: Shell Execution, unless the user explicitly says otherwise.
 
-Phase 9 scope:
+Phase 10 scope:
 
-1. Inspect only the relevant Phase 9 docs, decisions, packages/tools, packages/diff, packages/core tool-dispatch integration points, packages/permissions mutation policy integration, packages/storage ledger/change persistence, packages/events mutation/diff events, packages/cache invalidation integration, apps/server route integration points, and apps/tui diff/permission rendering points before changing files.
-2. Implement controlled file mutation tools through the backend runtime/tool path, not through TUI or direct server route writes.
-3. Implement exactly these file mutation tools unless repository docs require narrower names:
-   - write
-   - edit
-   - apply_patch
-   - diff_preview
-   - revert_last_change
-4. Use patch-first mutation wherever possible.
-5. Create a diff preview before any mutation can be applied.
-6. Support dry-run preview for file mutation.
-7. Require permission evaluation before applying mutation.
-8. Ensure edit/write/apply_patch default to ask unless deterministic policy denies them.
-9. Ensure deny prevents mutation execution.
-10. Ensure no mutation bypasses the permission engine.
-11. Ensure no mutation bypasses diff preview.
-12. Record mutation proposals, diff previews, permission decisions, applied mutations, failed mutations, and revert attempts in the run ledger where the existing architecture supports it.
-13. Persist file mutation metadata using the existing storage architecture where required by the docs.
-14. Invalidate read/search cache entries affected by file mutation.
-15. Keep the TUI renderer-only: it may display diff previews, dry-run results, permission prompts, mutation status, and ledger entries, but it must not write files or decide policy.
-16. Keep server route handlers thin: they may expose protocol/API surfaces, but must not directly write files or apply patches outside the core/tool/permission/diff path.
-17. Keep packages/diff responsible for patch preview/apply/revert mechanics.
-18. Keep packages/tools responsible for tool definitions and execution adapters.
-19. Keep packages/permissions responsible for allow/ask/deny decisions only.
-20. Keep packages/core responsible for orchestrating tool execution, permission gates, events, and ledger integration.
+1. Inspect only the relevant Phase 10 docs, decisions, packages/shell, packages/tools bash/tool integration points, packages/core tool-dispatch and permission orchestration, packages/permissions command policy integration, packages/storage ledger/shell-command persistence, packages/events shell events, apps/server route integration points, and apps/tui shell/permission/rendering points before changing files.
+2. Implement controlled shell execution through the backend runtime/tool path, not through TUI or direct server route process spawning.
+3. Implement a simple command runner first.
+4. Add a bash/shell tool only through packages/tools and the existing tool registry/runtime path.
+5. Keep packages/shell responsible for command runner mechanics, command preview support, process lifecycle, timeout, abort, stdout/stderr capture, and output limits.
+6. Keep packages/tools responsible for shell tool definitions and execution adapters.
+7. Keep packages/permissions responsible for command-level allow/ask/deny policy decisions.
+8. Keep packages/core responsible for orchestrating shell tool execution, command preview, permission gates, events, ledger entries, timeout/abort flow, and tool result handling.
+9. Add static command preview/dry-run metadata before ask-gated shell execution.
+10. Ensure shell dry-run/preview never executes the command.
+11. Require permission evaluation before any command execution.
+12. Ensure bash/shell defaults to ask unless deterministic policy denies it.
+13. Ensure destructive commands default to deny unless explicitly configured otherwise by existing policy architecture.
+14. Ensure deny prevents command execution.
+15. Ensure ask pauses execution until an approve/deny decision is received.
+16. Ensure no shell command bypasses permission checks.
+17. Ensure no shell command bypasses command preview where Phase 10 docs require preview.
+18. Record command proposal, risk classification, preview, permission decision, start, output chunks or controlled output summaries, completion, failure, timeout, and abort events in the run ledger where the existing architecture supports it.
+19. Control shell output size and avoid storing unlimited raw command output.
+20. Redact obvious secret values from command output where reasonably possible within Phase 10 scope.
+21. Support timeout and abort for long-running commands.
+22. Keep the TUI renderer-only: it may display command previews, permission prompts, shell status, output summaries/chunks, timeout/abort status, and ledger entries, but it must not spawn processes, execute shell commands, or decide policy.
+23. Keep server route handlers thin: they may expose protocol/API surfaces, but must not spawn processes or execute shell commands directly outside the core/tool/permission/shell path.
+24. Add PTY design documentation only if required by the docs.
+25. Keep PTY execution out of Phase 10 unless explicitly approved by the user.
 
-Phase 9 must not implement shell execution, bash tools, PTY support, token-health runtime, broad planner runtime, agent modes, model-provider-specific UI, unrelated TUI features, or broad future-phase behavior.
+Phase 10 must not implement full PTY execution, terminal emulation, token-health runtime, broad planner runtime, agent modes, model-provider-specific UI, unrelated TUI features, or broad future-phase behavior.
 
-Do not let model output, TUI code, route handlers, tools, or diff utilities bypass permission checks or diff preview.
+Do not let model output, TUI code, route handlers, tools, shell utilities, or dry-run/preview code bypass permission checks.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
