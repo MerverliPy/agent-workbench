@@ -16,8 +16,14 @@
       "name": "@agent-workbench/server",
       "version": "0.0.0",
       "dependencies": {
+        "@agent-workbench/core": "workspace:*",
+        "@agent-workbench/events": "workspace:*",
+        "@agent-workbench/models": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
+        "@agent-workbench/storage": "workspace:*",
+        "@agent-workbench/tools": "workspace:*",
         "hono": "^4.12.27",
+        "ulid": "^2.3.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -49,6 +55,17 @@
     "packages/core": {
       "name": "@agent-workbench/core",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/events": "workspace:*",
+        "@agent-workbench/models": "workspace:*",
+        "@agent-workbench/protocol": "workspace:*",
+        "@agent-workbench/storage": "workspace:*",
+        "@agent-workbench/tools": "workspace:*",
+        "ulid": "^2.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/diff": {
       "name": "@agent-workbench/diff",
@@ -57,10 +74,19 @@
     "packages/events": {
       "name": "@agent-workbench/events",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/models": {
       "name": "@agent-workbench/models",
       "version": "0.0.0",
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/permissions": {
       "name": "@agent-workbench/permissions",
@@ -108,6 +134,12 @@
     "packages/tools": {
       "name": "@agent-workbench/tools",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/ui": {
       "name": "@agent-workbench/ui",
@@ -444,6 +476,8 @@
     "tsx": ["tsx@4.22.4", "", { "dependencies": { "esbuild": "~0.28.0" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "bin": { "tsx": "dist/cli.mjs" } }, "sha512-X8EX+XV4QR5xCsrgxaED954zTDfY8KqlDtskKEL0cHhyS/P8b4IFOvGDQpsC9Q1XnLq915wEfwwY/zzskCtmhg=="],
 
     "typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "ulid": ["ulid@2.4.0", "", { "bin": { "ulid": "bin/cli.js" } }, "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg=="],
 
     "undici-types": ["undici-types@8.3.0", "", {}, "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="],
 

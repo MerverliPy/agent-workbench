@@ -1,10 +1,7 @@
 import type { Hono } from "hono";
 import {
-  AbortSessionRoute,
-  CreateSessionRoute,
   CreateTokenRoute,
   DecidePermissionRoute,
-  DeleteSessionRoute,
   FocusRoute,
   GetAuthStatusRoute,
   GetConfigRoute,
@@ -12,46 +9,35 @@ import {
   GetEffectivePolicyRoute,
   GetFileDiffRoute,
   GetFileTreeRoute,
-  GetMessageRoute,
   GetPermissionRequestRoute,
   GetProviderRoute,
-  GetSessionRoute,
-  GetToolRoute,
   GetTuiStateRoute,
   ListFilesRoute,
-  ListMessagesRoute,
   ListPermissionRequestsRoute,
   ListProviderModelsRoute,
   ListProvidersRoute,
-  ListSessionsRoute,
   ListToolsRoute,
+  GetToolRoute,
   PrefillPromptRoute,
   ReadFileRoute,
-  SubmitMessageRoute,
-  SummarizeSessionRoute,
-  UpdateSessionRoute,
   ValidateConfigRoute,
   type RouteContract,
 } from "@agent-workbench/protocol";
 import type { ServerAppBindings } from "../context";
 import { createNotImplementedHandler } from "./helpers";
 
+/**
+ * Routes that are not yet implemented and return 501.
+ *
+ * Session and message routes were removed from this list in Phase 6 and are
+ * now handled by session-routes.ts and message-routes.ts respectively.
+ */
 interface PlaceholderRouteDefinition {
   readonly contract: RouteContract;
   readonly routeName: string;
 }
 
 const placeholderRoutes: readonly PlaceholderRouteDefinition[] = [
-  { contract: CreateSessionRoute, routeName: "session.create" },
-  { contract: ListSessionsRoute, routeName: "session.list" },
-  { contract: GetSessionRoute, routeName: "session.get" },
-  { contract: UpdateSessionRoute, routeName: "session.update" },
-  { contract: AbortSessionRoute, routeName: "session.abort" },
-  { contract: SummarizeSessionRoute, routeName: "session.summarize" },
-  { contract: DeleteSessionRoute, routeName: "session.delete" },
-  { contract: SubmitMessageRoute, routeName: "message.submit" },
-  { contract: ListMessagesRoute, routeName: "message.list" },
-  { contract: GetMessageRoute, routeName: "message.get" },
   { contract: GetConfigRoute, routeName: "config.get" },
   { contract: GetEffectiveConfigRoute, routeName: "config.getEffective" },
   { contract: ValidateConfigRoute, routeName: "config.validate" },

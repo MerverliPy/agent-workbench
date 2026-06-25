@@ -3,5 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Model provider adapters, model router, stream normalization, and usage metadata."
+  "description": "Model provider adapters, model router, stream normalization, and usage metadata.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
 }

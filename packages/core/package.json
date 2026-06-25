@@ -3,5 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Agent runtime orchestration, session runner, context builder, and model/tool loop."
+  "description": "Agent runtime orchestration, session runner, context builder, and model/tool loop.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/storage": "workspace:*",
+    "@agent-workbench/events": "workspace:*",
+    "@agent-workbench/tools": "workspace:*",
+    "@agent-workbench/models": "workspace:*",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
 }

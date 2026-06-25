@@ -1,6 +1,7 @@
 import type { Hono } from "hono";
 import { EventRoute, GlobalInfoRoute, HealthRoute } from "@agent-workbench/protocol";
 import { streamSSE } from "hono/streaming";
+import type { EventBus } from "@agent-workbench/events";
 import type { ServerConfig } from "../config";
 import type { ServerAppBindings } from "../context";
 import { validateRequest } from "../utils/validation";
@@ -14,7 +15,11 @@ function sleep(milliseconds: number) {
 
 export function registerGlobalRoutes(
   app: Hono<ServerAppBindings>,
-  options: { readonly startedAt: number; readonly config: ServerConfig }
+  options: {
+    readonly startedAt: number;
+    readonly config: ServerConfig;
+    readonly eventBus: EventBus;
+  }
 ) {
   app.get(
     HealthRoute.path,
@@ -33,7 +38,7 @@ export function registerGlobalRoutes(
       description: options.config.description,
       uptime: Math.floor((Date.now() - options.startedAt) / 1000),
       serverTime: new Date().toISOString(),
-      capabilities: ["health", "info", "sse", "validated-placeholders"],
+      capabilities: ["health", "info", "sse", "sessions", "messages", "core-runtime"],
     }))
   );
 
@@ -43,15 +48,29 @@ export function registerGlobalRoutes(
     return streamSSE(context, async (stream) => {
       await stream.write("retry: 3000\n\n");
 
-      for (;;) {
+      // Subscribe to the event bus and forward events as SSE data lines.
+      const unsubscribe = options.eventBus.subscribe((event) => {
         if (stream.aborted) {
-          break;
+          return;
         }
+        const data = JSON.stringify(event);
+        // Fire-and-forget — we cannot await inside the sync subscribe callback.
+        stream
+          .write(`data: ${data}\n\n`)
+          .catch((err) =>
+            console.error("[sse] Failed to write event to stream", err)
+          );
+      });
 
-        // Phase 3 accepts repeated query params like ?types=a&types=b via Hono's
-        // queries() support, but intentionally does not invent runtime events yet.
-        await stream.write(`: keep-alive ${new Date().toISOString()}\n\n`);
-        await sleep(30000);
+      try {
+        // Keep-alive loop — client gets periodic comments so connections stay
+        // alive through proxies and the browser EventSource API.
+        while (!stream.aborted) {
+          await stream.write(`: keep-alive ${new Date().toISOString()}\n\n`);
+          await sleep(30000);
+        }
+      } finally {
+        unsubscribe();
       }
     });
   });

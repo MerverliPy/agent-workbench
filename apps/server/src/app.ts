@@ -1,14 +1,17 @@
 import { Hono } from "hono";
 import type { ServerConfig } from "./config";
-import type { ServerAppBindings } from "./context";
+import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
 import { handleAppError } from "./middleware/error-handler";
 import { requestIdMiddleware } from "./middleware/request-id";
 import { registerGlobalRoutes } from "./routes/global";
+import { registerSessionRoutes } from "./routes/session-routes";
+import { registerMessageRoutes } from "./routes/message-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
+  readonly services: ServerServices;
   readonly startedAt?: number;
 }
 
@@ -21,8 +24,11 @@ export function createApp(options: CreateAppOptions) {
   registerGlobalRoutes(app, {
     config: options.config,
     startedAt,
+    eventBus: options.services.eventBus,
   });
 
+  registerSessionRoutes(app, options.services);
+  registerMessageRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

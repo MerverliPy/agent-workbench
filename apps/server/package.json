@@ -11,8 +11,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agent-workbench/core": "workspace:*",
+    "@agent-workbench/events": "workspace:*",
+    "@agent-workbench/models": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/storage": "workspace:*",
+    "@agent-workbench/tools": "workspace:*",
     "hono": "^4.12.27",
+    "ulid": "^2.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
