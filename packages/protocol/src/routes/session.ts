@@ -1,0 +1,61 @@
+import { z } from "zod/v4";
+import { Ulid, Pagination } from "../schemas/common";
+import { ErrorEnvelope } from "../schemas/error-envelope";
+import { Session, CreateSessionRequest, UpdateSessionRequest } from "../schemas/session";
+
+export const SessionListParams = Pagination.extend({
+  status: z.string().optional(),
+  projectPath: z.string().optional(),
+});
+
+export const CreateSessionRoute = {
+  method: "POST" as const,
+  path: "/session",
+  body: CreateSessionRequest,
+  response: Session,
+  errors: [ErrorEnvelope],
+} as const;
+
+export const ListSessionsRoute = {
+  method: "GET" as const,
+  path: "/session",
+  params: SessionListParams,
+  response: z.object({ items: z.array(Session), nextCursor: Ulid.optional() }),
+  errors: [ErrorEnvelope],
+} as const;
+
+export const GetSessionRoute = {
+  method: "GET" as const,
+  path: "/session/:sessionId",
+  response: Session,
+  errors: [ErrorEnvelope],
+} as const;
+
+export const UpdateSessionRoute = {
+  method: "PATCH" as const,
+  path: "/session/:sessionId",
+  body: UpdateSessionRequest,
+  response: Session,
+  errors: [ErrorEnvelope],
+} as const;
+
+export const AbortSessionRoute = {
+  method: "POST" as const,
+  path: "/session/:sessionId/abort",
+  response: Session,
+  errors: [ErrorEnvelope],
+} as const;
+
+export const SummarizeSessionRoute = {
+  method: "POST" as const,
+  path: "/session/:sessionId/summarize",
+  response: z.object({ summary: z.string() }),
+  errors: [ErrorEnvelope],
+} as const;
+
+export const DeleteSessionRoute = {
+  method: "DELETE" as const,
+  path: "/session/:sessionId",
+  response: z.object({ deleted: z.boolean() }),
+  errors: [ErrorEnvelope],
+} as const;

@@ -1,0 +1,95 @@
+import { ErrorEnvelope } from "@agent-workbench/protocol";
+import { ApiError, SdkError } from "./errors";
+
+export interface HttpTransportOptions {
+  baseUrl: string;
+}
+
+export class HttpTransport {
+  private baseUrl: string;
+
+  constructor(options: HttpTransportOptions) {
+    this.baseUrl = options.baseUrl.replace(/\/$/, "");
+  }
+
+  async request<T>(
+    method: string,
+    path: string,
+    options?: {
+      params?: Record<string, string | undefined>;
+      body?: unknown;
+    },
+    signal?: AbortSignal,
+  ): Promise<T> {
+    const url = new URL(`${this.baseUrl}${path}`);
+
+    if (options?.params) {
+      for (const [key, value] of Object.entries(options.params)) {
+        if (value !== undefined) {
+          url.searchParams.set(key, value);
+        }
+      }
+    }
+
+    const headers: Record<string, string> = {};
+
+    if (options?.body !== undefined) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const fetchOptions: RequestInit = { method, headers };
+    if (options?.body !== undefined) {
+      fetchOptions.body = JSON.stringify(options.body);
+    }
+    if (signal) {
+      fetchOptions.signal = signal;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), fetchOptions);
+    } catch (error) {
+      throw new SdkError(`Request failed: ${method} ${path}`, error);
+    }
+
+    if (!response.ok) {
+      const parsed = await this.parseError(response);
+      throw parsed;
+    }
+
+    const text = await response.text();
+    if (!text) {
+      return undefined as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch (error) {
+      throw new SdkError(`Failed to parse response: ${text.slice(0, 100)}`, error);
+    }
+  }
+
+  private async parseError(response: Response): Promise<ApiError> {
+    let code = "unknown";
+    let message = `HTTP ${response.status}: ${response.statusText}`;
+    let details: unknown;
+    let requestId: string | undefined;
+    let recoverable: boolean | undefined;
+
+    try {
+      const body = await response.json();
+      const parsed = ErrorEnvelope.safeParse(body);
+      if (parsed.success) {
+        code = parsed.data.error.code;
+        message = parsed.data.error.message;
+        details = parsed.data.error.details;
+        requestId = parsed.data.error.requestId;
+        recoverable = parsed.data.error.recoverable;
+      }
+    } catch {
+      // body not parseable as error envelope
+    }
+
+    return new ApiError(code, message, response.status, requestId, recoverable, details);
+  }
+}

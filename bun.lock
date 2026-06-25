@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "agent-workbench",
+      "devDependencies": {
+        "typescript": "^6.0.3",
+      },
     },
     "apps/cli": {
       "name": "@agent-workbench/cli",
@@ -52,10 +55,17 @@
     "packages/protocol": {
       "name": "@agent-workbench/protocol",
       "version": "0.0.0",
+      "dependencies": {
+        "@asteasolutions/zod-to-openapi": "^8.5.0",
+        "zod": "^4.4.3",
+      },
     },
     "packages/sdk": {
       "name": "@agent-workbench/sdk",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+      },
     },
     "packages/shell": {
       "name": "@agent-workbench/shell",
@@ -114,5 +124,15 @@
     "@agent-workbench/tui": ["@agent-workbench/tui@workspace:apps/tui"],
 
     "@agent-workbench/ui": ["@agent-workbench/ui@workspace:packages/ui"],
+
+    "@asteasolutions/zod-to-openapi": ["@asteasolutions/zod-to-openapi@8.5.0", "", { "dependencies": { "openapi3-ts": "^4.1.2" }, "peerDependencies": { "zod": "^4.0.0" } }, "sha512-SABbKiObg5dLRiTFnqiW1WWwGcg1BJfmHtT2asIBnBHg6Smy/Ms2KHc650+JI4Hw7lSkdiNebEGXpwoxfben8Q=="],
+
+    "openapi3-ts": ["openapi3-ts@4.6.0", "", { "dependencies": { "yaml": "^2.9.0" } }, "sha512-a4sfn6L2sIShhtzJqmjGrARvxAW/3F2BJDdyRVvNF9VhAsZSh5hSyI3a9TNvmzBxXmq66nY5LNT5bQcBxYAZZg=="],
+
+    "typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "yaml": ["yaml@2.9.0", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA=="],
+
+    "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
   }
 }

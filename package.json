@@ -13,5 +13,8 @@
   },
   "engines": {
     "bun": ">=1"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }
