@@ -47,19 +47,21 @@ Current Phase
 Phase 0 is complete.
 Phase 1 scaffold is accepted.
 Phase 2 Protocol Contract is accepted.
+Phase 3 Local Server is accepted.
 
-Current work is Phase 3: Local Server, unless the user explicitly says otherwise.
+Current work is Phase 4: TUI Shell, unless the user explicitly says otherwise.
 
-Phase 3 scope:
+Phase 4 scope:
 
-1. Implement the local HTTP/SSE server control plane in apps/server.
-2. Use packages/protocol route contracts and schemas as the source of truth.
-3. Validate request params, query, body, and responses through protocol schemas.
-4. Return structured error envelopes.
-5. Add localhost-only default binding.
-6. Add health/info routes and SSE plumbing needed for later runtime phases.
+1. Implement the terminal TUI shell in apps/tui using OpenTUI + SolidJS.
+2. Render a chat-first layout: header, session sidebar, message timeline, prompt editor, status bar.
+3. Add command palette, permission modal placeholder, diff viewer placeholder, run ledger panel placeholder, and token-health panel placeholder.
+4. Connect to the local server through @agent-workbench/sdk.
+5. Subscribe to SSE events via sdk.events.connect().
+6. Handle Phase 3 placeholder routes returning HTTP 501 gracefully.
+7. Keep the TUI as a thin client — no tool execution, no file mutation, no model calls, no shell execution, no storage access, no permission policy.
 
-Do not implement TUI screens, core runtime, tools, storage schema, permission engine, model adapters, shell runner, diff engine, or token-health runtime unless the active phase explicitly allows it.
+Do not implement core runtime, tools, storage schema, permission engine, model adapters, shell runner, diff engine, or token-health runtime unless the active phase explicitly allows it.
 
 Protocol Rules
 
