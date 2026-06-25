@@ -50,24 +50,30 @@ Phase 2 Protocol Contract is accepted.
 Phase 3 Local Server is accepted.
 Phase 4 TUI Shell is accepted.
 Phase 5 Storage is accepted.
+Phase 6 Core Runtime is accepted.
 
-Current work is Phase 6: Core Runtime, unless the user explicitly says otherwise.
+Current work is Phase 7: Read-Only Tools, unless the user explicitly says otherwise.
 
-Phase 6 scope:
+Phase 7 scope:
 
-1. Inspect only the relevant Phase 6 docs and packages/core scaffold before changing files.
-2. Create the core runtime skeleton in packages/core.
-3. Implement SessionRunner.
-4. Implement ContextBuilder.
-5. Implement ModelRouter.
-6. Add ToolRegistry integration for the read-only tool path only.
-7. Add EventPublisher integration so runtime events can stream through the existing server/TUI path.
-8. Add RunLedger integration so runtime lifecycle, model calls, tool calls, permission flow, and errors can be recorded.
-9. Add run abort/cancellation support.
-10. Support prompt → model path → assistant response flow.
-11. Support prompt → read-only tool path → response flow at the orchestration level.
+1. Inspect only the relevant Phase 7 docs, packages/tools, packages/core integration points, and adjacent cache/storage/event surfaces before changing files.
+2. Implement the initial read-only tools in packages/tools:
+   - read
+   - grep
+   - glob
+3. Implement structured tool inputs.
+4. Implement structured tool results.
+5. Add tool input schema validation.
+6. Add tool-result compression and truncation hooks for large outputs.
+7. Respect sensitive paths and project-root boundaries.
+8. Add cache integration for read/grep/glob where supported by the existing package structure.
+9. Ensure read-only tool calls are recorded in the run ledger.
+10. Ensure read-only tool calls remain visible through the existing runtime event/server/TUI path.
+11. Wire tool registration into the existing Phase 6 ToolRegistry/Core runtime path only as needed.
 
-Phase 6 must not implement Phase 7 read/grep/glob tool bodies, Phase 8 permission engine policy, shell execution, file mutation, diff application, token-health runtime, cache runtime, planner runtime, model-provider-specific UI, database table definitions, or new TUI features.
+Phase 7 must not implement file mutation tools, write/edit/apply_patch, shell execution, permission engine policy, diff application, token-health runtime, planner runtime, model-provider-specific UI, database table definitions, or unrelated TUI features.
+
+Read-only tools must not mutate project state.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
