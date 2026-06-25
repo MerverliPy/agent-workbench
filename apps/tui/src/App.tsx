@@ -1,7 +1,7 @@
 import type { JSX } from "@opentui/solid";
 import { onMount, onCleanup } from "solid-js";
 import { useKeyboard } from "@opentui/solid";
-import type { EventEnvelope, PermissionRequest } from "@agent-workbench/protocol";
+import type { EventEnvelope, PermissionRequest, DiffPreview } from "@agent-workbench/protocol";
 import { sdk } from "./lib/sdk";
 import {
   setServerStatus,
@@ -13,6 +13,9 @@ import {
   commandPaletteOpen,
   setCommandPaletteOpen,
   setPermissionModalOpen,
+  setCurrentDiffPreview,
+  setDiffViewerOpen,
+  setMutationStatus,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -96,6 +99,69 @@ export function App(): JSX.Element {
       }
       // Close modal when all pending requests are resolved.
       // The modal component also derives visibility from pendingPermissionRequests().
+      return;
+    }
+
+    // ── Phase 9: Diff and file mutation events ────────────────────────────
+
+    if (type === "diff.preview_created") {
+      // Backend generated a diff preview before the permission gate.
+      // TUI opens DiffViewer to show the preview (render-only — no mutation here).
+      const payload = event.payload as Record<string, unknown>;
+      const preview = payload["preview"] as DiffPreview | undefined;
+      if (preview !== undefined) {
+        setCurrentDiffPreview(preview);
+        setMutationStatus("proposed");
+        setDiffViewerOpen(true);
+      }
+      return;
+    }
+
+    if (type === "file.change_applied") {
+      const payload = event.payload as Record<string, unknown>;
+      const path = payload["path"] as string | undefined;
+      setMutationStatus("applied");
+      setCurrentDiffPreview(null);
+      appendSystemNotice(
+        path !== undefined ? `File changed: ${path}` : "File mutation applied."
+      );
+      return;
+    }
+
+    if (type === "file.change_failed") {
+      const payload = event.payload as Record<string, unknown>;
+      const error = payload["error"] as string | undefined;
+      setMutationStatus("failed");
+      setCurrentDiffPreview(null);
+      appendSystemNotice(
+        `Mutation failed: ${error ?? "unknown error"}`
+      );
+      return;
+    }
+
+    if (type === "file.revert_attempted") {
+      setMutationStatus("reverting");
+      return;
+    }
+
+    if (type === "file.revert_completed") {
+      const payload = event.payload as Record<string, unknown>;
+      const path = payload["path"] as string | undefined;
+      setMutationStatus("reverted");
+      setCurrentDiffPreview(null);
+      appendSystemNotice(
+        path !== undefined ? `Reverted: ${path}` : "File reverted."
+      );
+      return;
+    }
+
+    if (type === "file.revert_failed") {
+      const payload = event.payload as Record<string, unknown>;
+      const error = payload["error"] as string | undefined;
+      setMutationStatus("failed");
+      appendSystemNotice(
+        `Revert failed: ${error ?? "unknown error"}`
+      );
       return;
     }
 

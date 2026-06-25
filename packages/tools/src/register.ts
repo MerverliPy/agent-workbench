@@ -12,6 +12,14 @@ import { createGrepTool } from "./tools/grep";
 import { createGlobTool } from "./tools/glob";
 import type { ToolCache } from "@agent-workbench/cache";
 
+// Phase 9 mutation tools
+import { createWriteTool } from "./tools/write";
+import { createEditTool } from "./tools/edit";
+import { createApplyPatchTool } from "./tools/apply-patch";
+import { createDiffPreviewTool } from "./tools/diff-preview";
+import { createRevertLastChangeTool } from "./tools/revert-last-change";
+import type { MutationToolOptions } from "./mutation-context";
+
 export interface RegisterReadOnlyToolsOptions {
   /** Optional session-scoped cache for read/grep/glob results. */
   cache?: ToolCache;
@@ -33,4 +41,25 @@ export function registerReadOnlyTools(
   registry.register(createReadTool(toolOpts));
   registry.register(createGrepTool(toolOpts));
   registry.register(createGlobTool(toolOpts));
+}
+
+/**
+ * Register the Phase 9 file mutation tools into `registry`.
+ *
+ * write, edit, apply_patch — apply mutations with diff preview + permission gate.
+ * diff_preview — read-only preview without applying any mutation.
+ * revert_last_change — revert the most recent session mutation for a path.
+ *
+ * @param registry  The ToolRegistry instance.
+ * @param options   Required mutation dependencies (fileChangeRepository, optional toolCache).
+ */
+export function registerMutationTools(
+  registry: ToolRegistry,
+  options: MutationToolOptions
+): void {
+  registry.register(createWriteTool(options));
+  registry.register(createEditTool(options));
+  registry.register(createApplyPatchTool(options));
+  registry.register(createDiffPreviewTool());
+  registry.register(createRevertLastChangeTool(options));
 }

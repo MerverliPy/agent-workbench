@@ -1,7 +1,7 @@
 import { ulid } from "ulid";
 import type { EventBus } from "@agent-workbench/events";
 import { EventName } from "@agent-workbench/events";
-import type { EventEnvelope } from "@agent-workbench/protocol";
+import type { EventEnvelope, DiffPreview } from "@agent-workbench/protocol";
 import type { ModelUsage } from "@agent-workbench/models";
 
 /**
@@ -119,6 +119,102 @@ export class EventPublisher {
       requestId,
       toolName,
       reason,
+    });
+  }
+
+  // ── Diff and file mutation (Phase 9) ─────────────────────────────────────
+
+  /**
+   * Emitted after a diff preview is generated for a mutation tool, before
+   * the permission gate fires. TUI uses this to open the DiffViewer with
+   * the full preview payload.
+   */
+  publishDiffPreviewCreated(
+    toolCallId: string,
+    toolName: string,
+    preview: DiffPreview
+  ): void {
+    this.publish(EventName.DIFF_PREVIEW_CREATED, {
+      toolCallId,
+      toolName,
+      preview,
+    });
+  }
+
+  /**
+   * Emitted after a write/edit/apply_patch tool applies successfully.
+   */
+  publishFileChangeApplied(
+    toolCallId: string,
+    toolName: string,
+    path: string,
+    changeId?: string
+  ): void {
+    this.publish(EventName.FILE_CHANGE_APPLIED, {
+      toolCallId,
+      toolName,
+      path,
+      changeId,
+    });
+  }
+
+  /**
+   * Emitted when a mutation tool execution fails after permission approval.
+   */
+  publishFileChangeFailed(
+    toolCallId: string,
+    toolName: string,
+    path: string,
+    error: string
+  ): void {
+    this.publish(EventName.FILE_CHANGE_FAILED, {
+      toolCallId,
+      toolName,
+      path,
+      error,
+    });
+  }
+
+  /**
+   * Emitted when revert_last_change is dispatched (before execution).
+   */
+  publishFileRevertAttempted(
+    toolCallId: string,
+    path: string
+  ): void {
+    this.publish(EventName.FILE_REVERT_ATTEMPTED, {
+      toolCallId,
+      path,
+    });
+  }
+
+  /**
+   * Emitted when revert_last_change completes successfully.
+   */
+  publishFileRevertCompleted(
+    toolCallId: string,
+    path: string,
+    revertedChangeId: string
+  ): void {
+    this.publish(EventName.FILE_REVERT_COMPLETED, {
+      toolCallId,
+      path,
+      revertedChangeId,
+    });
+  }
+
+  /**
+   * Emitted when revert_last_change fails.
+   */
+  publishFileRevertFailed(
+    toolCallId: string,
+    path: string,
+    error: string
+  ): void {
+    this.publish(EventName.FILE_REVERT_FAILED, {
+      toolCallId,
+      path,
+      error,
     });
   }
 

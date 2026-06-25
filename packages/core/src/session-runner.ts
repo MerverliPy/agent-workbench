@@ -8,6 +8,9 @@ import { ToolCallDispatcher } from "./tool-dispatcher";
 import { EventPublisher } from "./event-publisher";
 import { RunLedger } from "./run-ledger";
 import type { ToolExecutionContext } from "@agent-workbench/tools";
+import { assertSafePath } from "@agent-workbench/tools";
+import { generateDiffPreview, extractDiffParams } from "@agent-workbench/diff";
+import type { DiffPreview } from "@agent-workbench/protocol";
 
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
@@ -28,6 +31,16 @@ const DEFAULT_MAX_ITERATIONS = 20;
  * Phase 7 change:
  *  - Reads session.projectPath and passes it as projectRoot to each tool call
  *    via ToolExecutionContext.
+ *
+ * Phase 9 change:
+ *  - Generates a diff preview for write/edit/apply_patch/revert_last_change
+ *    BEFORE the permission gate so the preview is available in the permission
+ *    request payload (docs/14 §7, decisions/0008, decisions/0015).
+ *  - Includes diffSummaryJson in the persisted PermissionRequest row.
+ *  - After successful dispatch, emits file.change_applied or revert events
+ *    and records mutation ledger entries.
+ *  - After successful dispatch, records revert-specific ledger events.
+ *  - Cache invalidation is handled inside each mutation tool executor.
  *
  * Phase 8 change:
  *  - Evaluates permissions before every tool execution via PermissionEngine.
@@ -375,6 +388,108 @@ export class SessionRunner {
       ledger.recordToolCallRequested(storageId, request.name);
       events.publishToolCallRequested(storageId, request.name);
 
+      // ── Phase 9: Diff preview for mutation tools ──────────────────────
+      // For write/edit/apply_patch: preview is REQUIRED before the permission
+      // gate. Path safety (containment + sensitive-path) is enforced BEFORE
+      // any file read to prevent unsafe reads of outside-project or denied paths.
+      // If path safety fails or preview cannot be generated, the tool call is
+      // failed immediately — execution never proceeds without a valid preview.
+      //
+      // revert_last_change does not need a pre-execution preview here; path
+      // safety is enforced inside its own executor.
+      let diffPreview: DiffPreview | undefined;
+      let diffSummaryJson: string | null = null;
+
+      if (DIFF_PREVIEW_REQUIRED.has(request.name)) {
+        // 1. Extract typed params — fail early if the model gave malformed input.
+        const params = extractDiffParams(request.name, request.input);
+        if (params === undefined) {
+          const reason = `${request.name}: cannot generate diff preview (malformed or incomplete input)`;
+          this.deps.toolCallRepository.update(storageId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+            errorJson: JSON.stringify({ error: reason }),
+          });
+          ledger.recordToolCallFailed(storageId, request.name, reason);
+          events.publishToolCallFailed(storageId, request.name, reason);
+          results.push({
+            id: storageId,
+            modelCallId: request.modelCallId,
+            name: request.name,
+            result: null,
+            error: reason,
+          });
+          continue;
+        }
+
+        // 2. Validate path safety BEFORE any file read.
+        //    assertSafePath resolves the path against projectPath, checks
+        //    project-root containment (including symlink resolution), and
+        //    rejects sensitive paths (.env, .ssh, *.pem, etc.).
+        let safePath: string;
+        try {
+          safePath = assertSafePath(params.path, projectPath);
+        } catch (pathErr: unknown) {
+          const reason = pathErr instanceof Error ? pathErr.message : String(pathErr);
+          this.deps.toolCallRepository.update(storageId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+            errorJson: JSON.stringify({ error: reason }),
+          });
+          ledger.recordToolCallFailed(storageId, request.name, reason);
+          events.publishToolCallFailed(storageId, request.name, reason);
+          results.push({
+            id: storageId,
+            modelCallId: request.modelCallId,
+            name: request.name,
+            result: null,
+            error: reason,
+          });
+          continue;
+        }
+
+        // 3. Generate diff preview with the validated, normalised path.
+        //    Preview failure is fatal — do not silently continue to execution.
+        const safeParams = { ...params, path: safePath };
+        try {
+          diffPreview = await generateDiffPreview(safeParams, projectPath);
+          diffSummaryJson = JSON.stringify({
+            id: diffPreview.id,
+            path: diffPreview.path,
+            linesAdded: diffPreview.linesAdded,
+            linesRemoved: diffPreview.linesRemoved,
+            patchLength: diffPreview.patch.length,
+          });
+          // Emit diff.preview_created so TUI can open the DiffViewer.
+          ledger.recordDiffPreviewCreated(
+            storageId,
+            request.name,
+            diffPreview.path,
+            diffPreview.id
+          );
+          events.publishDiffPreviewCreated(storageId, request.name, diffPreview);
+        } catch (previewErr: unknown) {
+          const reason = `${request.name}: diff preview failed: ${
+            previewErr instanceof Error ? previewErr.message : String(previewErr)
+          }`;
+          this.deps.toolCallRepository.update(storageId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+            errorJson: JSON.stringify({ error: reason }),
+          });
+          ledger.recordToolCallFailed(storageId, request.name, reason);
+          events.publishToolCallFailed(storageId, request.name, reason);
+          results.push({
+            id: storageId,
+            modelCallId: request.modelCallId,
+            name: request.name,
+            result: null,
+            error: reason,
+          });
+          continue;
+        }
+      }
+
       // ── Phase 8: Permission evaluation ─────────────────────────────────
       const targetPaths = extractTargetPaths(request.input);
       const evalResult = this.deps.permissionEngine.evaluate({
@@ -405,7 +520,7 @@ export class SessionRunner {
           reason: evalResult.reason,
           targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
           command: null,
-          diffSummaryJson: null,
+          diffSummaryJson,
           dryRunSummaryJson: null,
           status: "denied",
           createdAt: new Date().toISOString(),
@@ -446,6 +561,8 @@ export class SessionRunner {
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
           targetPaths,
+          // Include diff preview for the TUI permission modal to render.
+          diffPreview: diffPreview ?? null,
           status: "pending",
           createdAt: now,
         };
@@ -462,7 +579,7 @@ export class SessionRunner {
           reason: evalResult.reason,
           targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
           command: null,
-          diffSummaryJson: null,
+          diffSummaryJson,
           dryRunSummaryJson: null,
           status: "pending",
           createdAt: now,
@@ -532,6 +649,13 @@ export class SessionRunner {
 
       this.deps.toolCallRepository.update(storageId, { status: "running" });
 
+      // Phase 9: for revert_last_change, record the attempt before execution.
+      if (request.name === "revert_last_change") {
+        const targetPath = targetPaths?.[0] ?? "unknown";
+        ledger.recordRevertAttempted(storageId, targetPath);
+        events.publishFileRevertAttempted(storageId, targetPath);
+      }
+
       // Build the execution context for Phase 7 tools.
       const execContext: ToolExecutionContext = {
         sessionId,
@@ -563,6 +687,18 @@ export class SessionRunner {
         });
         ledger.recordToolCallFailed(storageId, request.name, result.error);
         events.publishToolCallFailed(storageId, request.name, result.error);
+
+        // Phase 9: emit file-mutation-specific failure events.
+        if (MUTATION_TOOLS.has(request.name)) {
+          const targetPath = targetPaths?.[0] ?? "unknown";
+          if (request.name === "revert_last_change") {
+            ledger.recordRevertFailed(storageId, targetPath, result.error);
+            events.publishFileRevertFailed(storageId, targetPath, result.error);
+          } else {
+            ledger.recordMutationFailed(storageId, request.name, targetPath, result.error);
+            events.publishFileChangeFailed(storageId, request.name, targetPath, result.error);
+          }
+        }
       } else {
         this.deps.toolCallRepository.update(storageId, {
           status: "completed",
@@ -572,6 +708,34 @@ export class SessionRunner {
         });
         ledger.recordToolCallCompleted(storageId, request.name);
         events.publishToolCallCompleted(storageId, request.name);
+
+        // Phase 9: emit file-mutation-specific success events.
+        if (MUTATION_TOOLS.has(request.name)) {
+          const resultObj =
+            result.result !== null && typeof result.result === "object"
+              ? (result.result as Record<string, unknown>)
+              : {};
+          const targetPath =
+            typeof resultObj["path"] === "string"
+              ? resultObj["path"]
+              : (targetPaths?.[0] ?? "unknown");
+          const changeId =
+            typeof resultObj["changeId"] === "string"
+              ? resultObj["changeId"]
+              : undefined;
+
+          if (request.name === "revert_last_change") {
+            const revertedChangeId =
+              typeof resultObj["revertedChangeId"] === "string"
+                ? resultObj["revertedChangeId"]
+                : "";
+            ledger.recordRevertCompleted(storageId, targetPath, revertedChangeId);
+            events.publishFileRevertCompleted(storageId, targetPath, revertedChangeId);
+          } else {
+            ledger.recordMutationApplied(storageId, request.name, targetPath, changeId);
+            events.publishFileChangeApplied(storageId, request.name, targetPath, changeId);
+          }
+        }
       }
 
       results.push(result);
@@ -582,6 +746,29 @@ export class SessionRunner {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Mutation tools that require a diff preview BEFORE the permission gate.
+ * diff_preview is excluded (it IS the preview; no pre-gate preview needed).
+ * revert_last_change is excluded because its path is looked up from storage,
+ * not from raw model input; path safety is enforced in its own executor.
+ */
+const DIFF_PREVIEW_REQUIRED = new Set([
+  "write",
+  "edit",
+  "apply_patch",
+]);
+
+/**
+ * Full set of mutation tools — used for file-change event emission after dispatch.
+ * diff_preview is excluded (read-only).
+ */
+const MUTATION_TOOLS = new Set([
+  "write",
+  "edit",
+  "apply_patch",
+  "revert_last_change",
+]);
 
 /**
  * Best-effort extraction of file paths from a tool call input.

@@ -44,6 +44,48 @@ export const EventName = {
    * PERM-EXPIRY: not implemented — see packages/permissions/src/gate.ts.
    */
   PERMISSION_EXPIRED: "permission.expired",
+
+  // ── Diff and file mutation events (Phase 9) ──────────────────────────────
+  // Event names are provisional — see LEDGER-001 in docs/13_RUN_LEDGER_MODEL.md.
+
+  /**
+   * Emitted by core after a diff preview is generated for a mutation tool,
+   * before the permission gate fires. TUI uses this to open the DiffViewer.
+   */
+  DIFF_PREVIEW_CREATED: "diff.preview_created",
+
+  /**
+   * Emitted by core when a file mutation is proposed (permission requested).
+   * Carries the tool name and target path; diff summary is in the permission
+   * request payload.
+   */
+  FILE_CHANGE_PROPOSED: "file.change_proposed",
+
+  /**
+   * Emitted by core after a write/edit/apply_patch/revert executes
+   * successfully.
+   */
+  FILE_CHANGE_APPLIED: "file.change_applied",
+
+  /**
+   * Emitted by core when a mutation tool execution fails after approval.
+   */
+  FILE_CHANGE_FAILED: "file.change_failed",
+
+  /**
+   * Emitted by core when a revert attempt starts (before execution).
+   */
+  FILE_REVERT_ATTEMPTED: "file.revert_attempted",
+
+  /**
+   * Emitted by core after a revert completes successfully.
+   */
+  FILE_REVERT_COMPLETED: "file.revert_completed",
+
+  /**
+   * Emitted by core when a revert attempt fails.
+   */
+  FILE_REVERT_FAILED: "file.revert_failed",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

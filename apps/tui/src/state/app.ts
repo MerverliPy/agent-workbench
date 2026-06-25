@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import type { PermissionRequest } from "@agent-workbench/protocol";
+import type { PermissionRequest, DiffPreview } from "@agent-workbench/protocol";
 
 /**
  * Placeholder session ID used while server session APIs return 501.
@@ -107,3 +107,21 @@ export const [ledgerPanelOpen, setLedgerPanelOpen] = createSignal(false);
 export const [diffViewerOpen, setDiffViewerOpen] = createSignal(false);
 
 export const [tokenHealthOpen, setTokenHealthOpen] = createSignal(false);
+
+// ── Phase 9: Diff preview / mutation status ───────────────────────────────
+
+/**
+ * The most recent diff preview received via SSE diff.preview_created event.
+ * Cleared after a mutation applies (file.change_applied) or fails.
+ * TUI renders this — it does not generate it.
+ */
+export const [currentDiffPreview, setCurrentDiffPreview] =
+  createSignal<DiffPreview | null>(null);
+
+/**
+ * High-level mutation status string for the status bar.
+ * Set by App.tsx SSE routing; cleared on next idle state.
+ */
+export const [mutationStatus, setMutationStatus] = createSignal<
+  "idle" | "proposed" | "applied" | "failed" | "reverting" | "reverted"
+>("idle");

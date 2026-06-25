@@ -61,4 +61,23 @@ export class CacheRepository {
       .run();
     return this.findById(id);
   }
+
+  /**
+   * Return all non-invalidated cache entries for a session.
+   * Used by ToolCache.invalidateAffectedByPath() to find entries
+   * that reference a mutated file path.
+   */
+  listActiveBySession(sessionId: string): CacheEntryRow[] {
+    return this.db
+      .select()
+      .from(cacheEntries)
+      .where(
+        and(
+          eq(cacheEntries.sessionId, sessionId),
+          isNull(cacheEntries.invalidatedAt)
+        )
+      )
+      .orderBy(asc(cacheEntries.createdAt))
+      .all();
+  }
 }

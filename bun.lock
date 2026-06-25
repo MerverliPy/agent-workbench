@@ -65,6 +65,7 @@
       "name": "@agent-workbench/core",
       "version": "0.0.0",
       "dependencies": {
+        "@agent-workbench/diff": "workspace:*",
         "@agent-workbench/events": "workspace:*",
         "@agent-workbench/models": "workspace:*",
         "@agent-workbench/permissions": "workspace:*",
@@ -80,6 +81,14 @@
     "packages/diff": {
       "name": "@agent-workbench/diff",
       "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+        "diff": "^9.0.0",
+        "ulid": "^2.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "packages/events": {
       "name": "@agent-workbench/events",
@@ -153,7 +162,10 @@
       "version": "0.0.0",
       "dependencies": {
         "@agent-workbench/cache": "workspace:*",
+        "@agent-workbench/diff": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
+        "@agent-workbench/storage": "workspace:*",
+        "ulid": "^2.3.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {

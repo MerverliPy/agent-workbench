@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agent-workbench/diff": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "@agent-workbench/events": "workspace:*",

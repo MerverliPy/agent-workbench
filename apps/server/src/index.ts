@@ -2,7 +2,7 @@ import { SessionRunner } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
 import { StubModelProvider } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import { ToolRegistry, registerReadOnlyTools } from "@agent-workbench/tools";
+import { ToolRegistry, registerReadOnlyTools, registerMutationTools } from "@agent-workbench/tools";
 import {
   createStorageConnection,
   runMigrations,
@@ -11,6 +11,7 @@ import {
   ToolCallRepository,
   LedgerRepository,
   CacheRepository,
+  FileChangeRepository,
   PermissionRepository,
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
@@ -28,6 +29,7 @@ const messageRepository = new MessageRepository(storage.db);
 const toolCallRepository = new ToolCallRepository(storage.db);
 const ledgerRepository = new LedgerRepository(storage.db);
 const cacheRepository = new CacheRepository(storage.db);
+const fileChangeRepository = new FileChangeRepository(storage.db);
 const permissionRepository = new PermissionRepository(storage.db);
 
 // ── Events ───────────────────────────────────────────────────────────────────
@@ -46,8 +48,10 @@ const toolCache = new ToolCache(cacheRepository);
 
 // ── Tools ────────────────────────────────────────────────────────────────────
 // Phase 7: register read, grep, and glob read-only tools.
+// Phase 9: register write, edit, apply_patch, diff_preview, revert_last_change.
 const toolRegistry = new ToolRegistry();
 registerReadOnlyTools(toolRegistry, { cache: toolCache });
+registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
 
 // ── Model provider ───────────────────────────────────────────────────────────
 // Phase 6: stub provider. Real adapters will be added in a future phase.
@@ -85,7 +89,7 @@ const app = createApp({
 });
 
 console.log(`[server] Binding to http://${config.host}:${config.port}`);
-console.log("[server] Phase 8 — Permission Engine active");
+console.log("[server] Phase 9 — File Mutation Tools active");
 console.log(`[server] Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
 console.log("[server] Using StubModelProvider (real providers are a future phase)");
 

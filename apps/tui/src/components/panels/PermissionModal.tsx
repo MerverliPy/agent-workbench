@@ -4,13 +4,17 @@ import { sdk } from "../../lib/sdk";
 import {
   pendingPermissionRequests,
   setPermissionModalOpen,
+  currentDiffPreview,
 } from "../../state/app";
 
 /**
- * Permission modal — Phase 8 implementation.
+ * Permission modal — Phase 8 / Phase 9.
  *
  * Renders the first pending permission request received via SSE.
  * Provides Approve / Deny buttons that call sdk.permissions.decide().
+ *
+ * Phase 9 addition: shows a "diff preview available" hint when the
+ * DiffViewer is open alongside the permission modal.
  *
  * The TUI:
  *   - Renders backend-provided data (tool name, risk level, reason, paths).
@@ -23,6 +27,7 @@ import {
 export function PermissionModal(): JSX.Element {
   const hasRequest = () => pendingPermissionRequests().length > 0;
   const firstRequest = () => pendingPermissionRequests()[0];
+  const hasDiff = () => currentDiffPreview() !== null;
 
   async function handleDecision(decision: "allow" | "deny"): Promise<void> {
     const req = firstRequest();
@@ -55,7 +60,7 @@ export function PermissionModal(): JSX.Element {
         top={4}
         left={6}
         width={60}
-        height={14}
+        height={16}
         border={true}
         title=" Permission Request "
         titleAlignment="center"
@@ -67,6 +72,10 @@ export function PermissionModal(): JSX.Element {
         <text content={`Reason:    ${reason()}`} />
         <Show when={paths().length > 0}>
           <text content={`Paths:     ${paths()}`} />
+        </Show>
+        <Show when={hasDiff()}>
+          <text content="" />
+          <text content="  Diff preview is open in the viewer panel." />
         </Show>
         <text content="" />
         <text content="Allow this operation?" />

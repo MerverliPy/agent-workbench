@@ -8,6 +8,8 @@ const Category = {
   MODEL: "model",
   TOOL: "tool",
   PERMISSION: "permission",
+  DIFF: "diff",
+  FILE: "file",
   ERROR: "error",
 } as const;
 
@@ -287,6 +289,113 @@ export class RunLedger {
       Actor.POLICY,
       `Tool call denied: ${toolName}`,
       { toolCallId, toolName, reason }
+    );
+  }
+
+  // ── Diff and file mutation (Phase 9) ──────────────────────────────────────
+
+  /**
+   * Record that a diff preview was generated for a mutation tool, before
+   * the permission gate fires (docs/14 §7, docs/13 §7).
+   */
+  recordDiffPreviewCreated(
+    toolCallId: string,
+    toolName: string,
+    path: string,
+    diffPreviewId?: string
+  ): void {
+    this.record(
+      "diff.preview_created",
+      Category.DIFF,
+      Actor.SYSTEM,
+      `Diff preview created for ${toolName}: ${path}`,
+      { toolCallId, toolName, path, diffPreviewId }
+    );
+  }
+
+  /**
+   * Record that a file mutation was applied successfully.
+   */
+  recordMutationApplied(
+    toolCallId: string,
+    toolName: string,
+    path: string,
+    changeId?: string
+  ): void {
+    this.record(
+      "file.change_applied",
+      Category.FILE,
+      Actor.TOOL,
+      `File mutation applied: ${toolName} → ${path}`,
+      { toolCallId, toolName, path, changeId }
+    );
+  }
+
+  /**
+   * Record that a file mutation failed after approval.
+   */
+  recordMutationFailed(
+    toolCallId: string,
+    toolName: string,
+    path: string,
+    error: string
+  ): void {
+    this.record(
+      "file.change_failed",
+      Category.FILE,
+      Actor.TOOL,
+      `File mutation failed: ${toolName} → ${path}: ${error}`,
+      { toolCallId, toolName, path, error }
+    );
+  }
+
+  /**
+   * Record that a revert was attempted.
+   */
+  recordRevertAttempted(
+    toolCallId: string,
+    path: string
+  ): void {
+    this.record(
+      "file.revert_attempted",
+      Category.FILE,
+      Actor.TOOL,
+      `File revert attempted: ${path}`,
+      { toolCallId, path }
+    );
+  }
+
+  /**
+   * Record that a revert completed successfully.
+   */
+  recordRevertCompleted(
+    toolCallId: string,
+    path: string,
+    revertedChangeId: string
+  ): void {
+    this.record(
+      "file.revert_completed",
+      Category.FILE,
+      Actor.TOOL,
+      `File revert completed: ${path}`,
+      { toolCallId, path, revertedChangeId }
+    );
+  }
+
+  /**
+   * Record that a revert failed.
+   */
+  recordRevertFailed(
+    toolCallId: string,
+    path: string,
+    error: string
+  ): void {
+    this.record(
+      "file.revert_failed",
+      Category.FILE,
+      Actor.TOOL,
+      `File revert failed: ${path}: ${error}`,
+      { toolCallId, path, error }
     );
   }
 

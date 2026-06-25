@@ -96,4 +96,33 @@ export class ToolCache {
   invalidateById(id: string): void {
     this.repo.invalidate(id);
   }
+
+  /**
+   * Invalidate all active session cache entries that reference the mutated
+   * file path.
+   *
+   * Phase 9 conservative approach: invalidates ALL non-expired entries for the
+   * session when a mutation occurs, because grep/glob cache keys embed patterns
+   * rather than explicit paths and cannot be reliably matched. This ensures
+   * cache correctness at the cost of slightly more re-fetching.
+   *
+   * Fine-grained path-based invalidation is deferred (see CACHE-005).
+   *
+   * @param sessionId   Active session ULID.
+   * @param projectPath Absolute project root path.
+   * @param _mutatedPath  Absolute path of the file that was mutated (reserved
+   *                    for future fine-grained invalidation).
+   */
+  invalidateAffectedByPath(
+    sessionId: string,
+    projectPath: string,
+    _mutatedPath: string
+  ): void {
+    const active = this.repo.listActiveBySession(sessionId);
+    for (const entry of active) {
+      // Guard against cross-project hits (defensive; should never occur).
+      if (entry.projectPath !== projectPath) continue;
+      this.repo.invalidate(entry.id);
+    }
+  }
 }
