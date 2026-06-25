@@ -23,7 +23,7 @@ export type Message = z.infer<typeof Message>;
 
 export const SubmitMessageRequest = z.object({
   content: z.string().min(1),
-  role: MessageRole.default("user"),
+  role: z.literal("user").optional().default("user"),
   parentMessageId: Ulid.optional(),
 });
 export type SubmitMessageRequest = z.infer<typeof SubmitMessageRequest>;

@@ -2,6 +2,10 @@ import { z } from "zod/v4";
 import { ErrorEnvelope } from "../schemas/error-envelope";
 import { ToolDefinition } from "../schemas/tool";
 
+export const ToolNameParams = z.object({
+  toolName: z.string().min(1),
+});
+
 export const ListToolsRoute = {
   method: "GET" as const,
   path: "/tool",
@@ -12,6 +16,7 @@ export const ListToolsRoute = {
 export const GetToolRoute = {
   method: "GET" as const,
   path: "/tool/:toolName",
+  pathParams: ToolNameParams,
   response: ToolDefinition,
   errors: [ErrorEnvelope],
 } as const;

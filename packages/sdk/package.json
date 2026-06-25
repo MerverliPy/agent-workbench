@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*"
+    "@agent-workbench/protocol": "workspace:*",
+    "zod": "^4.4.3"
   }
 }

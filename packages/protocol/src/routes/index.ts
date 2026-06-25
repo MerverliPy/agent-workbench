@@ -1,5 +1,6 @@
 export * from "./health";
 export * from "./event";
+export * from "./info";
 export * from "./session";
 export * from "./message";
 export * from "./config";

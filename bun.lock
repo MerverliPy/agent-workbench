@@ -65,6 +65,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@agent-workbench/protocol": "workspace:*",
+        "zod": "^4.4.3",
       },
     },
     "packages/shell": {

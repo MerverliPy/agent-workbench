@@ -10,14 +10,19 @@ export const PermissionRequestListParams = z.object({
 export const ListPermissionRequestsRoute = {
   method: "GET" as const,
   path: "/permission/request",
-  params: PermissionRequestListParams,
+  query: PermissionRequestListParams,
   response: z.object({ items: z.array(PermissionRequest) }),
   errors: [ErrorEnvelope],
 } as const;
 
+export const PermissionRequestIdParams = z.object({
+  requestId: z.string().min(1),
+});
+
 export const GetPermissionRequestRoute = {
   method: "GET" as const,
   path: "/permission/request/:requestId",
+  pathParams: PermissionRequestIdParams,
   response: PermissionRequest,
   errors: [ErrorEnvelope],
 } as const;
@@ -25,6 +30,7 @@ export const GetPermissionRequestRoute = {
 export const DecidePermissionRoute = {
   method: "POST" as const,
   path: "/permission/request/:requestId/decision",
+  pathParams: PermissionRequestIdParams,
   body: SubmitDecisionRequest,
   response: PermissionDecision,
   errors: [ErrorEnvelope],

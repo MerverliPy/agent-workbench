@@ -1,12 +1,12 @@
-import type { EventEnvelope } from "@agent-workbench/protocol";
+import { EventEnvelope } from "@agent-workbench/protocol";
 import { SdkError } from "./errors";
 
 export type EventCallback = (event: EventEnvelope) => void;
 export type EventFilter = (event: EventEnvelope) => boolean;
+export type ErrorCallback = (error: Error) => void;
 
 export interface SseTransportOptions {
   url: string;
-  signal?: AbortSignal;
 }
 
 export class SseTransport {
@@ -14,6 +14,8 @@ export class SseTransport {
   private abortController: AbortController | null = null;
   private listeners: Map<string, Set<EventCallback>> = new Map();
   private filter: EventFilter | null = null;
+  private errorHandler: ErrorCallback | null = null;
+  private buffer = "";
 
   constructor(options: SseTransportOptions) {
     this.url = options.url;
@@ -34,16 +36,21 @@ export class SseTransport {
     this.filter = fn;
   }
 
+  setErrorHandler(handler: ErrorCallback): void {
+    this.errorHandler = handler;
+  }
+
   async connect(signal?: AbortSignal): Promise<void> {
     this.abortController = new AbortController();
-    const combinedSignal = signal
-      ? AbortSignal.any?.([signal, this.abortController.signal]) ?? this.abortController.signal
-      : this.abortController.signal;
+    const abortSignal = this.abortController.signal;
+
+    const onExternalAbort = () => abortSignal.aborted || this.abortController?.abort();
+    signal?.addEventListener("abort", onExternalAbort);
 
     try {
       const response = await fetch(this.url, {
         headers: { Accept: "text/event-stream" },
-        signal: combinedSignal,
+        signal: abortSignal,
       });
 
       if (!response.ok) {
@@ -56,15 +63,14 @@ export class SseTransport {
       }
 
       const decoder = new TextDecoder();
-      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
+        this.buffer += decoder.decode(value, { stream: true });
+        const lines = this.buffer.split("\n");
+        this.buffer = lines.pop() ?? "";
 
         let currentType = "";
         let currentData = "";
@@ -85,43 +91,53 @@ export class SseTransport {
       if (error instanceof SdkError) throw error;
       if (error instanceof DOMException && (error as DOMException).name === "AbortError") return;
       throw new SdkError("SSE connection failed", error);
+    } finally {
+      signal?.removeEventListener("abort", onExternalAbort);
     }
   }
 
   disconnect(): void {
     this.abortController?.abort();
     this.abortController = null;
+    this.buffer = "";
   }
 
   private dispatch(type: string, data: string): void {
+    let parsed: unknown;
     try {
-      const parsed = JSON.parse(data);
-      const event: EventEnvelope = {
-        id: parsed.id,
-        type: parsed.type ?? type,
-        sessionId: parsed.sessionId,
-        runId: parsed.runId,
-        timestamp: parsed.timestamp,
-        payload: parsed.payload,
-      };
-
-      if (this.filter && !this.filter(event)) return;
-
-      const callbacks = this.listeners.get(event.type);
-      if (callbacks) {
-        for (const cb of callbacks) {
-          cb(event);
-        }
-      }
-
-      const wildcardCallbacks = this.listeners.get("*");
-      if (wildcardCallbacks) {
-        for (const cb of wildcardCallbacks) {
-          cb(event);
-        }
-      }
+      parsed = JSON.parse(data);
     } catch {
-      // skip unparseable events
+      this.errorHandler?.(new SdkError("Failed to parse SSE event data as JSON"));
+      return;
+    }
+
+    const raw = parsed as Record<string, unknown>;
+    const result = EventEnvelope.safeParse({
+      ...raw,
+      type: raw.type ?? type,
+    });
+
+    if (!result.success) {
+      this.errorHandler?.(new SdkError(`Malformed SSE event: ${result.error?.issues?.map((i) => i.message).join(", ")}`));
+      return;
+    }
+
+    const event = result.data;
+
+    if (this.filter && !this.filter(event)) return;
+
+    const callbacks = this.listeners.get(event.type);
+    if (callbacks) {
+      for (const cb of callbacks) {
+        cb(event);
+      }
+    }
+
+    const wildcardCallbacks = this.listeners.get("*");
+    if (wildcardCallbacks) {
+      for (const cb of wildcardCallbacks) {
+        cb(event);
+      }
     }
   }
 }

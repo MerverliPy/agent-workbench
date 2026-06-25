@@ -2,6 +2,7 @@ import { z } from "zod/v4";
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { HealthRoute } from "../routes/health";
 import { EventRoute } from "../routes/event";
+import { GlobalInfoRoute } from "../routes/info";
 import {
   CreateSessionRoute,
   ListSessionsRoute,
@@ -42,39 +43,82 @@ import { ListToolsRoute, GetToolRoute } from "../routes/tool";
 import { PrefillPromptRoute, FocusRoute, GetTuiStateRoute } from "../routes/tui";
 import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
 import { ErrorEnvelope } from "../schemas/error-envelope";
+import type { RouteContract } from "../types";
 
-function registerRoute(
-  registry: OpenAPIRegistry,
-  route: {
-    method: string;
-    path: string;
-    response: z.ZodType;
-    body?: z.ZodType;
-    params?: z.ZodType;
-  },
-) {
-  const pathConfig: Parameters<typeof registry.registerPath>[0] = {
-    method: route.method.toLowerCase() as "get" | "post" | "put" | "patch" | "delete",
-    path: route.path,
-    responses: {
-      200: {
-        description: "Success",
-        content: {
-          "application/json": {
-            schema: route.response,
-          },
+function openApiMethod(method: string): "get" | "post" | "put" | "patch" | "delete" {
+  return method.toLowerCase() as "get" | "post" | "put" | "patch" | "delete";
+}
+
+function openApiPath(path: string): string {
+  return path.replace(/:(\w+)/g, "{$1}");
+}
+
+function registerRoute(registry: OpenAPIRegistry, route: RouteContract) {
+  const path = openApiPath(route.path);
+
+  const responses: Record<string, { description: string; content?: Record<string, { schema: z.ZodType }> }> = {};
+
+  if (route.isStream) {
+    responses["200"] = {
+      description: "SSE Event Stream",
+      content: {
+        "text/event-stream": {
+          schema: route.response,
         },
       },
-    },
-  };
-  if (route.body) {
-    pathConfig.request = {
-      body: {
-        content: { "application/json": { schema: route.body } },
+    };
+  } else {
+    responses["200"] = {
+      description: "Success",
+      content: {
+        "application/json": {
+          schema: route.response,
+        },
       },
     };
   }
-  registry.registerPath(pathConfig);
+
+  for (const errorSchema of route.errors) {
+    responses["400"] = {
+      description: "Bad Request",
+      content: {
+        "application/json": {
+          schema: errorSchema,
+        },
+      },
+    };
+    responses["500"] = {
+      description: "Internal Server Error",
+      content: {
+        "application/json": {
+          schema: errorSchema,
+        },
+      },
+    };
+  }
+
+  const request: Record<string, unknown> = {};
+
+  if (route.body) {
+    request.body = {
+      content: { "application/json": { schema: route.body } },
+    };
+  }
+
+  if (route.query) {
+    request.queryParams = route.query;
+  }
+
+  if (route.pathParams) {
+    request.pathParams = route.pathParams;
+  }
+
+  registry.registerPath({
+    method: openApiMethod(route.method),
+    path,
+    request: Object.keys(request).length > 0 ? request as any : undefined,
+    responses,
+  });
 }
 
 export function createOpenApiDocument(title: string, version: string) {
@@ -82,39 +126,46 @@ export function createOpenApiDocument(title: string, version: string) {
 
   registry.register("ErrorEnvelope", ErrorEnvelope);
 
-  registerRoute(registry, HealthRoute);
-  registerRoute(registry, EventRoute);
-  registerRoute(registry, CreateSessionRoute);
-  registerRoute(registry, ListSessionsRoute);
-  registerRoute(registry, GetSessionRoute);
-  registerRoute(registry, UpdateSessionRoute);
-  registerRoute(registry, AbortSessionRoute);
-  registerRoute(registry, SummarizeSessionRoute);
-  registerRoute(registry, DeleteSessionRoute);
-  registerRoute(registry, SubmitMessageRoute);
-  registerRoute(registry, ListMessagesRoute);
-  registerRoute(registry, GetMessageRoute);
-  registerRoute(registry, GetConfigRoute);
-  registerRoute(registry, GetEffectiveConfigRoute);
-  registerRoute(registry, ValidateConfigRoute);
-  registerRoute(registry, ListProvidersRoute);
-  registerRoute(registry, GetProviderRoute);
-  registerRoute(registry, ListProviderModelsRoute);
-  registerRoute(registry, ListFilesRoute);
-  registerRoute(registry, ReadFileRoute);
-  registerRoute(registry, GetFileDiffRoute);
-  registerRoute(registry, GetFileTreeRoute);
-  registerRoute(registry, ListPermissionRequestsRoute);
-  registerRoute(registry, GetPermissionRequestRoute);
-  registerRoute(registry, DecidePermissionRoute);
-  registerRoute(registry, GetEffectivePolicyRoute);
-  registerRoute(registry, ListToolsRoute);
-  registerRoute(registry, GetToolRoute);
-  registerRoute(registry, PrefillPromptRoute);
-  registerRoute(registry, FocusRoute);
-  registerRoute(registry, GetTuiStateRoute);
-  registerRoute(registry, CreateTokenRoute);
-  registerRoute(registry, GetAuthStatusRoute);
+  const routes: RouteContract[] = [
+    HealthRoute,
+    EventRoute,
+    GlobalInfoRoute,
+    CreateSessionRoute,
+    ListSessionsRoute,
+    GetSessionRoute,
+    UpdateSessionRoute,
+    AbortSessionRoute,
+    SummarizeSessionRoute,
+    DeleteSessionRoute,
+    SubmitMessageRoute,
+    ListMessagesRoute,
+    GetMessageRoute,
+    GetConfigRoute,
+    GetEffectiveConfigRoute,
+    ValidateConfigRoute,
+    ListProvidersRoute,
+    GetProviderRoute,
+    ListProviderModelsRoute,
+    ListFilesRoute,
+    ReadFileRoute,
+    GetFileDiffRoute,
+    GetFileTreeRoute,
+    ListPermissionRequestsRoute,
+    GetPermissionRequestRoute,
+    DecidePermissionRoute,
+    GetEffectivePolicyRoute,
+    ListToolsRoute,
+    GetToolRoute,
+    PrefillPromptRoute,
+    FocusRoute,
+    GetTuiStateRoute,
+    CreateTokenRoute,
+    GetAuthStatusRoute,
+  ];
+
+  for (const route of routes) {
+    registerRoute(registry, route);
+  }
 
   const generator = new OpenApiGeneratorV3(registry.definitions);
   return generator.generateDocument({

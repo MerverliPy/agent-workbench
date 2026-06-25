@@ -19,14 +19,19 @@ export const CreateSessionRoute = {
 export const ListSessionsRoute = {
   method: "GET" as const,
   path: "/session",
-  params: SessionListParams,
+  query: SessionListParams,
   response: z.object({ items: z.array(Session), nextCursor: Ulid.optional() }),
   errors: [ErrorEnvelope],
 } as const;
 
+export const SessionIdParams = z.object({
+  sessionId: z.string().min(1),
+});
+
 export const GetSessionRoute = {
   method: "GET" as const,
   path: "/session/:sessionId",
+  pathParams: SessionIdParams,
   response: Session,
   errors: [ErrorEnvelope],
 } as const;
@@ -34,6 +39,7 @@ export const GetSessionRoute = {
 export const UpdateSessionRoute = {
   method: "PATCH" as const,
   path: "/session/:sessionId",
+  pathParams: SessionIdParams,
   body: UpdateSessionRequest,
   response: Session,
   errors: [ErrorEnvelope],
@@ -42,6 +48,7 @@ export const UpdateSessionRoute = {
 export const AbortSessionRoute = {
   method: "POST" as const,
   path: "/session/:sessionId/abort",
+  pathParams: SessionIdParams,
   response: Session,
   errors: [ErrorEnvelope],
 } as const;
@@ -49,6 +56,7 @@ export const AbortSessionRoute = {
 export const SummarizeSessionRoute = {
   method: "POST" as const,
   path: "/session/:sessionId/summarize",
+  pathParams: SessionIdParams,
   response: z.object({ summary: z.string() }),
   errors: [ErrorEnvelope],
 } as const;
@@ -56,6 +64,7 @@ export const SummarizeSessionRoute = {
 export const DeleteSessionRoute = {
   method: "DELETE" as const,
   path: "/session/:sessionId",
+  pathParams: SessionIdParams,
   response: z.object({ deleted: z.boolean() }),
   errors: [ErrorEnvelope],
 } as const;

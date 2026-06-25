@@ -10,7 +10,8 @@ export type EventStreamParams = z.infer<typeof EventStreamParams>;
 export const EventRoute = {
   method: "GET" as const,
   path: "/global/event",
-  params: EventStreamParams,
+  query: EventStreamParams,
   response: z.undefined(),
   errors: [ErrorEnvelope],
+  isStream: true as const,
 } as const;

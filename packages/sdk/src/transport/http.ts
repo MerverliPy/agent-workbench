@@ -1,3 +1,4 @@
+import type { z } from "zod/v4";
 import { ErrorEnvelope } from "@agent-workbench/protocol";
 import { ApiError, SdkError } from "./errors";
 
@@ -12,12 +13,13 @@ export class HttpTransport {
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
   }
 
-  async request<T>(
+  async request<T = unknown>(
     method: string,
     path: string,
     options?: {
       params?: Record<string, string | undefined>;
       body?: unknown;
+      responseSchema?: z.ZodType<T>;
     },
     signal?: AbortSignal,
   ): Promise<T> {
@@ -62,11 +64,23 @@ export class HttpTransport {
       return undefined as T;
     }
 
+    let parsed: unknown;
     try {
-      return JSON.parse(text) as T;
+      parsed = JSON.parse(text);
     } catch (error) {
       throw new SdkError(`Failed to parse response: ${text.slice(0, 100)}`, error);
     }
+
+    if (options?.responseSchema) {
+      const result = options.responseSchema.safeParse(parsed);
+      if (!result.success) {
+        const issues = result.error?.issues?.map((i: { message: string }) => i.message).join(", ") ?? "unknown";
+        throw new SdkError(`Response validation failed: ${issues}`, result.error);
+      }
+      return result.data as T;
+    }
+
+    return parsed as T;
   }
 
   private async parseError(response: Response): Promise<ApiError> {

@@ -20,7 +20,7 @@ export const FileDiffParams = z.object({
 export const ListFilesRoute = {
   method: "GET" as const,
   path: "/file",
-  params: FileListParams,
+  query: FileListParams,
   response: z.object({ items: z.array(FileEntry) }),
   errors: [ErrorEnvelope],
 } as const;
@@ -28,7 +28,7 @@ export const ListFilesRoute = {
 export const ReadFileRoute = {
   method: "GET" as const,
   path: "/file/content",
-  params: FileContentParams,
+  query: FileContentParams,
   response: FileContent,
   errors: [ErrorEnvelope],
 } as const;
@@ -36,7 +36,7 @@ export const ReadFileRoute = {
 export const GetFileDiffRoute = {
   method: "GET" as const,
   path: "/file/diff",
-  params: FileDiffParams,
+  query: FileDiffParams,
   response: DiffPreview,
   errors: [ErrorEnvelope],
 } as const;
@@ -44,7 +44,7 @@ export const GetFileDiffRoute = {
 export const GetFileTreeRoute = {
   method: "GET" as const,
   path: "/file/tree",
-  params: z.object({ path: z.string().optional() }).optional(),
+  query: z.object({ path: z.string().optional() }).optional(),
   response: z.object({ items: z.array(FileEntry) }),
   errors: [ErrorEnvelope],
 } as const;
