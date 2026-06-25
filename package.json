@@ -1,0 +1,17 @@
+{
+  "name": "agent-workbench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "phase": "echo Phase 1 workspace scaffold only",
+    "validate": "echo See PHASE_1_VALIDATION.md"
+  },
+  "engines": {
+    "bun": ">=1"
+  }
+}

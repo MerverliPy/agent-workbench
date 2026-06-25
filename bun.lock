@@ -1,0 +1,118 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "agent-workbench",
+    },
+    "apps/cli": {
+      "name": "@agent-workbench/cli",
+      "version": "0.0.0",
+    },
+    "apps/server": {
+      "name": "@agent-workbench/server",
+      "version": "0.0.0",
+    },
+    "apps/tui": {
+      "name": "@agent-workbench/tui",
+      "version": "0.0.0",
+    },
+    "packages/cache": {
+      "name": "@agent-workbench/cache",
+      "version": "0.0.0",
+    },
+    "packages/config": {
+      "name": "@agent-workbench/config",
+      "version": "0.0.0",
+    },
+    "packages/core": {
+      "name": "@agent-workbench/core",
+      "version": "0.0.0",
+    },
+    "packages/diff": {
+      "name": "@agent-workbench/diff",
+      "version": "0.0.0",
+    },
+    "packages/events": {
+      "name": "@agent-workbench/events",
+      "version": "0.0.0",
+    },
+    "packages/models": {
+      "name": "@agent-workbench/models",
+      "version": "0.0.0",
+    },
+    "packages/permissions": {
+      "name": "@agent-workbench/permissions",
+      "version": "0.0.0",
+    },
+    "packages/planner": {
+      "name": "@agent-workbench/planner",
+      "version": "0.0.0",
+    },
+    "packages/protocol": {
+      "name": "@agent-workbench/protocol",
+      "version": "0.0.0",
+    },
+    "packages/sdk": {
+      "name": "@agent-workbench/sdk",
+      "version": "0.0.0",
+    },
+    "packages/shell": {
+      "name": "@agent-workbench/shell",
+      "version": "0.0.0",
+    },
+    "packages/storage": {
+      "name": "@agent-workbench/storage",
+      "version": "0.0.0",
+    },
+    "packages/tokens": {
+      "name": "@agent-workbench/tokens",
+      "version": "0.0.0",
+    },
+    "packages/tools": {
+      "name": "@agent-workbench/tools",
+      "version": "0.0.0",
+    },
+    "packages/ui": {
+      "name": "@agent-workbench/ui",
+      "version": "0.0.0",
+    },
+  },
+  "packages": {
+    "@agent-workbench/cache": ["@agent-workbench/cache@workspace:packages/cache"],
+
+    "@agent-workbench/cli": ["@agent-workbench/cli@workspace:apps/cli"],
+
+    "@agent-workbench/config": ["@agent-workbench/config@workspace:packages/config"],
+
+    "@agent-workbench/core": ["@agent-workbench/core@workspace:packages/core"],
+
+    "@agent-workbench/diff": ["@agent-workbench/diff@workspace:packages/diff"],
+
+    "@agent-workbench/events": ["@agent-workbench/events@workspace:packages/events"],
+
+    "@agent-workbench/models": ["@agent-workbench/models@workspace:packages/models"],
+
+    "@agent-workbench/permissions": ["@agent-workbench/permissions@workspace:packages/permissions"],
+
+    "@agent-workbench/planner": ["@agent-workbench/planner@workspace:packages/planner"],
+
+    "@agent-workbench/protocol": ["@agent-workbench/protocol@workspace:packages/protocol"],
+
+    "@agent-workbench/sdk": ["@agent-workbench/sdk@workspace:packages/sdk"],
+
+    "@agent-workbench/server": ["@agent-workbench/server@workspace:apps/server"],
+
+    "@agent-workbench/shell": ["@agent-workbench/shell@workspace:packages/shell"],
+
+    "@agent-workbench/storage": ["@agent-workbench/storage@workspace:packages/storage"],
+
+    "@agent-workbench/tokens": ["@agent-workbench/tokens@workspace:packages/tokens"],
+
+    "@agent-workbench/tools": ["@agent-workbench/tools@workspace:packages/tools"],
+
+    "@agent-workbench/tui": ["@agent-workbench/tui@workspace:apps/tui"],
+
+    "@agent-workbench/ui": ["@agent-workbench/ui@workspace:packages/ui"],
+  }
+}
