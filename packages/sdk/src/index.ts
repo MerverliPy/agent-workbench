@@ -19,5 +19,6 @@ export {
   ToolResource,
   TuiResource,
   AgentResource,
+  TokenHealthResource,
   AuthResource,
 } from "./resources";

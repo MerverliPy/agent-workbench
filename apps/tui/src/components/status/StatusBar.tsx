@@ -1,15 +1,7 @@
 import type { JSX } from "@opentui/solid";
-import { serverStatus, serverError, runStatus, pendingPermissions } from "../../state/app";
+import { serverStatus, serverError, runStatus, pendingPermissions, tokenHealth } from "../../state/app";
 import { SERVER_BASE_URL } from "../../lib/sdk";
 
-/**
- * Single-row status bar.
- *
- * Shows: server connection | run state | pending permissions | keyboard hint
- *
- * Phase 4: token health and agent/model info are placeholders.
- * These will be populated from SSE events in later phases.
- */
 export function StatusBar(): JSX.Element {
   function statusLine(): string {
     const svr = serverStatus();
@@ -22,9 +14,15 @@ export function StatusBar(): JSX.Element {
     const perms = pendingPermissions();
     const permPart = perms > 0 ? `  | permissions pending: ${perms}` : "";
 
+    const th = tokenHealth();
+    const tokenPart =
+      th !== null
+        ? `  | tokens: ${th.used}/${th.budget} (${th.level}${th.isEstimate ? "~" : ""})`
+        : "  | tokens: --";
+
     return (
       ` ${SERVER_BASE_URL}  |  server: ${svr}${errPart}  |  run: ${run}${permPart}` +
-      `  |  tokens: --  |  agent: --  |  [Ctrl+P] palette  [Ctrl+C] exit`
+      `${tokenPart}  |  agent: --  |  [Ctrl+P] palette  [Ctrl+T] tokens  [Ctrl+C] exit`
     );
   }
 

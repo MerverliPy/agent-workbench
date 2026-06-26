@@ -163,3 +163,23 @@ export const [availableAgents, setAvailableAgents] = createSignal<AgentInfo[]>([
 export function selectAgent(agentId: string): void {
   setCurrentAgentId(agentId);
 }
+
+// ── Phase 12: Token health state ─────────────────────────────────────────
+
+export interface TokenHealthState {
+  budget: number;
+  used: number;
+  remaining: number;
+  utilizationPercent: number;
+  level: string;
+  isEstimate: boolean;
+  compactionSuggested: boolean;
+}
+
+export const [tokenHealth, setTokenHealth] = createSignal<TokenHealthState | null>(null);
+
+export const [compactionSuggestion, setCompactionSuggestion] = createSignal<{
+  currentTokens: number;
+  estimatedCompactedTokens?: number | undefined;
+  reason?: string | undefined;
+} | null>(null);

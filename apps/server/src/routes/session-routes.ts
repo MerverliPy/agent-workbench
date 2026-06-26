@@ -187,14 +187,14 @@ export function registerSessionRoutes(
   );
 
   // POST /session/:sessionId/summarize — Phase 12
-  app.post(SummarizeSessionRoute.path, async (ctx) => {
-    throw new ApiError({
-      status: 501,
-      code: "NOT_IMPLEMENTED",
-      message: "session.summarize is not implemented (Phase 12)",
-      recoverable: true,
-    });
-  });
+  app.post(
+    SummarizeSessionRoute.path,
+    createJsonRouteHandler(SummarizeSessionRoute, (_ctx, { validated }) => {
+      const { sessionId } = validated.pathParams as { sessionId: string };
+      const result = services.sessionRunner.summarizeSession(sessionId);
+      return result;
+    })
+  );
 
   // DELETE /session/:sessionId
   app.delete(

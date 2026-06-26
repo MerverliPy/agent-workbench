@@ -85,6 +85,8 @@ export interface CoreDependencies {
   ledgerRepository: import("@agent-workbench/storage").LedgerRepository;
   // Phase 8: permission persistence
   permissionRepository: import("@agent-workbench/storage").PermissionRepository;
+  // Phase 12: summary persistence and token health
+  summaryRepository: import("@agent-workbench/storage").SummaryRepository;
   eventBus: import("@agent-workbench/events").EventBus;
   toolRegistry: import("@agent-workbench/tools").ToolRegistry;
   modelProvider: import("@agent-workbench/models").ModelProvider;
@@ -95,6 +97,8 @@ export interface CoreDependencies {
   shellRunner: import("@agent-workbench/shell").SimpleCommandRunner;
   // Phase 11: agent registry
   agentRegistry: import("./agent").AgentRegistry;
+  // Phase 12: token health
+  tokenHealthService: import("./token-health").TokenHealthService;
 }
 
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */

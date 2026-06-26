@@ -41,6 +41,7 @@ import {
 } from "../routes/permission";
 import { ListToolsRoute, GetToolRoute } from "../routes/tool";
 import { ListAgentsRoute, GetAgentRoute } from "../routes/agent";
+import { GetTokenHealthRoute } from "../routes/token-health";
 import { PrefillPromptRoute, FocusRoute, GetTuiStateRoute } from "../routes/tui";
 import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
 import { ErrorEnvelope } from "../schemas/error-envelope";
@@ -162,6 +163,7 @@ export function createOpenApiDocument(title: string, version: string) {
     PrefillPromptRoute,
     FocusRoute,
     GetTuiStateRoute,
+    GetTokenHealthRoute,
     CreateTokenRoute,
     GetAuthStatusRoute,
   ];

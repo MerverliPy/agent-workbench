@@ -306,6 +306,72 @@ export class EventPublisher {
     this.publish(EventName.AGENT_PROFILE_APPLIED, { agentId });
   }
 
+  // ── Token health (Phase 12) ──────────────────────────────────────────────────
+
+  publishTokenHealthUpdated(health: {
+    budget: number;
+    used: number;
+    remaining: number;
+    threshold: number;
+    utilizationPercent: number;
+    level: string;
+    isEstimate: boolean;
+    compactionSuggested: boolean;
+  }): void {
+    this.publish(EventName.TOKEN_HEALTH_UPDATED, {
+      budget: health.budget,
+      used: health.used,
+      remaining: health.remaining,
+      threshold: health.threshold,
+      utilizationPercent: health.utilizationPercent,
+      level: health.level,
+      isEstimate: health.isEstimate,
+      compactionSuggested: health.compactionSuggested,
+    });
+  }
+
+  publishTokenHealthWarning(level: string, message: string): void {
+    this.publish(EventName.TOKEN_HEALTH_WARNING, { level, message });
+  }
+
+  publishCompactionSuggested(
+    currentTokens: number,
+    estimatedCompactedTokens?: number,
+    reason?: string
+  ): void {
+    this.publish(EventName.COMPACTION_SUGGESTED, {
+      currentTokens,
+      estimatedCompactedTokens,
+      reason,
+    });
+  }
+
+  publishCompactionStarted(): void {
+    this.publish(EventName.COMPACTION_STARTED, {});
+  }
+
+  publishCompactionCompleted(summaryId: string): void {
+    this.publish(EventName.COMPACTION_COMPLETED, { summaryId });
+  }
+
+  publishCompactionRejected(): void {
+    this.publish(EventName.COMPACTION_REJECTED, {});
+  }
+
+  publishToolResultTruncated(
+    toolCallId: string,
+    originalLength: number,
+    truncatedLength: number,
+    reason: string
+  ): void {
+    this.publish(EventName.TOOL_RESULT_TRUNCATED, {
+      toolCallId,
+      originalLength,
+      truncatedLength,
+      reason,
+    });
+  }
+
   // ── Internal helper ─────────────────────────────────────────────────────────
 
   private publish(type: string, payload: unknown): void {

@@ -1,4 +1,4 @@
-import { SessionRunner, AgentRegistry } from "@agent-workbench/core";
+import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
 import { StubModelProvider } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
@@ -13,6 +13,7 @@ import {
   CacheRepository,
   FileChangeRepository,
   PermissionRepository,
+  SummaryRepository,
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
@@ -32,6 +33,7 @@ const ledgerRepository = new LedgerRepository(storage.db);
 const cacheRepository = new CacheRepository(storage.db);
 const fileChangeRepository = new FileChangeRepository(storage.db);
 const permissionRepository = new PermissionRepository(storage.db);
+const summaryRepository = new SummaryRepository(storage.db);
 
 // ── Events ───────────────────────────────────────────────────────────────────
 const eventBus = new EventBus();
@@ -68,6 +70,9 @@ const modelProvider = new StubModelProvider({
 // ── Phase 11: Agent registry ──────────────────────────────────────────────────
 const agentRegistry = new AgentRegistry();
 
+// ── Phase 12: Token health service ──────────────────────────────────────────────
+const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -75,6 +80,7 @@ const sessionRunner = new SessionRunner({
   toolCallRepository,
   ledgerRepository,
   permissionRepository,
+  summaryRepository,
   eventBus,
   toolRegistry,
   modelProvider,
@@ -82,6 +88,7 @@ const sessionRunner = new SessionRunner({
   permissionGate,
   shellRunner,
   agentRegistry,
+  tokenHealthService,
 });
 
 // ── Server ───────────────────────────────────────────────────────────────────
@@ -97,6 +104,8 @@ const app = createApp({
     permissionEngine,
     permissionGate,
     agentRegistry,
+    tokenHealthService,
+    summaryRepository,
   },
 });
 

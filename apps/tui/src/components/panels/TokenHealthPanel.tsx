@@ -1,29 +1,71 @@
 import type { JSX } from "@opentui/solid";
-import { setTokenHealthOpen } from "../../state/app";
+import { tokenHealth, compactionSuggestion, setTokenHealthOpen } from "../../state/app";
 
-/**
- * Token health panel — Phase 4 placeholder.
- *
- * In Phase 12, this panel will display:
- *   - Health status (ok / warning / critical)
- *   - Estimated context usage and remaining budget
- *   - Largest context contributors
- *   - Truncated tool output indicators
- *   - Summary state and compaction suggestion
- *
- * Token health state comes from SSE token_health.updated events emitted by
- * packages/tokens. No token budget calculation lives in the TUI.
- *
- * Phase 4: renders a placeholder notice only.
- */
 export function TokenHealthPanel(): JSX.Element {
+  const th = tokenHealth();
+  const compaction = compactionSuggestion();
+
+  if (th === null) {
+    return (
+      <box
+        position="absolute"
+        top={4}
+        left={8}
+        width={56}
+        height={10}
+        border={true}
+        title=" Token Health "
+        titleAlignment="center"
+        zIndex={20}
+        flexDirection="column"
+        padding={1}
+      >
+        <text content="No token health data available yet." />
+        <text content="Submit a prompt to trigger a token health update." />
+        <text content="" />
+        <box
+          height={1}
+          flexDirection="row"
+          onMouseDown={() => setTokenHealthOpen(false)}
+        >
+          <text content="  [close]" />
+        </box>
+      </box>
+    );
+  }
+
+  const statusLabel = th.level.toUpperCase();
+  const statusColor = th.level === "critical" ? "red" : th.level === "strained" ? "yellow" : th.level === "watch" ? "yellow" : "green";
+  const barWidth = 40;
+  const filledChars = Math.round((th.utilizationPercent / 100) * barWidth);
+  const emptyChars = barWidth - filledChars;
+  const barText = `[${"#".repeat(filledChars)}${".".repeat(emptyChars)}]`;
+
+  const lines: string[] = [
+    `Status: ${statusLabel}  ${th.isEstimate ? "(estimate)" : ""}`,
+    `Budget: ${th.used}/${th.budget} tokens used`,
+    `Remaining: ${th.remaining} tokens`,
+    barText,
+  ];
+
+  if (compaction !== null) {
+    lines.push(
+      `Compaction: ~${compaction.currentTokens} → ~${compaction.estimatedCompactedTokens ?? "?"} tokens`
+    );
+    if (compaction.reason !== undefined) {
+      lines.push(`Reason: ${compaction.reason}`);
+    }
+  }
+
+  const height = Math.max(8, lines.length + 4);
+
   return (
     <box
       position="absolute"
       top={4}
       left={8}
       width={56}
-      height={10}
+      height={height}
       border={true}
       title=" Token Health "
       titleAlignment="center"
@@ -31,11 +73,9 @@ export function TokenHealthPanel(): JSX.Element {
       flexDirection="column"
       padding={1}
     >
-      <text content="[Phase 4 placeholder — Token Health]" />
-      <text content="" />
-      <text content="Token health monitoring is a Phase 12 feature." />
-      <text content="Context budget, compaction suggestions, and usage" />
-      <text content="details will appear here in Phase 12." />
+      {lines.map((line) => (
+        <text content={line} />
+      ))}
       <text content="" />
       <box
         height={1}

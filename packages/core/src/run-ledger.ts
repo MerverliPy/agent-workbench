@@ -12,6 +12,7 @@ const Category = {
   FILE: "file",
   SHELL: "shell",
   AGENT: "agent",
+  TOKEN: "token",
   ERROR: "error",
 } as const;
 
@@ -517,6 +518,88 @@ export class RunLedger {
       Actor.SYSTEM,
       `Agent profile applied: ${agentId} (v${promptVersion})`,
       { agentId, promptVersion }
+    );
+  }
+
+  // ── Token health (Phase 12) ──────────────────────────────────────────────
+
+  recordTokenHealthUpdated(
+    level: string,
+    used: number,
+    limit: number,
+    utilizationPercent: number
+  ): void {
+    this.record(
+      "token_health.updated",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      `Token health: ${level} (${used}/${limit}, ${utilizationPercent}%)`,
+      { level, used, limit, utilizationPercent }
+    );
+  }
+
+  recordTokenHealthWarning(level: string, message: string): void {
+    this.record(
+      "token_health.warning",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      `Token health warning (${level}): ${message}`,
+      { level, message }
+    );
+  }
+
+  recordCompactionSuggested(
+    currentTokens: number,
+    estimatedCompactedTokens?: number
+  ): void {
+    this.record(
+      "compaction.suggested",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      `Compaction suggested (current: ${currentTokens} tokens)`,
+      { currentTokens, estimatedCompactedTokens }
+    );
+  }
+
+  recordCompactionStarted(): void {
+    this.record(
+      "compaction.started",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      "Compaction started"
+    );
+  }
+
+  recordCompactionCompleted(summaryId: string): void {
+    this.record(
+      "compaction.completed",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      `Compaction completed (summary: ${summaryId})`,
+      { summaryId }
+    );
+  }
+
+  recordCompactionRejected(): void {
+    this.record(
+      "compaction.rejected",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      "Compaction rejected by user"
+    );
+  }
+
+  recordToolResultTruncated(
+    toolCallId: string,
+    originalLength: number,
+    truncatedLength: number
+  ): void {
+    this.record(
+      "tool_result.truncated",
+      Category.TOKEN,
+      Actor.SYSTEM,
+      `Tool result truncated (${originalLength} → ${truncatedLength} chars)`,
+      { toolCallId, originalLength, truncatedLength }
     );
   }
 

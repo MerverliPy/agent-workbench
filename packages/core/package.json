@@ -25,6 +25,7 @@
     "@agent-workbench/models": "workspace:*",
     "@agent-workbench/permissions": "workspace:*",
     "@agent-workbench/shell": "workspace:*",
+    "@agent-workbench/tokens": "workspace:*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

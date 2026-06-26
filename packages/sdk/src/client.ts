@@ -11,6 +11,7 @@ import { PermissionResource } from "./resources/permissions";
 import { ToolResource } from "./resources/tools";
 import { TuiResource } from "./resources/tui";
 import { AgentResource } from "./resources/agents";
+import { TokenHealthResource } from "./resources/token-health";
 import { AuthResource } from "./resources/auth";
 
 export interface WorkbenchClientOptions {
@@ -29,6 +30,7 @@ export class WorkbenchClient {
   public readonly tools: ToolResource;
   public readonly tui: TuiResource;
   public readonly agents: AgentResource;
+  public readonly tokenHealth: TokenHealthResource;
   public readonly auth: AuthResource;
 
   private http: HttpTransport;
@@ -48,6 +50,7 @@ export class WorkbenchClient {
     this.tools = new ToolResource(this.http);
     this.tui = new TuiResource(this.http);
     this.agents = new AgentResource(this.http);
+    this.tokenHealth = new TokenHealthResource(this.http);
     this.auth = new AuthResource(this.http);
   }
 }

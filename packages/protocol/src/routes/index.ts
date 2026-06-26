@@ -10,4 +10,5 @@ export * from "./permission";
 export * from "./tool";
 export * from "./tui";
 export * from "./agent";
+export * from "./token-health";
 export * from "./auth";

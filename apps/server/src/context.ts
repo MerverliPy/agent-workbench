@@ -1,10 +1,11 @@
-import type { SessionRunner, AgentRegistry } from "@agent-workbench/core";
+import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
 import type { EventBus } from "@agent-workbench/events";
 import type {
   SessionRepository,
   MessageRepository,
   LedgerRepository,
   PermissionRepository,
+  SummaryRepository,
 } from "@agent-workbench/storage";
 import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 
@@ -26,6 +27,9 @@ export interface ServerServices {
   readonly permissionGate: PermissionGate;
   // Phase 11: agent registry
   readonly agentRegistry: AgentRegistry;
+  // Phase 12: token health
+  readonly tokenHealthService: TokenHealthService;
+  readonly summaryRepository: SummaryRepository;
 }
 
 export type ServerAppBindings = {

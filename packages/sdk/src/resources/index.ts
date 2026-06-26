@@ -9,4 +9,5 @@ export { PermissionResource } from "./permissions";
 export { ToolResource } from "./tools";
 export { TuiResource } from "./tui";
 export { AgentResource } from "./agents";
+export { TokenHealthResource } from "./token-health";
 export { AuthResource } from "./auth";

@@ -100,6 +100,15 @@ export const EventName = {
 
   AGENT_SELECTED: "agent.selected",
   AGENT_PROFILE_APPLIED: "agent.profile_applied",
+
+  // ── Token health (Phase 12) ───────────────────────────────────────────────
+  TOKEN_HEALTH_UPDATED: "token_health.updated",
+  TOKEN_HEALTH_WARNING: "token_health.warning",
+  COMPACTION_SUGGESTED: "compaction.suggested",
+  COMPACTION_STARTED: "compaction.started",
+  COMPACTION_COMPLETED: "compaction.completed",
+  COMPACTION_REJECTED: "compaction.rejected",
+  TOOL_RESULT_TRUNCATED: "tool_result.truncated",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

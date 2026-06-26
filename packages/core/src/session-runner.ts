@@ -18,6 +18,11 @@ import type { AgentProfile } from "./agent";
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
 
+function truncateForSummary(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen) + "...";
+}
+
 /**
  * Orchestrates a single user prompt through the model/tool loop and produces
  * an assistant response.
@@ -69,7 +74,7 @@ export class SessionRunner {
   constructor(deps: CoreDependencies) {
     this.deps = deps;
     this.runRegistry = new RunRegistry();
-    this.contextBuilder = new ContextBuilder(deps.messageRepository);
+    this.contextBuilder = new ContextBuilder(deps.messageRepository, deps.summaryRepository);
     this.modelRouter = new ModelRouter(deps.modelProvider);
     this.toolDispatcher = new ToolCallDispatcher(deps.toolRegistry);
   }
@@ -187,7 +192,159 @@ export class SessionRunner {
     return true;
   }
 
+  /**
+   * Phase 12: compute the current token health status for a session.
+   * Delegates to TokenHealthService — server route handlers call this.
+   */
+  getTokenHealth(sessionId: string): {
+    budget: number;
+    used: number;
+    remaining: number;
+    threshold: number;
+    utilizationPercent: number;
+    level: string;
+    isEstimate: boolean;
+    compactionSuggested: boolean;
+  } {
+    const budget = this.deps.tokenHealthService.computeBudget(sessionId);
+    const compaction = this.deps.tokenHealthService.suggestCompaction(sessionId);
+    return {
+      budget: budget.limit,
+      used: budget.used,
+      remaining: budget.remaining,
+      threshold: budget.limit,
+      utilizationPercent: budget.utilizationPercent,
+      level: budget.level,
+      isEstimate: budget.isEstimate,
+      compactionSuggested: compaction.suggested,
+    };
+  }
+
+  /**
+   * Phase 12: generate and persist a session summary.
+   * Requires user invocation — never runs automatically.
+   * Emits and ledgers compaction.started/completed around persistence.
+   */
+  summarizeSession(sessionId: string): { summary: string } {
+    const session = this.deps.sessionRepository.findById(sessionId);
+    if (session === undefined) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const messages = this.deps.messageRepository.listBySession(sessionId);
+    if (messages.length === 0) {
+      throw new Error(`No messages to summarize in session ${sessionId}`);
+    }
+
+    const summaryRunId = ulid();
+    const events = new EventPublisher(this.deps.eventBus, sessionId, summaryRunId);
+    const ledger = new RunLedger(
+      this.deps.ledgerRepository,
+      sessionId,
+      summaryRunId
+    );
+
+    events.publishCompactionStarted();
+    ledger.recordCompactionStarted();
+
+    const parts: string[] = [];
+    parts.push(`Project: ${session.projectPath}`);
+
+    const userMessages = messages.filter((m) => m.role === "user");
+    if (userMessages.length > 0) {
+      parts.push(`User goals: ${userMessages.map((m) => truncateForSummary(m.content, 200)).join("; ")}`);
+    }
+
+    const assistantMessages = messages.filter((m) => m.role === "assistant");
+    if (assistantMessages.length > 0) {
+      parts.push(`Assistant responses: ${assistantMessages.length} messages`);
+    }
+
+    const toolMessages = messages.filter((m) => m.role === "tool");
+    if (toolMessages.length > 0) {
+      parts.push(`Tool results: ${toolMessages.length} results`);
+    }
+
+    const summaryContent = parts.join("\n");
+
+    const summaryId = ulid();
+    this.deps.summaryRepository.create({
+      id: summaryId,
+      sessionId,
+      runId: null,
+      summaryType: "session",
+      sourceRangeJson: null,
+      content: summaryContent,
+      qualityStatus: "unchecked",
+      createdAt: new Date().toISOString(),
+      metadataJson: JSON.stringify({
+        messageCount: messages.length,
+        generatedBy: "core",
+      }),
+    });
+
+    events.publishCompactionCompleted(summaryId);
+    ledger.recordCompactionCompleted(summaryId);
+
+    return { summary: summaryContent };
+  }
+
   // ── Private orchestration ──────────────────────────────────────────────────
+
+  /**
+   * Phase 12: compute token health, emit/ledger update, and emit/ledger
+   * warning or compaction suggestion when budget level warrants it.
+   *
+   * Must be re-computed on every call; never stores mutable global state
+   * on SessionRunner.
+   */
+  private emitTokenHealth(
+    sessionId: string,
+    events: EventPublisher,
+    ledger: RunLedger
+  ): void {
+    const budget = this.deps.tokenHealthService.computeBudget(sessionId);
+    const compaction = this.deps.tokenHealthService.suggestCompaction(sessionId);
+    events.publishTokenHealthUpdated({
+      budget: budget.limit,
+      used: budget.used,
+      remaining: budget.remaining,
+      threshold: budget.limit,
+      utilizationPercent: budget.utilizationPercent,
+      level: budget.level,
+      isEstimate: budget.isEstimate,
+      compactionSuggested: compaction.suggested,
+    });
+    ledger.recordTokenHealthUpdated(
+      budget.level,
+      budget.used,
+      budget.limit,
+      budget.utilizationPercent
+    );
+
+    if (budget.level !== "healthy") {
+      const warningMsg =
+        budget.level === "critical"
+          ? `Context nearly exhausted (${budget.utilizationPercent}% used)`
+          : budget.level === "strained"
+            ? `Context usage is high (${budget.utilizationPercent}% used)`
+            : `Context usage is elevated (${budget.utilizationPercent}% used)`;
+      events.publishTokenHealthWarning(budget.level, warningMsg);
+      ledger.recordTokenHealthWarning(budget.level, warningMsg);
+    }
+
+    if (compaction.suggested) {
+      events.publishCompactionSuggested(
+        compaction.currentTokens,
+        compaction.estimatedCompactedTokens,
+        compaction.reason
+      );
+      ledger.recordCompactionSuggested(
+        compaction.currentTokens,
+        compaction.estimatedCompactedTokens
+      );
+    }
+  }
 
   private async executeLoop(
     sessionId: string,
@@ -238,12 +395,14 @@ export class SessionRunner {
 
       // ── Build context ──────────────────────────────────────────────────────
       // The user message for this run is already in storage, so we include it.
-      const context = await this.contextBuilder.build(
+      const context = await this.contextBuilder.build({
         sessionId,
-        undefined,           // no explicit systemPrompt override
-        undefined,           // no run exclusion
-        agentSystemPrompt    // Phase 11: agent system prompt from definition
-      );
+        systemPrompt: undefined,
+        agentSystemPrompt,
+      });
+
+      // Phase 12: compute and emit token health after context build.
+      this.emitTokenHealth(sessionId, events, ledger);
 
       // ── Model call ─────────────────────────────────────────────────────────
       ledger.recordModelCallStarted(iteration);
@@ -276,6 +435,9 @@ export class SessionRunner {
 
       ledger.recordModelCallCompleted(iteration, modelResponse.usage);
       events.publishModelCallCompleted(modelResponse.usage);
+
+      // Phase 12: re-compute token health after model usage is available.
+      this.emitTokenHealth(sessionId, events, ledger);
 
       // ── Handle model response ──────────────────────────────────────────────
       const kind = modelResponse.kind;
@@ -824,6 +986,7 @@ export class SessionRunner {
       }
 
       // ── Persist result ──────────────────────────────────────────────────
+      let truncatedResult: unknown = result.result;
       if (result.error !== undefined) {
         this.deps.toolCallRepository.update(storageId, {
           status: "failed",
@@ -852,10 +1015,41 @@ export class SessionRunner {
           }
         }
       } else {
+        // Phase 12: truncate large tool results before persisting.
+        const rawResultStr = JSON.stringify(result.result);
+        const truncated = this.deps.tokenHealthService.truncateOutput(rawResultStr);
+        if (truncated.meta.truncated) {
+          ledger.recordToolResultTruncated(
+            storageId,
+            rawResultStr.length,
+            truncated.content.length
+          );
+          events.publishToolResultTruncated(
+            storageId,
+            rawResultStr.length,
+            truncated.content.length,
+            truncated.meta.reason
+          );
+        }
+        truncatedResult =
+          truncated.meta.truncated
+            ? {
+                truncated: true,
+                content: truncated.content,
+                metadata: truncated.meta,
+              }
+            : result.result;
+
         this.deps.toolCallRepository.update(storageId, {
           status: "completed",
           completedAt: new Date().toISOString(),
-          resultJson: JSON.stringify(result.result),
+          resultJson: truncated.meta.truncated
+            ? JSON.stringify({
+                truncated: true,
+                content: truncated.content,
+                metadata: truncated.meta,
+              })
+            : truncated.content,
           errorJson: null,
         });
         ledger.recordToolCallCompleted(storageId, request.name);
@@ -916,7 +1110,16 @@ export class SessionRunner {
         }
       }
 
-      results.push(result);
+      // Phase 12: apply truncated result to the return value so
+      // the caller persists truncated content in tool result messages.
+      if (result.error === undefined && truncatedResult !== null && truncatedResult !== undefined) {
+        results.push({
+          ...result,
+          result: truncatedResult,
+        });
+      } else {
+        results.push(result);
+      }
     }
 
     return results;

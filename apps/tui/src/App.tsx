@@ -21,6 +21,9 @@ import {
   clearShellOutput,
   setCurrentAgentId,
   setAvailableAgents,
+  setTokenHealth,
+  setTokenHealthOpen,
+  setCompactionSuggestion,
   PLACEHOLDER_SESSION_ID,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -69,6 +72,12 @@ export function App(): JSX.Element {
     // Escape: close command palette if open
     if (key.name === "escape" && commandPaletteOpen()) {
       setCommandPaletteOpen(false);
+    }
+
+    // Ctrl+T: toggle token health panel
+    if (key.ctrl && key.name === "t") {
+      setTokenHealthOpen((open) => !open);
+      return;
     }
 
     // Phase 11: Agent selection (Ctrl+1 = Build, Ctrl+2 = Plan)
@@ -265,6 +274,79 @@ export function App(): JSX.Element {
       return;
     }
 
+    // ── Phase 12: Token health events ──────────────────────────────────
+
+    if (type === "token_health.updated") {
+      const payload = event.payload as Record<string, unknown>;
+      setTokenHealth({
+        budget: (payload["budget"] as number) ?? 0,
+        used: (payload["used"] as number) ?? 0,
+        remaining: (payload["remaining"] as number) ?? 0,
+        utilizationPercent: (payload["utilizationPercent"] as number) ?? 0,
+        level: (payload["level"] as string) ?? "healthy",
+        isEstimate: (payload["isEstimate"] as boolean) ?? true,
+        compactionSuggested: (payload["compactionSuggested"] as boolean) ?? false,
+      });
+      return;
+    }
+
+    if (type === "token_health.warning") {
+      const payload = event.payload as Record<string, unknown>;
+      const level = payload["level"] as string | undefined;
+      const message = payload["message"] as string | undefined;
+      appendSystemNotice(
+        `Token health (${level ?? "unknown"}): ${message ?? "check usage"}`
+      );
+      return;
+    }
+
+    if (type === "compaction.suggested") {
+      const payload = event.payload as Record<string, unknown>;
+      setCompactionSuggestion({
+        currentTokens: payload["currentTokens"] as number,
+        estimatedCompactedTokens: payload["estimatedCompactedTokens"] as number | undefined,
+        reason: payload["reason"] as string | undefined,
+      });
+      setTokenHealthOpen(true);
+      appendSystemNotice(
+        `Compaction suggested: ${(payload["reason"] as string) ?? "context usage is high"}`
+      );
+      return;
+    }
+
+    if (type === "compaction.started") {
+      appendSystemNotice("Compaction started...");
+      return;
+    }
+
+    if (type === "compaction.completed") {
+      const payload = event.payload as Record<string, unknown>;
+      const summaryId = payload["summaryId"] as string | undefined;
+      appendSystemNotice(
+        `Compaction completed${summaryId !== undefined ? ` (${summaryId})` : ""}`
+      );
+      return;
+    }
+
+    if (type === "compaction.rejected") {
+      setCompactionSuggestion(null);
+      appendSystemNotice("Compaction rejected");
+      return;
+    }
+
+    if (type === "tool_result.truncated") {
+      const payload = event.payload as Record<string, unknown>;
+      const toolCallId = payload["toolCallId"] as string | undefined;
+      const originalLen = payload["originalLength"] as number | undefined;
+      const truncatedLen = payload["truncatedLength"] as number | undefined;
+      if (toolCallId !== undefined && originalLen !== undefined && truncatedLen !== undefined) {
+        appendSystemNotice(
+          `Tool result truncated (${originalLen} → ${truncatedLen} chars)`
+        );
+      }
+      return;
+    }
+
     // token_health.updated, run.*, tool.*, etc. are Phase 6+ events.
     // Silently skip unknown types — do not crash on unexpected events.
   }
@@ -305,10 +387,28 @@ export function App(): JSX.Element {
         // Agent endpoint may not be ready yet — silently ignore.
       });
 
-    // 3. Subscribe to all SSE events
+    // 3. Fetch initial token health on mount
+    sdk.tokenHealth
+      .get(PLACEHOLDER_SESSION_ID, controller.signal)
+      .then((data) => {
+        setTokenHealth({
+          budget: data.budget,
+          used: data.used,
+          remaining: data.remaining,
+          utilizationPercent: data.utilizationPercent,
+          level: data.level,
+          isEstimate: data.isEstimate,
+          compactionSuggested: data.compactionSuggested,
+        });
+      })
+      .catch(() => {
+        // Token health endpoint may not be ready yet — silently ignore.
+      });
+
+    // 4. Subscribe to all SSE events
     sdk.events.onAny(handleEvent);
 
-    // 3. Start SSE stream (runs until disconnect/abort)
+    // 5. Start SSE stream (runs until disconnect/abort)
     //    No auto-reconnect in Phase 4 — restart TUI if SSE drops.
     sdk.events
       .connect(controller.signal)
