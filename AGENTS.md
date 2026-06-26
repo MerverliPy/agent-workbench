@@ -54,8 +54,9 @@ Phase 6 Core Runtime is accepted.
 Phase 7 Read-Only Tools is accepted.
 Phase 8 Permission Engine is accepted.
 Phase 9 File Mutation Tools is accepted.
+Phase 10 Shell Execution is accepted.
 
-Current work is Phase 10: Shell Execution, unless the user explicitly says otherwise.
+Current work is Phase 11: Agent Modes, unless the user explicitly says otherwise.
 
 Phase 10 scope:
 
@@ -90,6 +91,27 @@ Phase 10 must not implement full PTY execution, terminal emulation, token-health
 Do not let model output, TUI code, route handlers, tools, shell utilities, or dry-run/preview code bypass permission checks.
 
 Do not implement future phases unless the active phase explicitly allows it.
+
+Phase 11 scope:
+
+1. Inspect only the relevant Phase 11 docs, decisions, packages/core agent-mode integration, packages/permissions agent-level policy, packages/protocol agent profile schemas, packages/sdk agent selection surface, packages/storage agent persistence (if aligned), packages/events agent events, apps/server agent route integration, and apps/tui agent-mode rendering points before changing files.
+2. Define Build and Plan agent modes.
+3. Add agent profile metadata and selection model.
+4. Ensure selected agent mode is visible to core/runtime.
+5. Ensure permission engine can apply agent-level rules.
+6. Store/version agent definitions or make them version-ready.
+7. Expose enough protocol/server/sdk surface for selecting an agent mode if already aligned with architecture.
+8. TUI may render/select agent mode through SDK/server only.
+9. TUI must not decide agent policy.
+10. Agents cannot bypass permissions.
+11. No subagents.
+12. No delegation system.
+13. No broad planner runtime.
+14. No token-health runtime.
+15. No provider-specific UI.
+16. No unrelated TUI features.
+
+Phase 11 must not implement subagents, delegation, broad planner runtime, token-health runtime, provider-specific UI, full PTY execution, terminal emulation, or future-phase behavior.
 
 Protocol Rules
 
