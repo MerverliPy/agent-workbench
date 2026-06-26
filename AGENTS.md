@@ -56,8 +56,9 @@ Phase 8 Permission Engine is accepted.
 Phase 9 File Mutation Tools is accepted.
 Phase 10 Shell Execution is accepted.
 Phase 11 Agent Modes is accepted.
+Phase 12 Token Health is accepted.
 
-Current work is Phase 12: Token Health, unless the user explicitly says otherwise.
+Current work is Phase 13: Pre-Run Planner, unless the user explicitly says otherwise.
 
 Phase 10 scope:
 
@@ -136,6 +137,37 @@ Phase 12 scope:
 Phase 12 must not implement broad planner runtime, subagents, delegation system, provider-specific UI, full PTY execution, terminal emulation, shell execution changes, file mutation changes, agent-mode expansion beyond Build/Plan, or unrelated TUI features.
 
 Do not let token-health logic, token counting, budget enforcement, trimming, or compaction bypass permissions, agent mode rules, or tool gates.
+
+Do not implement future phases unless the active phase explicitly allows it.
+
+Phase 13 scope:
+
+1. Inspect only the relevant Phase 13 docs, decisions, packages/planner plan structures, packages/core planner orchestration, packages/permissions mutation/permission policy, packages/diff diff preview integration, packages/shell command preview integration, packages/protocol planner schemas, packages/sdk planner surface, packages/storage plan persistence (if aligned), packages/events planner events, apps/server planner route integration, and apps/tui planner rendering points before changing files.
+2. Require an execution plan before mutation and risky operations.
+3. Planner must prepare a bounded plan identifying target files, mutation steps, and risky operations before execution.
+4. Keep packages/planner responsible for plan data structures, plan validation, and plan schema only.
+5. Keep packages/core responsible for orchestrating the planner gate, plan lifecycle, plan events, ledger entries, and integration with permissions/diff/shell/token-health boundaries.
+6. Keep packages/permissions responsible for plan-level approval policy (may deny, ask-gate, or allow plans based on risk).
+7. Keep packages/diff responsible for file diff previews referenced by plans.
+8. Keep packages/shell responsible for command previews referenced by plans.
+9. Ensure mutation plans identify target files and risky steps.
+10. Ensure file mutation still requires dry-run/diff preview where existing architecture enforces it.
+11. Ensure shell commands still require dry-run/command preview where existing architecture enforces it.
+12. Require permission evaluation before plan execution.
+13. Ensure risky plans require approval according to policy.
+14. Ensure planner cannot bypass permissions, diff preview, dry-run, agent modes, tool gates, or token-health boundaries.
+15. Ensure planner must not execute tools directly.
+16. Record plan proposal, plan steps, plan risk classification, permission decisions, and plan execution events in the run ledger where the existing architecture supports it.
+17. Keep the TUI renderer-only: it may display plan summaries, plan steps, plan risk indicators, permission prompts, and ledger entries, but it must not generate plans, validate plans, execute plans, or decide policy.
+18. Keep server route handlers thin: they may expose protocol/API surfaces, but must not execute plans or manage planner lifecycle directly outside the core/planner path.
+19. No subagents.
+20. No delegation system.
+21. No broad autonomous planner runtime beyond bounded pre-mutation plans unless decision 0013 or later confirmation explicitly requires it.
+22. No unrelated cache, token-health, shell, file-mutation, or agent-mode changes.
+
+Phase 13 must not implement broad autonomous planner runtime, subagents, delegation system, provider-specific UI, full PTY execution, terminal emulation, cache implementation, token-health changes, shell execution changes, file mutation changes, agent-mode expansion beyond Build/Plan, or unrelated TUI features.
+
+Do not let planner logic, plan validation, plan gating, or plan execution bypass permissions, agent mode rules, tool gates, diff preview, dry-run, or token-health boundaries.
 
 Do not implement future phases unless the active phase explicitly allows it.
 
