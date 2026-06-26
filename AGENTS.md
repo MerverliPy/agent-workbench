@@ -55,8 +55,9 @@ Phase 7 Read-Only Tools is accepted.
 Phase 8 Permission Engine is accepted.
 Phase 9 File Mutation Tools is accepted.
 Phase 10 Shell Execution is accepted.
+Phase 11 Agent Modes is accepted.
 
-Current work is Phase 11: Agent Modes, unless the user explicitly says otherwise.
+Current work is Phase 12: Token Health, unless the user explicitly says otherwise.
 
 Phase 10 scope:
 
@@ -112,6 +113,31 @@ Phase 11 scope:
 16. No unrelated TUI features.
 
 Phase 11 must not implement subagents, delegation, broad planner runtime, token-health runtime, provider-specific UI, full PTY execution, terminal emulation, or future-phase behavior.
+
+Phase 12 scope:
+
+1. Inspect only the relevant Phase 12 docs, decisions, packages/core token-health orchestration, packages/protocol token-health schemas, packages/sdk token-health surface, packages/storage token-metadata persistence, packages/events token-health events, packages/tokens budget/compaction support, apps/server token-health route integration, and apps/tui token-health rendering points before changing files.
+2. Track context/token health for runs and sessions.
+3. Add context-budget metadata and budget-consumption tracking.
+4. Support summary-ready architecture without broad summarization behavior unless Phase 12 docs explicitly require it.
+5. Define safe context-trimming or warning behavior if aligned with Phase 12 docs.
+6. Emit/ledger token-health updates where existing event/ledger architecture supports it.
+7. Keep packages/core responsible for token/context health calculation, budget enforcement, compaction triggers, and warning application.
+8. Keep packages/tokens responsible for budget models, token counting/estimation, and compaction support.
+9. Keep packages/storage responsible for persisting summaries/token metadata only where existing architecture supports it.
+10. Keep packages/protocol and packages/sdk responsible for exposing token-health state only through typed routes/events.
+11. Keep packages/events responsible for shared token-health event names, event helpers, and event-streaming types only.
+12. Keep the TUI renderer-only: it may display token-health status, budget gauges, warnings, and ledger entries only through SDK/server/events.
+13. TUI must not compute token budgets, summaries, or trimming policy.
+14. Keep server route handlers thin: they may expose protocol/API surfaces, but must not compute token health or trigger compaction directly outside the core/token path.
+15. Keep provider-specific tokenization details minimal unless already abstracted through existing packages/tokens boundaries.
+16. Ensure token-health work cannot bypass permissions, agent mode rules, or tool gates.
+
+Phase 12 must not implement broad planner runtime, subagents, delegation system, provider-specific UI, full PTY execution, terminal emulation, shell execution changes, file mutation changes, agent-mode expansion beyond Build/Plan, or unrelated TUI features.
+
+Do not let token-health logic, token counting, budget enforcement, trimming, or compaction bypass permissions, agent mode rules, or tool gates.
+
+Do not implement future phases unless the active phase explicitly allows it.
 
 Protocol Rules
 
