@@ -3,6 +3,7 @@ import type { EventBus } from "@agent-workbench/events";
 import { EventName } from "@agent-workbench/events";
 import type { EventEnvelope, DiffPreview } from "@agent-workbench/protocol";
 import type { ModelUsage } from "@agent-workbench/models";
+import type { CommandPreview } from "@agent-workbench/shell";
 
 /**
  * Typed wrapper around EventBus for publishing Phase 6 runtime events.
@@ -215,6 +216,83 @@ export class EventPublisher {
       toolCallId,
       path,
       error,
+    });
+  }
+
+  // ── Shell execution (Phase 10) ──────────────────────────────────────────
+
+  publishShellCommandRequested(
+    toolCallId: string,
+    preview: CommandPreview
+  ): void {
+    this.publish(EventName.SHELL_COMMAND_REQUESTED, {
+      toolCallId,
+      preview,
+    });
+  }
+
+  publishShellRiskClassified(
+    toolCallId: string,
+    riskLevel: string,
+    matchedRules: string[]
+  ): void {
+    this.publish(EventName.SHELL_COMMAND_RISK_CLASSIFIED, {
+      toolCallId,
+      riskLevel,
+      matchedRules,
+    });
+  }
+
+  publishShellCommandStarted(toolCallId: string, command: string): void {
+    this.publish(EventName.SHELL_COMMAND_STARTED, {
+      toolCallId,
+      command,
+    });
+  }
+
+  publishShellOutputChunk(
+    toolCallId: string,
+    stream: "stdout" | "stderr",
+    chunk: string
+  ): void {
+    this.publish(EventName.SHELL_OUTPUT_CHUNK, {
+      toolCallId,
+      stream,
+      chunk,
+    });
+  }
+
+  publishShellCommandCompleted(
+    toolCallId: string,
+    exitCode: number | null,
+    timedOut: boolean,
+    truncated: boolean
+  ): void {
+    this.publish(EventName.SHELL_COMMAND_COMPLETED, {
+      toolCallId,
+      exitCode,
+      timedOut,
+      truncated,
+    });
+  }
+
+  publishShellCommandFailed(
+    toolCallId: string,
+    error: string
+  ): void {
+    this.publish(EventName.SHELL_COMMAND_FAILED, {
+      toolCallId,
+      error,
+    });
+  }
+
+  publishShellCommandAborted(
+    toolCallId: string,
+    reason: string
+  ): void {
+    this.publish(EventName.SHELL_COMMAND_ABORTED, {
+      toolCallId,
+      reason,
     });
   }
 

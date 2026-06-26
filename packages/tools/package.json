@@ -20,6 +20,7 @@
     "@agent-workbench/cache": "workspace:*",
     "@agent-workbench/diff": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/shell": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "ulid": "^2.3.0",
     "zod": "^4.4.3"

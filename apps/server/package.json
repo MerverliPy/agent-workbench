@@ -17,6 +17,7 @@
     "@agent-workbench/models": "workspace:*",
     "@agent-workbench/permissions": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/shell": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "@agent-workbench/tools": "workspace:*",
     "hono": "^4.12.27",

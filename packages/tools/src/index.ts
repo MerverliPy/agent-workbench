@@ -62,5 +62,10 @@ export { createRevertLastChangeTool } from "./tools/revert-last-change";
 export type { MutationToolOptions } from "./mutation-context";
 
 // Registration helpers
-export { registerReadOnlyTools, registerMutationTools } from "./register";
+export { registerReadOnlyTools, registerMutationTools, registerShellTool } from "./register";
 export type { RegisterReadOnlyToolsOptions } from "./register";
+
+// Bash shell tool (Phase 10)
+export { BashInput, BashResult, createBashTool } from "./tools/bash";
+export type { BashInput as BashInputType, BashResult as BashResultType } from "./tools/bash";
+export type { BashToolOptions } from "./tools/bash";

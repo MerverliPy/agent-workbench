@@ -24,6 +24,7 @@
     "@agent-workbench/tools": "workspace:*",
     "@agent-workbench/models": "workspace:*",
     "@agent-workbench/permissions": "workspace:*",
+    "@agent-workbench/shell": "workspace:*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

@@ -16,6 +16,9 @@ import {
   setCurrentDiffPreview,
   setDiffViewerOpen,
   setMutationStatus,
+  setShellStatus,
+  appendShellOutputChunk,
+  clearShellOutput,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -161,6 +164,66 @@ export function App(): JSX.Element {
       setMutationStatus("failed");
       appendSystemNotice(
         `Revert failed: ${error ?? "unknown error"}`
+      );
+      return;
+    }
+
+    // ── Phase 10: Shell execution events ───────────────────────────────
+
+    if (type === "shell.command_requested") {
+      const payload = event.payload as Record<string, unknown>;
+      const preview = payload["preview"] as Record<string, unknown> | undefined;
+      if (preview !== undefined) {
+        appendSystemNotice(
+          `Shell command: ${preview["normalized"] ?? "unknown"} (risk: ${preview["riskLevel"] ?? "high"})`
+        );
+      }
+      return;
+    }
+
+    if (type === "shell.command_started") {
+      setShellStatus("running");
+      clearShellOutput();
+      return;
+    }
+
+    if (type === "shell.output_chunk") {
+      const payload = event.payload as Record<string, unknown>;
+      const stream = payload["stream"] as "stdout" | "stderr" | undefined;
+      const chunk = payload["chunk"] as string | undefined;
+      if (stream !== undefined && chunk !== undefined) {
+        appendShellOutputChunk({ stream, chunk });
+      }
+      return;
+    }
+
+    if (type === "shell.command_completed") {
+      const payload = event.payload as Record<string, unknown>;
+      const exitCode = payload["exitCode"];
+      const timedOut = payload["timedOut"];
+      setShellStatus("completed");
+      appendSystemNotice(
+        `Shell command completed (exit code: ${exitCode ?? "null"}${timedOut ? ", timed out" : ""})`
+      );
+      return;
+    }
+
+    if (type === "shell.command_failed") {
+      const payload = event.payload as Record<string, unknown>;
+      const error = payload["error"] as string | undefined;
+      setShellStatus("failed");
+      appendSystemNotice(
+        `Shell command failed: ${error ?? "unknown error"}`
+      );
+      return;
+    }
+
+    if (type === "shell.command_aborted") {
+      const payload = event.payload as Record<string, unknown>;
+      const reason = payload["reason"] as string | undefined;
+      setShellStatus("aborted");
+      appendSystemNotice(
+        `Shell command aborted: ${reason ?? "unknown reason"}`
       );
       return;
     }

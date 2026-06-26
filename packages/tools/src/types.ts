@@ -23,6 +23,10 @@ export interface ToolExecutionContext {
   projectRoot: string;
   /** Abort signal forwarded from the run's AbortController. */
   signal?: AbortSignal;
+  /** Phase 10: stdout chunk callback for shell tools. */
+  onStdout?: (chunk: string) => void;
+  /** Phase 10: stderr chunk callback for shell tools. */
+  onStderr?: (chunk: string) => void;
 }
 
 /**

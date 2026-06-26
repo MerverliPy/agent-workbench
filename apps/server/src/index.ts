@@ -2,7 +2,7 @@ import { SessionRunner } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
 import { StubModelProvider } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import { ToolRegistry, registerReadOnlyTools, registerMutationTools } from "@agent-workbench/tools";
+import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
 import {
   createStorageConnection,
   runMigrations,
@@ -15,6 +15,7 @@ import {
   PermissionRepository,
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
+import { SimpleCommandRunner } from "@agent-workbench/shell";
 import { createApp } from "./app";
 import { getServerConfig } from "./config";
 
@@ -46,12 +47,17 @@ const permissionGate = new PermissionGate();
 // Phase 7: session-scoped tool result cache backed by the cache_entries table.
 const toolCache = new ToolCache(cacheRepository);
 
+// ── Phase 10: Shell command runner ────────────────────────────────────────────
+const shellRunner = new SimpleCommandRunner();
+
 // ── Tools ────────────────────────────────────────────────────────────────────
 // Phase 7: register read, grep, and glob read-only tools.
 // Phase 9: register write, edit, apply_patch, diff_preview, revert_last_change.
+// Phase 10: register bash shell tool.
 const toolRegistry = new ToolRegistry();
 registerReadOnlyTools(toolRegistry, { cache: toolCache });
 registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
+registerShellTool(toolRegistry, { shellRunner });
 
 // ── Model provider ───────────────────────────────────────────────────────────
 // Phase 6: stub provider. Real adapters will be added in a future phase.
@@ -71,6 +77,7 @@ const sessionRunner = new SessionRunner({
   modelProvider,
   permissionEngine,
   permissionGate,
+  shellRunner,
 });
 
 // ── Server ───────────────────────────────────────────────────────────────────
@@ -89,7 +96,7 @@ const app = createApp({
 });
 
 console.log(`[server] Binding to http://${config.host}:${config.port}`);
-console.log("[server] Phase 9 — File Mutation Tools active");
+console.log("[server] Phase 10 — Shell Execution active");
 console.log(`[server] Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
 console.log("[server] Using StubModelProvider (real providers are a future phase)");
 

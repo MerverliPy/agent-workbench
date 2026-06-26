@@ -10,6 +10,7 @@ const Category = {
   PERMISSION: "permission",
   DIFF: "diff",
   FILE: "file",
+  SHELL: "shell",
   ERROR: "error",
 } as const;
 
@@ -396,6 +397,103 @@ export class RunLedger {
       Actor.TOOL,
       `File revert failed: ${path}: ${error}`,
       { toolCallId, path, error }
+    );
+  }
+
+  // ── Shell execution (Phase 10) ──────────────────────────────────────────
+
+  recordShellCommandRequested(
+    toolCallId: string,
+    command: string
+  ): void {
+    this.record(
+      "shell.command_requested",
+      Category.SHELL,
+      Actor.AGENT,
+      `Shell command requested: ${command}`,
+      { toolCallId, command }
+    );
+  }
+
+  recordShellRiskClassified(
+    toolCallId: string,
+    riskLevel: string,
+    matchedRules: string[]
+  ): void {
+    this.record(
+      "shell.command_risk_classified",
+      Category.SHELL,
+      Actor.SYSTEM,
+      `Shell command risk classified: ${riskLevel}`,
+      { toolCallId, riskLevel, matchedRules }
+    );
+  }
+
+  recordShellCommandStarted(
+    toolCallId: string,
+    command: string
+  ): void {
+    this.record(
+      "shell.command_started",
+      Category.SHELL,
+      Actor.TOOL,
+      `Shell command started: ${command}`,
+      { toolCallId, command }
+    );
+  }
+
+  recordShellOutputChunk(
+    toolCallId: string,
+    stream: string,
+    chunkLength: number
+  ): void {
+    this.record(
+      "shell.output_chunk",
+      Category.SHELL,
+      Actor.TOOL,
+      `Shell ${stream} chunk (${chunkLength} bytes)`,
+      { toolCallId, stream, chunkLength }
+    );
+  }
+
+  recordShellCommandCompleted(
+    toolCallId: string,
+    exitCode: number | null,
+    timedOut: boolean,
+    truncated: boolean
+  ): void {
+    this.record(
+      "shell.command_completed",
+      Category.SHELL,
+      Actor.TOOL,
+      `Shell command completed (exit ${exitCode})`,
+      { toolCallId, exitCode, timedOut, truncated }
+    );
+  }
+
+  recordShellCommandFailed(
+    toolCallId: string,
+    error: string
+  ): void {
+    this.record(
+      "shell.command_failed",
+      Category.SHELL,
+      Actor.TOOL,
+      `Shell command failed: ${error}`,
+      { toolCallId, error }
+    );
+  }
+
+  recordShellCommandAborted(
+    toolCallId: string,
+    reason: string
+  ): void {
+    this.record(
+      "shell.command_aborted",
+      Category.SHELL,
+      Actor.TOOL,
+      `Shell command aborted: ${reason}`,
+      { toolCallId, reason }
     );
   }
 

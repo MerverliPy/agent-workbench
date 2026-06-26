@@ -86,6 +86,17 @@ export const EventName = {
    * Emitted by core when a revert attempt fails.
    */
   FILE_REVERT_FAILED: "file.revert_failed",
+
+  // ── Shell execution events (Phase 10) ────────────────────────────────────
+  // Event names are provisional — see LEDGER-001 in docs/13_RUN_LEDGER_MODEL.md.
+
+  SHELL_COMMAND_REQUESTED: "shell.command_requested",
+  SHELL_COMMAND_RISK_CLASSIFIED: "shell.command_risk_classified",
+  SHELL_COMMAND_STARTED: "shell.command_started",
+  SHELL_OUTPUT_CHUNK: "shell.output_chunk",
+  SHELL_COMMAND_COMPLETED: "shell.command_completed",
+  SHELL_COMMAND_FAILED: "shell.command_failed",
+  SHELL_COMMAND_ABORTED: "shell.command_aborted",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

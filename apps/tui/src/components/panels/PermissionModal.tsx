@@ -53,6 +53,24 @@ export function PermissionModal(): JSX.Element {
   const reason = () => firstRequest()?.reason ?? "(no reason provided)";
   const paths = () => firstRequest()?.targetPaths?.join(", ") ?? "";
 
+  // Phase 10: shell command preview data from the permission request payload.
+  const command = () => firstRequest()?.command ?? "";
+  const normalizedCommand = () => {
+    const preview = firstRequest()?.commandPreview as Record<string, unknown> | undefined;
+    if (preview !== undefined && typeof preview["normalized"] === "string") {
+      return preview["normalized"];
+    }
+    return command();
+  };
+  const isBash = () => toolName() === "bash";
+  const matchedRules = () => {
+    const preview = firstRequest()?.commandPreview as Record<string, unknown> | undefined;
+    if (preview !== undefined && Array.isArray(preview["matchedRules"])) {
+      return preview["matchedRules"] as string[];
+    }
+    return [];
+  };
+
   return (
     <Show when={hasRequest()}>
       <box
@@ -69,7 +87,18 @@ export function PermissionModal(): JSX.Element {
         padding={1}
       >
         <text content={`Tool:      ${toolName()}  ${riskLabel()}`} />
-        <text content={`Reason:    ${reason()}`} />
+        <Show when={isBash() && normalizedCommand().length > 0}>
+          <text content={`Command:   ${normalizedCommand()}`} />
+          <Show when={matchedRules().length > 0}>
+            <text content={`Matched:   ${matchedRules().join(", ")}`} />
+          </Show>
+        </Show>
+        <Show when={!isBash()}>
+          <text content={`Reason:    ${reason()}`} />
+        </Show>
+        <Show when={isBash()}>
+          <text content={`Risk:      ${reason()}`} />
+        </Show>
         <Show when={paths().length > 0}>
           <text content={`Paths:     ${paths()}`} />
         </Show>

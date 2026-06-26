@@ -125,3 +125,25 @@ export const [currentDiffPreview, setCurrentDiffPreview] =
 export const [mutationStatus, setMutationStatus] = createSignal<
   "idle" | "proposed" | "applied" | "failed" | "reverting" | "reverted"
 >("idle");
+
+// ── Phase 10: Shell execution state ──────────────────────────────────────
+
+export type ShellStatus = "idle" | "running" | "completed" | "failed" | "aborted";
+
+export const [shellStatus, setShellStatus] = createSignal<ShellStatus>("idle");
+
+export interface ShellOutputChunk {
+  stream: "stdout" | "stderr";
+  chunk: string;
+}
+
+export const [shellOutputChunks, setShellOutputChunks] = createSignal<ShellOutputChunk[]>([]);
+
+export function appendShellOutputChunk(chunk: ShellOutputChunk): void {
+  setShellOutputChunks((prev) => [...prev, chunk]);
+}
+
+export function clearShellOutput(): void {
+  setShellOutputChunks([]);
+  setShellStatus("idle");
+}

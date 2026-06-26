@@ -23,6 +23,7 @@ export const PermissionRequest = z.object({
   command: z.string().optional(),
   diffSummary: z.string().optional(),
   dryRunSummary: z.string().optional(),
+  commandPreview: z.unknown().optional(),
   status: PermissionRequestStatus,
   createdAt: Timestamp,
   expiresAt: Timestamp.optional(),

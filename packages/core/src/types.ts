@@ -86,6 +86,8 @@ export interface CoreDependencies {
   // Phase 8: permission evaluation and ask-gate
   permissionEngine: import("@agent-workbench/permissions").PermissionEngine;
   permissionGate: import("@agent-workbench/permissions").PermissionGate;
+  // Phase 10: shell command runner
+  shellRunner: import("@agent-workbench/shell").SimpleCommandRunner;
 }
 
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */

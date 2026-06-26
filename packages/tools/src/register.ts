@@ -20,6 +20,9 @@ import { createDiffPreviewTool } from "./tools/diff-preview";
 import { createRevertLastChangeTool } from "./tools/revert-last-change";
 import type { MutationToolOptions } from "./mutation-context";
 
+// Phase 10 bash tool
+import { createBashTool, type BashToolOptions } from "./tools/bash";
+
 export interface RegisterReadOnlyToolsOptions {
   /** Optional session-scoped cache for read/grep/glob results. */
   cache?: ToolCache;
@@ -62,4 +65,17 @@ export function registerMutationTools(
   registry.register(createApplyPatchTool(options));
   registry.register(createDiffPreviewTool());
   registry.register(createRevertLastChangeTool(options));
+}
+
+/**
+ * Register the Phase 10 bash shell tool into `registry`.
+ *
+ * @param registry  The ToolRegistry instance.
+ * @param options   Required shell runner dependency.
+ */
+export function registerShellTool(
+  registry: ToolRegistry,
+  options: BashToolOptions
+): void {
+  registry.register(createBashTool(options));
 }

@@ -11,6 +11,8 @@ import type { ToolExecutionContext } from "@agent-workbench/tools";
 import { assertSafePath } from "@agent-workbench/tools";
 import { generateDiffPreview, extractDiffParams } from "@agent-workbench/diff";
 import type { DiffPreview } from "@agent-workbench/protocol";
+import { previewCommand } from "@agent-workbench/shell";
+import type { CommandPreview } from "@agent-workbench/shell";
 
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
@@ -388,6 +390,58 @@ export class SessionRunner {
       ledger.recordToolCallRequested(storageId, request.name);
       events.publishToolCallRequested(storageId, request.name);
 
+      // ── Phase 10: Shell preview for bash tools ────────────────────────
+      // For bash: generate a static command preview BEFORE the permission
+      // gate. The preview classifies risk and detects destructive patterns
+      // without executing the command. Preview failure for malformed input
+      // is fatal — no execution without a valid preview.
+      let commandPreview: CommandPreview | undefined;
+      let command: string | undefined;
+      let dryRunSummaryJson: string | null = null;
+
+      if (request.name === "bash") {
+        command = extractBashCommand(request.input);
+        if (command === undefined || command.trim().length === 0) {
+          const reason = "bash: missing or empty command";
+          this.deps.toolCallRepository.update(storageId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+            errorJson: JSON.stringify({ error: reason }),
+          });
+          ledger.recordToolCallFailed(storageId, request.name, reason);
+          events.publishToolCallFailed(storageId, request.name, reason);
+          results.push({
+            id: storageId,
+            modelCallId: request.modelCallId,
+            name: request.name,
+            result: null,
+            error: reason,
+          });
+          continue;
+        }
+
+        commandPreview = previewCommand(command, projectPath);
+        dryRunSummaryJson = JSON.stringify({
+          normalized: commandPreview.normalized,
+          baseBinary: commandPreview.baseBinary,
+          riskLevel: commandPreview.riskLevel,
+          matchedRules: commandPreview.matchedRules,
+        });
+
+        ledger.recordShellCommandRequested(storageId, command);
+        events.publishShellCommandRequested(storageId, commandPreview);
+        ledger.recordShellRiskClassified(
+          storageId,
+          commandPreview.riskLevel,
+          commandPreview.matchedRules
+        );
+        events.publishShellRiskClassified(
+          storageId,
+          commandPreview.riskLevel,
+          commandPreview.matchedRules
+        );
+      }
+
       // ── Phase 9: Diff preview for mutation tools ──────────────────────
       // For write/edit/apply_patch: preview is REQUIRED before the permission
       // gate. Path safety (containment + sensitive-path) is enforced BEFORE
@@ -495,7 +549,7 @@ export class SessionRunner {
       const evalResult = this.deps.permissionEngine.evaluate({
         toolName: request.name,
         ...(targetPaths !== undefined ? { targetPaths } : {}),
-        // command is undefined in Phase 8 — bash tool not yet implemented
+        ...(command !== undefined ? { command } : {}),
         // agentId is undefined — agent modes not yet implemented (Phase 11)
       });
 
@@ -519,9 +573,9 @@ export class SessionRunner {
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
           targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
-          command: null,
+          command: command ?? null,
           diffSummaryJson,
-          dryRunSummaryJson: null,
+          dryRunSummaryJson,
           status: "denied",
           createdAt: new Date().toISOString(),
           expiresAt: null,
@@ -563,6 +617,9 @@ export class SessionRunner {
           targetPaths,
           // Include diff preview for the TUI permission modal to render.
           diffPreview: diffPreview ?? null,
+          // Phase 10: include command and command preview for bash tools.
+          command: command ?? null,
+          commandPreview: commandPreview ?? null,
           status: "pending",
           createdAt: now,
         };
@@ -578,9 +635,9 @@ export class SessionRunner {
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
           targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
-          command: null,
+          command: command ?? null,
           diffSummaryJson,
-          dryRunSummaryJson: null,
+          dryRunSummaryJson,
           status: "pending",
           createdAt: now,
           expiresAt: null,
@@ -647,6 +704,12 @@ export class SessionRunner {
       ledger.recordToolCallStarted(storageId, request.name);
       events.publishToolCallStarted(storageId, request.name);
 
+      // Phase 10: emit shell.command_started for bash tools.
+      if (request.name === "bash" && command !== undefined) {
+        ledger.recordShellCommandStarted(storageId, command);
+        events.publishShellCommandStarted(storageId, command);
+      }
+
       this.deps.toolCallRepository.update(storageId, { status: "running" });
 
       // Phase 9: for revert_last_change, record the attempt before execution.
@@ -657,12 +720,26 @@ export class SessionRunner {
       }
 
       // Build the execution context for Phase 7 tools.
+      // Phase 10: include stdout/stderr chunk callbacks for bash tools
+      // so the core can emit shell.output_chunk events during execution.
       const execContext: ToolExecutionContext = {
         sessionId,
         runId,
         toolCallId: storageId,
         projectRoot: projectPath,
         signal,
+        ...(request.name === "bash"
+          ? {
+              onStdout: (chunk: string) => {
+                ledger.recordShellOutputChunk(storageId, "stdout", Buffer.byteLength(chunk, "utf8"));
+                events.publishShellOutputChunk(storageId, "stdout", chunk);
+              },
+              onStderr: (chunk: string) => {
+                ledger.recordShellOutputChunk(storageId, "stderr", Buffer.byteLength(chunk, "utf8"));
+                events.publishShellOutputChunk(storageId, "stderr", chunk);
+              },
+            }
+          : {}),
       };
 
       const result = await this.toolDispatcher.dispatch(request, execContext);
@@ -673,6 +750,13 @@ export class SessionRunner {
           completedAt: new Date().toISOString(),
           errorJson: JSON.stringify({ reason: "aborted" }),
         });
+
+        // Phase 10: emit shell.command_aborted for bash tools.
+        if (request.name === "bash") {
+          ledger.recordShellCommandAborted(storageId, "aborted by signal");
+          events.publishShellCommandAborted(storageId, "aborted by signal");
+        }
+
         events.publishToolCallAborted(storageId, request.name);
         break;
       }
@@ -687,6 +771,12 @@ export class SessionRunner {
         });
         ledger.recordToolCallFailed(storageId, request.name, result.error);
         events.publishToolCallFailed(storageId, request.name, result.error);
+
+        // Phase 10: emit shell.command_failed for bash tools.
+        if (request.name === "bash") {
+          ledger.recordShellCommandFailed(storageId, result.error);
+          events.publishShellCommandFailed(storageId, result.error);
+        }
 
         // Phase 9: emit file-mutation-specific failure events.
         if (MUTATION_TOOLS.has(request.name)) {
@@ -708,6 +798,32 @@ export class SessionRunner {
         });
         ledger.recordToolCallCompleted(storageId, request.name);
         events.publishToolCallCompleted(storageId, request.name);
+
+        // Phase 10: emit shell.command_completed for bash tools.
+        if (request.name === "bash") {
+          const shellResult =
+            result.result !== null && typeof result.result === "object"
+              ? (result.result as Record<string, unknown>)
+              : {};
+          const exitCode =
+            typeof shellResult["exitCode"] === "number"
+              ? shellResult["exitCode"]
+              : null;
+          const timedOut = shellResult["timedOut"] === true;
+          const truncated = shellResult["truncated"] === true;
+          ledger.recordShellCommandCompleted(
+            storageId,
+            exitCode,
+            timedOut,
+            truncated
+          );
+          events.publishShellCommandCompleted(
+            storageId,
+            exitCode,
+            timedOut,
+            truncated
+          );
+        }
 
         // Phase 9: emit file-mutation-specific success events.
         if (MUTATION_TOOLS.has(request.name)) {
@@ -812,5 +928,18 @@ function extractTargetPaths(input: unknown): string[] | undefined {
     }
   }
 
+  return undefined;
+}
+
+/**
+ * Extract command string from bash tool input.
+ * Returns undefined if input is not an object or has no command field.
+ */
+function extractBashCommand(input: unknown): string | undefined {
+  if (input === null || typeof input !== "object") return undefined;
+  const obj = input as Record<string, unknown>;
+  if (typeof obj["command"] === "string" && obj["command"].trim().length > 0) {
+    return obj["command"];
+  }
   return undefined;
 }
