@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import type { PermissionRequest, DiffPreview } from "@agent-workbench/protocol";
+import type { PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
 
 /**
  * Placeholder session ID used while server session APIs return 501.
@@ -146,4 +146,20 @@ export function appendShellOutputChunk(chunk: ShellOutputChunk): void {
 export function clearShellOutput(): void {
   setShellOutputChunks([]);
   setShellStatus("idle");
+}
+
+// ── Phase 11: Agent mode state ─────────────────────────────────────────
+
+export const [currentAgentId, setCurrentAgentId] = createSignal<string | null>(null);
+
+export interface AgentInfo {
+  id: string;
+  name: string;
+  mode: string;
+}
+
+export const [availableAgents, setAvailableAgents] = createSignal<AgentInfo[]>([]);
+
+export function selectAgent(agentId: string): void {
+  setCurrentAgentId(agentId);
 }

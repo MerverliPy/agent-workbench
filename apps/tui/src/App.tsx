@@ -1,7 +1,7 @@
 import type { JSX } from "@opentui/solid";
 import { onMount, onCleanup } from "solid-js";
 import { useKeyboard } from "@opentui/solid";
-import type { EventEnvelope, PermissionRequest, DiffPreview } from "@agent-workbench/protocol";
+import type { EventEnvelope, PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
 import { sdk } from "./lib/sdk";
 import {
   setServerStatus,
@@ -19,6 +19,9 @@ import {
   setShellStatus,
   appendShellOutputChunk,
   clearShellOutput,
+  setCurrentAgentId,
+  setAvailableAgents,
+  PLACEHOLDER_SESSION_ID,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -41,6 +44,19 @@ import { AppLayout } from "./components/layout/AppLayout";
  *  - No permission policy decisions
  */
 export function App(): JSX.Element {
+  // ── Phase 11: Agent selection helper ─────────────────────────────────────
+
+  async function selectAgent(agentId: string): Promise<void> {
+    setCurrentAgentId(agentId);
+    try {
+      await sdk.sessions.update(PLACEHOLDER_SESSION_ID, { activeAgent: agentId as "build" | "plan" });
+    } catch {
+      // Session may not exist yet — local state already updated; server update
+      // will be retried on next full session creation.
+    }
+    appendSystemNotice(`Agent switched to ${agentId}`);
+  }
+
   // ── Global keyboard handling ─────────────────────────────────────────────
 
   useKeyboard((key) => {
@@ -53,6 +69,16 @@ export function App(): JSX.Element {
     // Escape: close command palette if open
     if (key.name === "escape" && commandPaletteOpen()) {
       setCommandPaletteOpen(false);
+    }
+
+    // Phase 11: Agent selection (Ctrl+1 = Build, Ctrl+2 = Plan)
+    if (key.ctrl && key.name === "1") {
+      void selectAgent("build");
+      return;
+    }
+    if (key.ctrl && key.name === "2") {
+      void selectAgent("plan");
+      return;
     }
   });
 
@@ -228,6 +254,17 @@ export function App(): JSX.Element {
       return;
     }
 
+    // ── Phase 11: Agent events ──────────────────────────────────────────
+
+    if (type === "agent.selected") {
+      const payload = event.payload as Record<string, unknown>;
+      const agentId = payload["agentId"] as string | undefined;
+      if (agentId !== undefined) {
+        setCurrentAgentId(agentId);
+      }
+      return;
+    }
+
     // token_health.updated, run.*, tool.*, etc. are Phase 6+ events.
     // Silently skip unknown types — do not crash on unexpected events.
   }
@@ -256,7 +293,19 @@ export function App(): JSX.Element {
         );
       });
 
-    // 2. Subscribe to all SSE events
+    // 2. Load available agents
+    sdk.agents
+      .list(controller.signal)
+      .then((items: AgentListItem[]) => {
+        setAvailableAgents(
+          items.map((a: AgentListItem) => ({ id: a.id, name: a.name, mode: a.mode }))
+        );
+      })
+      .catch(() => {
+        // Agent endpoint may not be ready yet — silently ignore.
+      });
+
+    // 3. Subscribe to all SSE events
     sdk.events.onAny(handleEvent);
 
     // 3. Start SSE stream (runs until disconnect/abort)

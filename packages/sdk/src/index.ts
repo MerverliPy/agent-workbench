@@ -18,5 +18,6 @@ export {
   PermissionResource,
   ToolResource,
   TuiResource,
+  AgentResource,
   AuthResource,
 } from "./resources";

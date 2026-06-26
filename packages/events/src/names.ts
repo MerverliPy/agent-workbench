@@ -97,6 +97,9 @@ export const EventName = {
   SHELL_COMMAND_COMPLETED: "shell.command_completed",
   SHELL_COMMAND_FAILED: "shell.command_failed",
   SHELL_COMMAND_ABORTED: "shell.command_aborted",
+
+  AGENT_SELECTED: "agent.selected",
+  AGENT_PROFILE_APPLIED: "agent.profile_applied",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

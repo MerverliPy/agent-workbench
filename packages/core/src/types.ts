@@ -56,6 +56,11 @@ export interface RunOptions {
   systemPrompt?: string;
   /** Maximum model/tool loop iterations before the run is aborted. Default 20. */
   maxIterations?: number;
+  /**
+   * Override the active agent for this run.
+   * When undefined, falls back to session.activeAgent then "build".
+   */
+  agentId?: string;
 }
 
 /** Return value of a completed (or aborted) run. */
@@ -88,6 +93,8 @@ export interface CoreDependencies {
   permissionGate: import("@agent-workbench/permissions").PermissionGate;
   // Phase 10: shell command runner
   shellRunner: import("@agent-workbench/shell").SimpleCommandRunner;
+  // Phase 11: agent registry
+  agentRegistry: import("./agent").AgentRegistry;
 }
 
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */

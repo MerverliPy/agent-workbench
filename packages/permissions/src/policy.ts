@@ -282,16 +282,144 @@ const COMMAND_RULES: PermissionPolicy["commandRules"] = [
 // ── Agent-level rules ────────────────────────────────────────────────────────
 
 /**
- * Agent-level policy overrides.
+ * Agent-level policy overrides for Phase 11 agent modes.
  *
- * Empty in Phase 8. Agent modes (Build, Plan) are introduced in Phase 11.
- * This array exists as a structural placeholder so the engine's evaluation
- * path is complete and tested now.
+ * Build agent: explicit rules matching the normal posture.
+ * Plan agent: restricted posture — mutation tools denied, read-only allowed, bash ask.
  *
- * Phase 11 will populate this based on docs/09_AGENT_MODEL.md and
- * docs/05_PERMISSION_MODEL.md §5 agent-level examples.
+ * Command hard-deny rules still apply first regardless of agent.
+ * Path rules still apply for sensitive paths regardless of agent.
  */
-const AGENT_RULES: PermissionPolicy["agentRules"] = [];
+const AGENT_RULES: PermissionPolicy["agentRules"] = [
+  // ── Build agent (normal posture) ─────────────────────────────────────────
+  {
+    agentId: "build",
+    toolName: "read",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Build agent: read-only file access is allowed.",
+  },
+  {
+    agentId: "build",
+    toolName: "grep",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Build agent: read-only file search is allowed.",
+  },
+  {
+    agentId: "build",
+    toolName: "glob",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Build agent: read-only path enumeration is allowed.",
+  },
+  {
+    agentId: "build",
+    toolName: "diff_preview",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Build agent: diff preview is safe read-only and allowed.",
+  },
+  {
+    agentId: "build",
+    toolName: "write",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Build agent: writing files requires user approval.",
+  },
+  {
+    agentId: "build",
+    toolName: "edit",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Build agent: editing files requires user approval.",
+  },
+  {
+    agentId: "build",
+    toolName: "apply_patch",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Build agent: applying patches requires user approval.",
+  },
+  {
+    agentId: "build",
+    toolName: "revert_last_change",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Build agent: reverting changes requires user approval.",
+  },
+  {
+    agentId: "build",
+    toolName: "bash",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Build agent: shell commands require user approval.",
+  },
+  // ── Plan agent (restricted posture) ─────────────────────────────────────
+  {
+    agentId: "plan",
+    toolName: "read",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Plan agent: read-only file access is allowed.",
+  },
+  {
+    agentId: "plan",
+    toolName: "grep",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Plan agent: read-only file search is allowed.",
+  },
+  {
+    agentId: "plan",
+    toolName: "glob",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Plan agent: read-only path enumeration is allowed.",
+  },
+  {
+    agentId: "plan",
+    toolName: "diff_preview",
+    outcome: "allow",
+    riskLevel: "low",
+    reason: "Plan agent: diff preview is safe read-only and allowed.",
+  },
+  {
+    agentId: "plan",
+    toolName: "bash",
+    outcome: "ask",
+    riskLevel: "high",
+    reason: "Plan agent: shell commands require user approval.",
+  },
+  {
+    agentId: "plan",
+    toolName: "write",
+    outcome: "deny",
+    riskLevel: "high",
+    reason: "Plan agent: file writing is denied (planning-first posture).",
+  },
+  {
+    agentId: "plan",
+    toolName: "edit",
+    outcome: "deny",
+    riskLevel: "high",
+    reason: "Plan agent: file editing is denied (planning-first posture).",
+  },
+  {
+    agentId: "plan",
+    toolName: "apply_patch",
+    outcome: "deny",
+    riskLevel: "high",
+    reason: "Plan agent: patch application is denied (planning-first posture).",
+  },
+  {
+    agentId: "plan",
+    toolName: "revert_last_change",
+    outcome: "deny",
+    riskLevel: "high",
+    reason: "Plan agent: revert is denied (planning-first posture).",
+  },
+];
 
 // ── Exported default policy ──────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
 import { z } from "zod/v4";
 import { Ulid, Timestamp } from "./common";
+import { AgentId } from "./agent";
 
 export const SessionStatus = z.enum(["active", "idle", "aborted", "archived", "deleted"]);
 export type SessionStatus = z.infer<typeof SessionStatus>;
@@ -8,7 +9,7 @@ export const Session = z.object({
   id: Ulid,
   projectPath: z.string(),
   title: z.string().optional(),
-  activeAgent: z.string().optional(),
+  activeAgent: AgentId.optional(),
   status: SessionStatus,
   createdAt: Timestamp,
   updatedAt: Timestamp,
@@ -25,7 +26,7 @@ export type CreateSessionRequest = z.infer<typeof CreateSessionRequest>;
 
 export const UpdateSessionRequest = z.object({
   title: z.string().optional(),
-  activeAgent: z.string().optional(),
+  activeAgent: AgentId.optional(),
   status: SessionStatus.optional(),
 });
 export type UpdateSessionRequest = z.infer<typeof UpdateSessionRequest>;

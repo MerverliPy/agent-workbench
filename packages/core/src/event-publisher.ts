@@ -296,6 +296,16 @@ export class EventPublisher {
     });
   }
 
+  // ── Agent (Phase 11) ───────────────────────────────────────────────────────
+
+  publishAgentSelected(agentId: string, previousAgentId?: string): void {
+    this.publish(EventName.AGENT_SELECTED, { agentId, previousAgentId });
+  }
+
+  publishAgentProfileApplied(agentId: string): void {
+    this.publish(EventName.AGENT_PROFILE_APPLIED, { agentId });
+  }
+
   // ── Internal helper ─────────────────────────────────────────────────────────
 
   private publish(type: string, payload: unknown): void {

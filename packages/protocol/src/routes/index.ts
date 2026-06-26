@@ -9,4 +9,5 @@ export * from "./file";
 export * from "./permission";
 export * from "./tool";
 export * from "./tui";
+export * from "./agent";
 export * from "./auth";

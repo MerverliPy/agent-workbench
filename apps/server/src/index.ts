@@ -1,4 +1,4 @@
-import { SessionRunner } from "@agent-workbench/core";
+import { SessionRunner, AgentRegistry } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
 import { StubModelProvider } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
@@ -65,6 +65,9 @@ const modelProvider = new StubModelProvider({
   textResponse: "Hello! I am the agent-workbench stub assistant. Real model providers will be added in a future phase.",
 });
 
+// ── Phase 11: Agent registry ──────────────────────────────────────────────────
+const agentRegistry = new AgentRegistry();
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -78,6 +81,7 @@ const sessionRunner = new SessionRunner({
   permissionEngine,
   permissionGate,
   shellRunner,
+  agentRegistry,
 });
 
 // ── Server ───────────────────────────────────────────────────────────────────
@@ -92,6 +96,7 @@ const app = createApp({
     permissionRepository,
     permissionEngine,
     permissionGate,
+    agentRegistry,
   },
 });
 

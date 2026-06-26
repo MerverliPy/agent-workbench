@@ -9,6 +9,9 @@ import {
   SummarizeSessionRoute,
   DeleteSessionRoute,
 } from "@agent-workbench/protocol";
+import { RunLedger } from "@agent-workbench/core";
+import { EventName } from "@agent-workbench/events";
+import type { EventEnvelope } from "@agent-workbench/protocol";
 import { ApiError } from "../errors";
 import type { ServerAppBindings, ServerServices } from "../context";
 import { createJsonRouteHandler } from "./helpers";
@@ -91,7 +94,7 @@ export function registerSessionRoutes(
       const { sessionId } = validated.pathParams as { sessionId: string };
       const body = validated.body as {
         title?: string;
-        activeAgent?: string;
+        activeAgent?: "build" | "plan";
         status?: string;
       };
       const existing = sessionRepository.findById(sessionId);
@@ -103,6 +106,13 @@ export function registerSessionRoutes(
           recoverable: true,
         });
       }
+
+      // Phase 11: capture previous agent before update for event/ledger.
+      const previousAgentId = existing.activeAgent;
+      const agentChanged =
+        body.activeAgent !== undefined &&
+        body.activeAgent !== existing.activeAgent;
+
       const updated = sessionRepository.update(sessionId, {
         ...(body.title !== undefined ? { title: body.title } : {}),
         ...(body.activeAgent !== undefined
@@ -119,6 +129,35 @@ export function registerSessionRoutes(
           recoverable: false,
         });
       }
+
+      // Phase 11: emit and ledger after successful persistence.
+      if (agentChanged && body.activeAgent !== undefined) {
+        const agentProfile = services.agentRegistry.get(body.activeAgent);
+        if (agentProfile !== undefined) {
+          const now = new Date().toISOString();
+          const event: EventEnvelope = {
+            id: ulid(),
+            type: EventName.AGENT_SELECTED,
+            sessionId,
+            runId: undefined,
+            timestamp: now,
+            payload: {
+              agentId: body.activeAgent,
+              previousAgentId: previousAgentId ?? null,
+              promptVersion: agentProfile.promptVersion,
+            },
+          };
+          services.eventBus.publish(event);
+
+          const ledger = new RunLedger(
+            services.ledgerRepository,
+            sessionId,
+            undefined
+          );
+          ledger.recordAgentSelected(body.activeAgent, agentProfile.promptVersion);
+        }
+      }
+
       return rowToProtocol(updated);
     })
   );
@@ -189,7 +228,7 @@ function rowToProtocol(
     id: row.id,
     projectPath: row.projectPath,
     title: row.title ?? undefined,
-    activeAgent: row.activeAgent ?? undefined,
+    activeAgent: (row.activeAgent as "build" | "plan" | undefined) ?? undefined,
     status: row.status as import("@agent-workbench/protocol").SessionStatus,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

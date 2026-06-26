@@ -11,6 +11,7 @@ const Category = {
   DIFF: "diff",
   FILE: "file",
   SHELL: "shell",
+  AGENT: "agent",
   ERROR: "error",
 } as const;
 
@@ -494,6 +495,28 @@ export class RunLedger {
       Actor.TOOL,
       `Shell command aborted: ${reason}`,
       { toolCallId, reason }
+    );
+  }
+
+  // ── Agent (Phase 11) ─────────────────────────────────────────────────────
+
+  recordAgentSelected(agentId: string, promptVersion: string): void {
+    this.record(
+      "agent.selected",
+      Category.AGENT,
+      Actor.USER,
+      `Agent selected: ${agentId} (v${promptVersion})`,
+      { agentId, promptVersion }
+    );
+  }
+
+  recordAgentProfileApplied(agentId: string, promptVersion: string): void {
+    this.record(
+      "agent.profile_applied",
+      Category.AGENT,
+      Actor.SYSTEM,
+      `Agent profile applied: ${agentId} (v${promptVersion})`,
+      { agentId, promptVersion }
     );
   }
 

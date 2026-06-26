@@ -8,4 +8,5 @@ export { FileResource } from "./files";
 export { PermissionResource } from "./permissions";
 export { ToolResource } from "./tools";
 export { TuiResource } from "./tui";
+export { AgentResource } from "./agents";
 export { AuthResource } from "./auth";

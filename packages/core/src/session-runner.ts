@@ -13,6 +13,7 @@ import { generateDiffPreview, extractDiffParams } from "@agent-workbench/diff";
 import type { DiffPreview } from "@agent-workbench/protocol";
 import { previewCommand } from "@agent-workbench/shell";
 import type { CommandPreview } from "@agent-workbench/shell";
+import type { AgentProfile } from "./agent";
 
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
@@ -98,6 +99,14 @@ export class SessionRunner {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
+    // ── Resolve active agent ─────────────────────────────────────────────────
+    // Phase 11: default to "build" when session.activeAgent is null/undefined.
+    const resolvedAgentId =
+      options.agentId ?? session.activeAgent ?? "build";
+    const agentProfile = this.deps.agentRegistry.resolveActiveAgent(resolvedAgentId);
+    const agentSystemPrompt =
+      options.systemPrompt ?? agentProfile.systemPrompt;
+
     // ── Concurrency guard ────────────────────────────────────────────────────
     if (this.runRegistry.hasActive(sessionId)) {
       const active = this.runRegistry.get(sessionId)!;
@@ -142,17 +151,22 @@ export class SessionRunner {
     events.publishRunStarted();
     ledger.recordRunStarted();
 
+    // Phase 11: record the active agent profile for this run.
+    events.publishAgentProfileApplied(agentProfile.id);
+    ledger.recordAgentProfileApplied(agentProfile.id, agentProfile.promptVersion);
+
     try {
       return await this.executeLoop(
         sessionId,
         runId,
         session.projectPath,
         content,
-        options.systemPrompt,
+        agentSystemPrompt,
         maxIterations,
         signal,
         events,
-        ledger
+        ledger,
+        agentProfile
       );
     } finally {
       this.runRegistry.remove(sessionId);
@@ -180,11 +194,12 @@ export class SessionRunner {
     runId: string,
     projectPath: string,
     userContent: string,
-    systemPrompt: string | undefined,
+    agentSystemPrompt: string | undefined,
     maxIterations: number,
     signal: AbortSignal,
     events: EventPublisher,
-    ledger: RunLedger
+    ledger: RunLedger,
+    agentProfile: AgentProfile
   ): Promise<RunResult> {
     // ── Persist user message ─────────────────────────────────────────────────
     const userMessageId = ulid();
@@ -225,7 +240,9 @@ export class SessionRunner {
       // The user message for this run is already in storage, so we include it.
       const context = await this.contextBuilder.build(
         sessionId,
-        systemPrompt
+        undefined,           // no explicit systemPrompt override
+        undefined,           // no run exclusion
+        agentSystemPrompt    // Phase 11: agent system prompt from definition
       );
 
       // ── Model call ─────────────────────────────────────────────────────────
@@ -292,7 +309,8 @@ export class SessionRunner {
         kind.calls,
         signal,
         events,
-        ledger
+        ledger,
+        agentProfile
       );
 
       // Check for abort after tool dispatch.
@@ -359,7 +377,8 @@ export class SessionRunner {
     modelToolCalls: readonly import("@agent-workbench/models").ModelToolCall[],
     signal: AbortSignal,
     events: EventPublisher,
-    ledger: RunLedger
+    ledger: RunLedger,
+    agentProfile: AgentProfile
   ): Promise<import("./types").ToolCallResult[]> {
     const results: import("./types").ToolCallResult[] = [];
 
@@ -389,6 +408,49 @@ export class SessionRunner {
 
       ledger.recordToolCallRequested(storageId, request.name);
       events.publishToolCallRequested(storageId, request.name);
+
+      // ── Phase 11: Tool availability enforcement by agent ──────────────────
+      // Plan agent must not execute mutation tools. Block early with a deny
+      // so no unnecessary previews are generated.
+      if (!this.deps.agentRegistry.isToolAvailable(agentProfile.id, request.name)) {
+        const reason = `Tool "${request.name}" is not available in ${agentProfile.mode} mode`;
+        this.deps.toolCallRepository.update(storageId, {
+          status: "denied",
+          completedAt: new Date().toISOString(),
+          errorJson: JSON.stringify({ error: reason }),
+        });
+        const permReqId = ulid();
+        this.deps.permissionRepository.createRequest({
+          id: permReqId,
+          sessionId,
+          runId,
+          toolCallId: storageId,
+          agentId: agentProfile.id,
+          toolName: request.name,
+          riskLevel: "high",
+          reason,
+          targetPathsJson: null,
+          command: null,
+          diffSummaryJson: null,
+          dryRunSummaryJson: null,
+          status: "denied",
+          createdAt: new Date().toISOString(),
+          expiresAt: null,
+          metadataJson: null,
+        });
+        ledger.recordPermissionDeniedByPolicy(permReqId, request.name, reason);
+        ledger.recordToolCallDenied(storageId, request.name, reason);
+        events.publishPermissionDenied(permReqId, request.name, reason);
+        events.publishToolCallFailed(storageId, request.name, `Permission denied: ${reason}`);
+        results.push({
+          id: storageId,
+          modelCallId: request.modelCallId,
+          name: request.name,
+          result: null,
+          error: `Permission denied: ${reason}`,
+        });
+        continue;
+      }
 
       // ── Phase 10: Shell preview for bash tools ────────────────────────
       // For bash: generate a static command preview BEFORE the permission
@@ -550,7 +612,7 @@ export class SessionRunner {
         toolName: request.name,
         ...(targetPaths !== undefined ? { targetPaths } : {}),
         ...(command !== undefined ? { command } : {}),
-        // agentId is undefined — agent modes not yet implemented (Phase 11)
+        agentId: agentProfile.id,
       });
 
       if (evalResult.outcome === "deny") {
@@ -568,7 +630,7 @@ export class SessionRunner {
           sessionId,
           runId,
           toolCallId: storageId,
-          agentId: null,
+          agentId: agentProfile.id,
           toolName: request.name,
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
@@ -630,7 +692,7 @@ export class SessionRunner {
           sessionId,
           runId,
           toolCallId: storageId,
-          agentId: null,
+          agentId: agentProfile.id,
           toolName: request.name,
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,

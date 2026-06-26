@@ -8,10 +8,12 @@ import type { ContextMessage } from "./types";
  * Phase 6 implementation: reads all messages for the session in chronological
  * order and maps each storage role to a ContextMessage role.
  *
+ * Phase 11: accepts an optional agentSystemPrompt that is prepended when
+ * no explicit systemPrompt override is provided.
+ *
  * Future phases will enrich this with:
  *  - session summaries (Phase 12 token health)
  *  - token-budget trimming (Phase 12)
- *  - agent-specific system prompts from agent definitions (Phase 11)
  */
 export class ContextBuilder {
   constructor(private readonly messageRepository: MessageRepository) {}
@@ -20,25 +22,32 @@ export class ContextBuilder {
    * Build the full context array for a model call.
    *
    * @param sessionId  Session whose history to load.
-   * @param systemPrompt  Optional override system prompt. When omitted, no
-   *   system message is prepended (the system prompt will be injected by the
-   *   agent definition in Phase 11).
+   * @param systemPrompt  Optional override system prompt. When omitted and
+   *   agentSystemPrompt is provided, the agent system prompt is used.
    * @param excludeRunId  When provided, messages belonging to the current
-   *   in-flight run are excluded (they haven't been acknowledged by the model
-   *   yet). Pass the current runId if the user message was already persisted
-   *   before calling the model.
+   *   in-flight run are excluded.
+   * @param agentSystemPrompt  Phase 11: system prompt from the active agent
+   *   definition. Used when no explicit systemPrompt override is given.
    */
   async build(
     sessionId: string,
     systemPrompt?: string,
-    excludeRunId?: string
+    excludeRunId?: string,
+    agentSystemPrompt?: string
   ): Promise<ContextMessage[]> {
     const rows = this.messageRepository.listBySession(sessionId);
 
     const messages: ContextMessage[] = [];
 
-    if (systemPrompt !== undefined && systemPrompt.length > 0) {
-      messages.push({ role: "system", content: systemPrompt });
+    const effectivePrompt =
+      systemPrompt !== undefined && systemPrompt.length > 0
+        ? systemPrompt
+        : agentSystemPrompt !== undefined && agentSystemPrompt.length > 0
+          ? agentSystemPrompt
+          : undefined;
+
+    if (effectivePrompt !== undefined && effectivePrompt.length > 0) {
+      messages.push({ role: "system", content: effectivePrompt });
     }
 
     for (const row of rows) {

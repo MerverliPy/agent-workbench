@@ -10,4 +10,5 @@ export * from "./provider";
 export * from "./file";
 export * from "./config";
 export * from "./token-health";
+export * from "./agent";
 export * from "../types";

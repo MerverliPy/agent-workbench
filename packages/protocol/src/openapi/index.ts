@@ -40,6 +40,7 @@ import {
   GetEffectivePolicyRoute,
 } from "../routes/permission";
 import { ListToolsRoute, GetToolRoute } from "../routes/tool";
+import { ListAgentsRoute, GetAgentRoute } from "../routes/agent";
 import { PrefillPromptRoute, FocusRoute, GetTuiStateRoute } from "../routes/tui";
 import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
 import { ErrorEnvelope } from "../schemas/error-envelope";
@@ -156,6 +157,8 @@ export function createOpenApiDocument(title: string, version: string) {
     GetEffectivePolicyRoute,
     ListToolsRoute,
     GetToolRoute,
+    ListAgentsRoute,
+    GetAgentRoute,
     PrefillPromptRoute,
     FocusRoute,
     GetTuiStateRoute,
