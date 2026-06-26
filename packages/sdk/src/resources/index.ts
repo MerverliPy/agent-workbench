@@ -11,3 +11,4 @@ export { TuiResource } from "./tui";
 export { AgentResource } from "./agents";
 export { TokenHealthResource } from "./token-health";
 export { AuthResource } from "./auth";
+export { PlanResource } from "./plans";

@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import type { PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
+import type { Plan } from "@agent-workbench/protocol";
 
 /**
  * Placeholder session ID used while server session APIs return 501.
@@ -183,3 +184,16 @@ export const [compactionSuggestion, setCompactionSuggestion] = createSignal<{
   estimatedCompactedTokens?: number | undefined;
   reason?: string | undefined;
 } | null>(null);
+
+// ── Phase 13: Planner state ──────────────────────────────────────────────
+
+export interface PlanState {
+  planId: string;
+  status: string;
+  summary: string;
+  riskLevel: string;
+  steps: Array<{ order: number; type: string; description: string; targetPath?: string }>;
+  targetFiles: string[];
+}
+
+export const [currentPlan, setCurrentPlan] = createSignal<PlanState | null>(null);

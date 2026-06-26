@@ -109,6 +109,16 @@ export const EventName = {
   COMPACTION_COMPLETED: "compaction.completed",
   COMPACTION_REJECTED: "compaction.rejected",
   TOOL_RESULT_TRUNCATED: "tool_result.truncated",
+
+  // ── Planner (Phase 13) ──────────────────────────────────────────────────
+  PLAN_PROPOSED: "plan.proposed",
+  PLAN_APPROVED: "plan.approved",
+  PLAN_DENIED: "plan.denied",
+  PLAN_STEP_STARTED: "plan.step_started",
+  PLAN_STEP_COMPLETED: "plan.step_completed",
+  PLAN_STEP_FAILED: "plan.step_failed",
+  PLAN_COMPLETED: "plan.completed",
+  PLAN_FAILED: "plan.failed",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

@@ -372,6 +372,40 @@ export class EventPublisher {
     });
   }
 
+  // ── Planner (Phase 13) ──────────────────────────────────────────────────────
+
+  publishPlanProposed(plan: import("@agent-workbench/protocol").Plan): void {
+    this.publish(EventName.PLAN_PROPOSED, { plan });
+  }
+
+  publishPlanApproved(planId: string): void {
+    this.publish(EventName.PLAN_APPROVED, { planId });
+  }
+
+  publishPlanDenied(planId: string, reason?: string): void {
+    this.publish(EventName.PLAN_DENIED, { planId, reason });
+  }
+
+  publishPlanStepStarted(planId: string, stepOrder: number): void {
+    this.publish(EventName.PLAN_STEP_STARTED, { planId, stepOrder });
+  }
+
+  publishPlanStepCompleted(planId: string, stepOrder: number): void {
+    this.publish(EventName.PLAN_STEP_COMPLETED, { planId, stepOrder });
+  }
+
+  publishPlanStepFailed(planId: string, stepOrder: number, error: string): void {
+    this.publish(EventName.PLAN_STEP_FAILED, { planId, stepOrder, error });
+  }
+
+  publishPlanCompleted(planId: string): void {
+    this.publish(EventName.PLAN_COMPLETED, { planId });
+  }
+
+  publishPlanFailed(planId: string, reason: string): void {
+    this.publish(EventName.PLAN_FAILED, { planId, reason });
+  }
+
   // ── Internal helper ─────────────────────────────────────────────────────────
 
   private publish(type: string, payload: unknown): void {

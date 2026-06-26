@@ -10,6 +10,7 @@ import { registerMessageRoutes } from "./routes/message-routes";
 import { registerPermissionRoutes } from "./routes/permission-routes";
 import { registerAgentRoutes } from "./routes/agent-routes";
 import { registerTokenHealthRoutes } from "./routes/token-health-routes";
+import { registerPlanRoutes } from "./routes/plan-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 
 export interface CreateAppOptions {
@@ -35,6 +36,7 @@ export function createApp(options: CreateAppOptions) {
   registerPermissionRoutes(app, options.services);
   registerAgentRoutes(app, options.services);
   registerTokenHealthRoutes(app, options.services);
+  registerPlanRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

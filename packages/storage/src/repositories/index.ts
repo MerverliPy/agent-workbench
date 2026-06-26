@@ -53,3 +53,9 @@ export {
   type CacheEntryRow,
   type CacheEntryInsert,
 } from "./cache-repository";
+
+export {
+  PlanRepository,
+  type PlanRow,
+  type PlanInsert,
+} from "./plan-repository";

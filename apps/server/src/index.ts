@@ -14,6 +14,7 @@ import {
   FileChangeRepository,
   PermissionRepository,
   SummaryRepository,
+  PlanRepository,
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
@@ -34,6 +35,7 @@ const cacheRepository = new CacheRepository(storage.db);
 const fileChangeRepository = new FileChangeRepository(storage.db);
 const permissionRepository = new PermissionRepository(storage.db);
 const summaryRepository = new SummaryRepository(storage.db);
+const planRepository = new PlanRepository(storage.db);
 
 // ── Events ───────────────────────────────────────────────────────────────────
 const eventBus = new EventBus();
@@ -81,6 +83,8 @@ const sessionRunner = new SessionRunner({
   ledgerRepository,
   permissionRepository,
   summaryRepository,
+  planRepository,
+  fileChangeRepository,
   eventBus,
   toolRegistry,
   modelProvider,
@@ -106,6 +110,7 @@ const app = createApp({
     agentRegistry,
     tokenHealthService,
     summaryRepository,
+    planRepository,
   },
 });
 

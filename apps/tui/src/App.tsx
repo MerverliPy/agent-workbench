@@ -2,6 +2,7 @@ import type { JSX } from "@opentui/solid";
 import { onMount, onCleanup } from "solid-js";
 import { useKeyboard } from "@opentui/solid";
 import type { EventEnvelope, PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
+import type { Plan } from "@agent-workbench/protocol";
 import { sdk } from "./lib/sdk";
 import {
   setServerStatus,
@@ -24,6 +25,7 @@ import {
   setTokenHealth,
   setTokenHealthOpen,
   setCompactionSuggestion,
+  setCurrentPlan,
   PLACEHOLDER_SESSION_ID,
 } from "./state/app";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -349,6 +351,72 @@ export function App(): JSX.Element {
 
     // token_health.updated, run.*, tool.*, etc. are Phase 6+ events.
     // Silently skip unknown types — do not crash on unexpected events.
+
+    // ── Phase 13: Plan events ──────────────────────────────────────────
+
+    if (type === "plan.proposed") {
+      const payload = event.payload as Record<string, unknown>;
+      const plan = payload["plan"] as Plan | undefined;
+      if (plan !== undefined) {
+        setCurrentPlan({
+          planId: plan.id,
+          status: plan.status,
+          summary: plan.summary,
+          riskLevel: plan.riskLevel,
+          steps: plan.steps.map((s) => {
+            const step: { order: number; type: string; description: string; targetPath?: string } = {
+              order: s.order,
+              type: s.type,
+              description: s.description,
+            };
+            if (s.targetPath !== undefined) step.targetPath = s.targetPath;
+            return step;
+          }),
+          targetFiles: plan.targetFiles,
+        });
+      }
+      appendSystemNotice(
+        `Plan proposed: ${plan?.summary ?? "mutation plan"} [${plan?.riskLevel ?? "high"}]`
+      );
+      return;
+    }
+
+    if (type === "plan.approved") {
+      const payload = event.payload as Record<string, unknown>;
+      const planId = payload["planId"] as string | undefined;
+      setCurrentPlan((prev) =>
+        prev !== null ? { ...prev, status: "approved" } : null
+      );
+      appendSystemNotice("Plan approved. Proceeding with execution.");
+      return;
+    }
+
+    if (type === "plan.denied") {
+      const payload = event.payload as Record<string, unknown>;
+      const reason = payload["reason"] as string | undefined;
+      setCurrentPlan((prev) =>
+        prev !== null ? { ...prev, status: "denied" } : null
+      );
+      appendSystemNotice(
+        `Plan denied${reason ? `: ${reason}` : ""}.`
+      );
+      return;
+    }
+
+    if (type === "plan.completed") {
+      setCurrentPlan(null);
+      return;
+    }
+
+    if (type === "plan.failed") {
+      const payload = event.payload as Record<string, unknown>;
+      const reason = payload["reason"] as string | undefined;
+      setCurrentPlan(null);
+      appendSystemNotice(
+        `Plan failed${reason ? `: ${reason}` : ""}.`
+      );
+      return;
+    }
   }
 
   // ── Lifecycle ────────────────────────────────────────────────────────────

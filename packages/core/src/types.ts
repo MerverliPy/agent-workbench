@@ -99,6 +99,9 @@ export interface CoreDependencies {
   agentRegistry: import("./agent").AgentRegistry;
   // Phase 12: token health
   tokenHealthService: import("./token-health").TokenHealthService;
+  // Phase 13: plan persistence and plan gate
+  planRepository: import("@agent-workbench/storage").PlanRepository;
+  fileChangeRepository: import("@agent-workbench/storage").FileChangeRepository;
 }
 
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */

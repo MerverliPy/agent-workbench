@@ -7,6 +7,7 @@ import { ModelRouter } from "./model-router";
 import { ToolCallDispatcher } from "./tool-dispatcher";
 import { EventPublisher } from "./event-publisher";
 import { RunLedger } from "./run-ledger";
+import { PlanGate, isMutationOrRisky } from "./plan-gate";
 import type { ToolExecutionContext } from "@agent-workbench/tools";
 import { assertSafePath } from "@agent-workbench/tools";
 import { generateDiffPreview, extractDiffParams } from "@agent-workbench/diff";
@@ -69,6 +70,7 @@ export class SessionRunner {
   private readonly contextBuilder: ContextBuilder;
   private readonly modelRouter: ModelRouter;
   private readonly toolDispatcher: ToolCallDispatcher;
+  private readonly planGate: PlanGate;
   private readonly deps: CoreDependencies;
 
   constructor(deps: CoreDependencies) {
@@ -77,6 +79,11 @@ export class SessionRunner {
     this.contextBuilder = new ContextBuilder(deps.messageRepository, deps.summaryRepository);
     this.modelRouter = new ModelRouter(deps.modelProvider);
     this.toolDispatcher = new ToolCallDispatcher(deps.toolRegistry);
+    this.planGate = new PlanGate(
+      deps.planRepository,
+      deps.permissionEngine,
+      deps.permissionGate
+    );
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
@@ -544,9 +551,170 @@ export class SessionRunner {
   ): Promise<import("./types").ToolCallResult[]> {
     const results: import("./types").ToolCallResult[] = [];
 
+    // ── Phase 13: Plan gate for mutation/risky tools ────────────────────────────
+    const mutationCalls = modelToolCalls.filter((c) => isMutationOrRisky(c.name));
+    let planBlocked = false;
+    const earlyFailedModelCallIds = new Set<string>();
+    let planId: string | undefined;
+    let planHadFailure = false;
+    let plannedStepCount = 0;
+    let completedPlannedSteps = 0;
+    const callStepOrder = new Map<string, number>();
+
+    if (mutationCalls.length > 0) {
+      const targetFiles = new Set<string>();
+      const callDescriptions: Array<{
+        toolName: string;
+        targetPath?: string;
+        command?: string;
+        description: string;
+      }> = [];
+      const earlyFailedCalls: Array<{
+        modelCallId: string;
+        name: string;
+        error: string;
+      }> = [];
+
+      for (const call of mutationCalls) {
+        const input = call.input as Record<string, unknown>;
+        let rawPath: string | undefined = typeof input?.["path"] === "string" ? input["path"] : undefined;
+        const rawCommand = typeof input?.["command"] === "string" ? input["command"] : undefined;
+
+        if (call.name === "revert_last_change") {
+          if (rawPath === undefined || rawPath.trim().length === 0) {
+            earlyFailedCalls.push({
+              modelCallId: call.id,
+              name: call.name,
+              error: "revert_last_change: missing path in input.",
+            });
+            continue;
+          }
+          let resolvedPath: string;
+          try {
+            resolvedPath = assertSafePath(rawPath, projectPath);
+          } catch (pathErr: unknown) {
+            const reason = pathErr instanceof Error ? pathErr.message : String(pathErr);
+            earlyFailedCalls.push({
+              modelCallId: call.id,
+              name: call.name,
+              error: `revert_last_change: cannot resolve path: ${reason}`,
+            });
+            continue;
+          }
+          const existingChange = this.deps.fileChangeRepository.findLatestByPath(
+            sessionId,
+            resolvedPath
+          );
+          if (existingChange === undefined) {
+            earlyFailedCalls.push({
+              modelCallId: call.id,
+              name: call.name,
+              error: `revert_last_change: no recorded change found for ${rawPath} in this session.`,
+            });
+            continue;
+          }
+          rawPath = resolvedPath;
+        }
+
+        if (rawPath !== undefined && rawPath.length > 0) targetFiles.add(rawPath);
+
+        if (call.name === "bash") {
+          const desc = {
+            toolName: call.name,
+            description: rawCommand !== undefined
+              ? `Run: ${rawCommand.slice(0, 80)}`
+              : "Run shell command",
+          } as { toolName: string; targetPath?: string; command?: string; description: string };
+          if (rawCommand !== undefined) desc.command = rawCommand;
+          callDescriptions.push(desc);
+          callStepOrder.set(call.id, callStepOrder.size);
+        } else {
+          const desc = {
+            toolName: call.name,
+            description: rawPath !== undefined
+              ? `${call.name} ${rawPath}`
+              : `${call.name} file`,
+          } as { toolName: string; targetPath?: string; command?: string; description: string };
+          if (rawPath !== undefined) desc.targetPath = rawPath;
+          callDescriptions.push(desc);
+          callStepOrder.set(call.id, callStepOrder.size);
+        }
+      }
+
+      if (callDescriptions.length > 0) {
+        const plan = this.planGate.buildPlan(
+          sessionId,
+          runId,
+          callDescriptions,
+          `Mutation plan: ${callDescriptions.length} step(s) on ${callDescriptions.map((d) => d.description.slice(0, 60)).join(", ")}`,
+          [...targetFiles]
+        );
+        planId = plan.id;
+        plannedStepCount = plan.steps.length;
+
+        const gateResult = await this.planGate.gate(
+          plan,
+          events,
+          ledger,
+          signal,
+          agentProfile.id
+        );
+
+        if (gateResult === "blocked") {
+          planBlocked = true;
+        }
+      }
+
+      for (const failed of earlyFailedCalls) {
+        earlyFailedModelCallIds.add(failed.modelCallId);
+        const storageId = ulid();
+        const request = modelToolCallToRequest(
+          { id: failed.modelCallId, name: failed.name, input: {} },
+          storageId
+        );
+        this.deps.toolCallRepository.create({
+          id: storageId,
+          sessionId,
+          runId,
+          messageId: null,
+          toolName: request.name,
+          status: "failed",
+          inputJson: JSON.stringify(request.input),
+          resultJson: null,
+          errorJson: JSON.stringify({ error: failed.error }),
+          startedAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
+          metadataJson: JSON.stringify({ modelCallId: request.modelCallId }),
+        });
+        ledger.recordToolCallFailed(storageId, request.name, failed.error);
+        events.publishToolCallFailed(storageId, request.name, failed.error);
+        results.push({
+          id: storageId,
+          modelCallId: request.modelCallId,
+          name: request.name,
+          result: null,
+          error: failed.error,
+        });
+      }
+    }
+
+    const emitPlanStepFailedForCall = (modelCallId: string, toolName: string, error: string) => {
+      if (planId === undefined) return;
+      const stepOrder = callStepOrder.get(modelCallId);
+      if (stepOrder === undefined) return;
+      planHadFailure = true;
+      ledger.recordPlanStepFailed(planId, stepOrder, error);
+      events.publishPlanStepFailed(planId, stepOrder, error);
+    };
+
     for (const modelCall of modelToolCalls) {
       if (signal.aborted) {
         break;
+      }
+
+      // Phase 13: skip model calls that were early-failed (e.g. revert with no prior change)
+      if (earlyFailedModelCallIds.has(modelCall.id)) {
+        continue;
       }
 
       const storageId = ulid();
@@ -570,6 +738,26 @@ export class SessionRunner {
 
       ledger.recordToolCallRequested(storageId, request.name);
       events.publishToolCallRequested(storageId, request.name);
+
+      // ── Phase 13: Skip mutation/risky tools when plan was blocked ────────────
+      if (planBlocked && isMutationOrRisky(request.name)) {
+        const reason = "Execution plan was denied or blocked.";
+        this.deps.toolCallRepository.update(storageId, {
+          status: "denied",
+          completedAt: new Date().toISOString(),
+          errorJson: JSON.stringify({ error: reason }),
+        });
+        ledger.recordToolCallDenied(storageId, request.name, reason);
+        events.publishToolCallFailed(storageId, request.name, reason);
+        results.push({
+          id: storageId,
+          modelCallId: request.modelCallId,
+          name: request.name,
+          result: null,
+          error: reason,
+        });
+        continue;
+      }
 
       // ── Phase 11: Tool availability enforcement by agent ──────────────────
       // Plan agent must not execute mutation tools. Block early with a deny
@@ -611,6 +799,7 @@ export class SessionRunner {
           result: null,
           error: `Permission denied: ${reason}`,
         });
+        emitPlanStepFailedForCall(request.modelCallId, request.name, reason);
         continue;
       }
 
@@ -641,6 +830,7 @@ export class SessionRunner {
             result: null,
             error: reason,
           });
+          emitPlanStepFailedForCall(request.modelCallId, request.name, reason);
           continue;
         }
 
@@ -697,6 +887,7 @@ export class SessionRunner {
             result: null,
             error: reason,
           });
+          emitPlanStepFailedForCall(request.modelCallId, request.name, reason);
           continue;
         }
 
@@ -723,6 +914,7 @@ export class SessionRunner {
             result: null,
             error: reason,
           });
+          emitPlanStepFailedForCall(request.modelCallId, request.name, reason);
           continue;
         }
 
@@ -764,6 +956,7 @@ export class SessionRunner {
             result: null,
             error: reason,
           });
+          emitPlanStepFailedForCall(request.modelCallId, request.name, reason);
           continue;
         }
       }
@@ -821,6 +1014,7 @@ export class SessionRunner {
           result: null,
           error: `Permission denied: ${evalResult.reason}`,
         });
+        emitPlanStepFailedForCall(request.modelCallId, request.name, evalResult.reason);
         continue;
       }
 
@@ -913,6 +1107,8 @@ export class SessionRunner {
             error: `Permission denied by ${deniedBy}.`,
           });
 
+          emitPlanStepFailedForCall(request.modelCallId, request.name, `Permission denied by ${deniedBy}`);
+
           if (signal.aborted) {
             break;
           }
@@ -927,6 +1123,15 @@ export class SessionRunner {
       // ── Dispatch ────────────────────────────────────────────────────────
       ledger.recordToolCallStarted(storageId, request.name);
       events.publishToolCallStarted(storageId, request.name);
+
+      // Phase 13: emit plan step event when inside an approved plan
+      if (planId !== undefined && isMutationOrRisky(request.name)) {
+        const stepOrder = callStepOrder.get(request.modelCallId);
+        if (stepOrder !== undefined) {
+          ledger.recordPlanStepStarted(planId, stepOrder);
+          events.publishPlanStepStarted(planId, stepOrder);
+        }
+      }
 
       // Phase 10: emit shell.command_started for bash tools.
       if (request.name === "bash" && command !== undefined) {
@@ -1012,6 +1217,16 @@ export class SessionRunner {
           } else {
             ledger.recordMutationFailed(storageId, request.name, targetPath, result.error);
             events.publishFileChangeFailed(storageId, request.name, targetPath, result.error);
+          }
+        }
+
+        // Phase 13: plan step failed
+        if (planId !== undefined && isMutationOrRisky(request.name)) {
+          planHadFailure = true;
+          const stepOrder = callStepOrder.get(request.modelCallId);
+          if (stepOrder !== undefined) {
+            ledger.recordPlanStepFailed(planId, stepOrder, result.error);
+            events.publishPlanStepFailed(planId, stepOrder, result.error);
           }
         }
       } else {
@@ -1108,6 +1323,16 @@ export class SessionRunner {
             events.publishFileChangeApplied(storageId, request.name, targetPath, changeId);
           }
         }
+
+        // Phase 13: plan step completed
+        if (planId !== undefined && isMutationOrRisky(request.name)) {
+          const stepOrder = callStepOrder.get(request.modelCallId);
+          if (stepOrder !== undefined) {
+            ledger.recordPlanStepCompleted(planId, stepOrder);
+            events.publishPlanStepCompleted(planId, stepOrder);
+            completedPlannedSteps++;
+          }
+        }
       }
 
       // Phase 12: apply truncated result to the return value so
@@ -1119,6 +1344,44 @@ export class SessionRunner {
         });
       } else {
         results.push(result);
+      }
+    }
+
+    // ── Phase 13: Emit plan lifecycle completion ───────────────────────────
+    if (planId !== undefined && !planBlocked) {
+      const finalPlan = this.deps.planRepository.findById(planId);
+      if (finalPlan !== undefined && finalPlan.status === "approved") {
+        if (signal.aborted) {
+          const reason = "Plan execution aborted";
+          ledger.recordPlanFailed(planId, reason);
+          events.publishPlanFailed(planId, reason);
+          this.deps.planRepository.update(planId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+          });
+        } else if (planHadFailure) {
+          ledger.recordPlanFailed(planId, "One or more plan steps failed during execution.");
+          events.publishPlanFailed(planId, "One or more plan steps failed during execution.");
+          this.deps.planRepository.update(planId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+          });
+        } else if (completedPlannedSteps < plannedStepCount) {
+          const reason = `Plan execution incomplete: ${completedPlannedSteps}/${plannedStepCount} steps completed`;
+          ledger.recordPlanFailed(planId, reason);
+          events.publishPlanFailed(planId, reason);
+          this.deps.planRepository.update(planId, {
+            status: "failed",
+            completedAt: new Date().toISOString(),
+          });
+        } else {
+          ledger.recordPlanCompleted(planId);
+          events.publishPlanCompleted(planId);
+          this.deps.planRepository.update(planId, {
+            status: "completed",
+            completedAt: new Date().toISOString(),
+          });
+        }
       }
     }
 

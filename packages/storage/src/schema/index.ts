@@ -7,3 +7,4 @@ export { fileChanges } from "./file-changes";
 export { configSnapshots } from "./config-snapshots";
 export { summaries } from "./summaries";
 export { cacheEntries } from "./cache-entries";
+export { plans } from "./plans";

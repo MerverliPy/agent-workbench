@@ -6,6 +6,7 @@ import type {
   LedgerRepository,
   PermissionRepository,
   SummaryRepository,
+  PlanRepository,
 } from "@agent-workbench/storage";
 import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 
@@ -30,6 +31,8 @@ export interface ServerServices {
   // Phase 12: token health
   readonly tokenHealthService: TokenHealthService;
   readonly summaryRepository: SummaryRepository;
+  // Phase 13: plan repository
+  readonly planRepository: PlanRepository;
 }
 
 export type ServerAppBindings = {

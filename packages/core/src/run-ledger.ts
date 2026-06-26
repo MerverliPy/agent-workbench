@@ -13,6 +13,7 @@ const Category = {
   SHELL: "shell",
   AGENT: "agent",
   TOKEN: "token",
+  PLAN: "planner",
   ERROR: "error",
 } as const;
 
@@ -600,6 +601,88 @@ export class RunLedger {
       Actor.SYSTEM,
       `Tool result truncated (${originalLength} → ${truncatedLength} chars)`,
       { toolCallId, originalLength, truncatedLength }
+    );
+  }
+
+  // ── Planner (Phase 13) ──────────────────────────────────────────────────
+
+  recordPlanProposed(planId: string, summary: string, riskLevel: string): void {
+    this.record(
+      "plan.proposed",
+      Category.PLAN,
+      Actor.SYSTEM,
+      `Plan proposed: ${summary}`,
+      { planId, riskLevel }
+    );
+  }
+
+  recordPlanApproved(planId: string): void {
+    this.record(
+      "plan.approved",
+      Category.PLAN,
+      Actor.USER,
+      `Plan approved`,
+      { planId }
+    );
+  }
+
+  recordPlanDenied(planId: string, reason: string): void {
+    this.record(
+      "plan.denied",
+      Category.PLAN,
+      Actor.USER,
+      `Plan denied: ${reason}`,
+      { planId, reason }
+    );
+  }
+
+  recordPlanStepStarted(planId: string, stepOrder: number): void {
+    this.record(
+      "plan.step_started",
+      Category.PLAN,
+      Actor.TOOL,
+      `Plan step ${stepOrder} started`,
+      { planId, stepOrder }
+    );
+  }
+
+  recordPlanStepCompleted(planId: string, stepOrder: number): void {
+    this.record(
+      "plan.step_completed",
+      Category.PLAN,
+      Actor.TOOL,
+      `Plan step ${stepOrder} completed`,
+      { planId, stepOrder }
+    );
+  }
+
+  recordPlanStepFailed(planId: string, stepOrder: number, error: string): void {
+    this.record(
+      "plan.step_failed",
+      Category.PLAN,
+      Actor.TOOL,
+      `Plan step ${stepOrder} failed: ${error}`,
+      { planId, stepOrder, error }
+    );
+  }
+
+  recordPlanCompleted(planId: string): void {
+    this.record(
+      "plan.completed",
+      Category.PLAN,
+      Actor.SYSTEM,
+      `Plan completed`,
+      { planId }
+    );
+  }
+
+  recordPlanFailed(planId: string, reason: string): void {
+    this.record(
+      "plan.failed",
+      Category.PLAN,
+      Actor.SYSTEM,
+      `Plan failed: ${reason}`,
+      { planId, reason }
     );
   }
 

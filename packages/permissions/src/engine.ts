@@ -20,6 +20,7 @@
  *   - Trust model-generated risk assessments.
  */
 
+import type { PlanStep } from "@agent-workbench/protocol";
 import type {
   PermissionEvalInput,
   PermissionEvalResult,
@@ -29,6 +30,15 @@ import type {
 } from "./types";
 import { defaultPolicy } from "./policy";
 import type { RiskLevel } from "@agent-workbench/protocol";
+
+const PLAN_STEP_TO_TOOL: Record<string, string> = {
+  read: "read",
+  shell: "bash",
+  write: "write",
+  edit: "edit",
+  patch: "apply_patch",
+  delete: "write",
+};
 
 export class PermissionEngine {
   private readonly policy: PermissionPolicy;
@@ -95,6 +105,40 @@ export class PermissionEngine {
       commandRules: [...this.policy.commandRules],
       agentRules: [...this.policy.agentRules],
     };
+  }
+
+  // ── Plan-level evaluation (Phase 13) ────────────────────────────────────
+
+  evaluatePlan(
+    steps: PlanStep[],
+    agentId?: string
+  ): PermissionEvalResult {
+    let mostRestrictive: PermissionEvalResult | undefined;
+
+    for (const step of steps) {
+      const input: PermissionEvalInput = {
+        toolName: PLAN_STEP_TO_TOOL[step.type] ?? "other",
+        ...(step.targetPath !== undefined
+          ? { targetPaths: [step.targetPath] }
+          : {}),
+        ...(step.command !== undefined ? { command: step.command } : {}),
+        ...(agentId !== undefined ? { agentId } : {}),
+      };
+      const result = this.evaluate(input);
+      if (
+        mostRestrictive === undefined ||
+        this.outcomeRestrictiveness(result.outcome) >
+          this.outcomeRestrictiveness(mostRestrictive.outcome)
+      ) {
+        mostRestrictive = result;
+      }
+      if (result.outcome === "deny") break;
+    }
+
+    if (mostRestrictive === undefined) {
+      return { outcome: "allow", riskLevel: "low", reason: "Plan has no evaluable steps." };
+    }
+    return mostRestrictive;
   }
 
   // ── Private evaluation helpers ─────────────────────────────────────────────

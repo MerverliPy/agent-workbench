@@ -21,4 +21,5 @@ export {
   AgentResource,
   TokenHealthResource,
   AuthResource,
+  PlanResource,
 } from "./resources";
