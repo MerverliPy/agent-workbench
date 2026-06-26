@@ -5,11 +5,16 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tests"
   ],
   "scripts": {
     "phase": "echo Phase 1 workspace scaffold only",
-    "validate": "echo See PHASE_1_VALIDATION.md"
+    "validate": "echo See PHASE_1_VALIDATION.md",
+    "test": "cd tests && bun test",
+    "test:unit": "cd tests && bun test unit",
+    "test:integration": "cd tests && bun test integration",
+    "test:e2e": "cd tests && bun test e2e"
   },
   "engines": {
     "bun": ">=1"

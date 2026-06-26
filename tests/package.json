@@ -1,34 +1,19 @@
 {
-  "name": "@agent-workbench/server",
+  "name": "@agent-workbench/tests",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Local HTTP/SSE control plane package. Owns routes, middleware, and server lifecycle only.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./public": {
-      "types": "./dist/public.d.ts",
-      "default": "./dist/public.js"
-    }
-  },
-  "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "@agent-workbench/cache": "workspace:*",
     "@agent-workbench/core": "workspace:*",
+    "@agent-workbench/diff": "workspace:*",
     "@agent-workbench/events": "workspace:*",
     "@agent-workbench/models": "workspace:*",
     "@agent-workbench/permissions": "workspace:*",
+    "@agent-workbench/planner": "workspace:*",
     "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/sdk": "workspace:*",
+    "@agent-workbench/server": "workspace:*",
     "@agent-workbench/shell": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "@agent-workbench/tokens": "workspace:*",
