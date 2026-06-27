@@ -277,6 +277,24 @@ const COMMAND_RULES: PermissionPolicy["commandRules"] = [
     riskLevel: "critical",
     reason: "Pipe-to-shell execution is denied by default.",
   },
+  {
+    pattern: "wget|sh",
+    outcome: "deny",
+    riskLevel: "critical",
+    reason: "Pipe-to-shell execution is denied by default.",
+  },
+  {
+    pattern: "| sh",
+    outcome: "deny",
+    riskLevel: "critical",
+    reason: "Pipe-to-shell execution is denied by default.",
+  },
+  {
+    pattern: "|sh",
+    outcome: "deny",
+    riskLevel: "critical",
+    reason: "Pipe-to-shell execution is denied by default.",
+  },
 ];
 
 // ── Agent-level rules ────────────────────────────────────────────────────────

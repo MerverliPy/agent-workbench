@@ -17,6 +17,8 @@ const DESTRUCTIVE_PATTERNS: readonly string[] = [
   "shred",
   "curl|sh",
   "wget|sh",
+  "| sh",
+  "| bash",
 ];
 
 const LOW_RISK_COMMANDS = new Set([
