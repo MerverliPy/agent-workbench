@@ -29,6 +29,8 @@ export interface TestServerOptions {
   port?: number;
   /** Override the default PermissionEngine policy (useful for plan-gate/integration tests). */
   permissionPolicy?: import("@agent-workbench/permissions").PermissionPolicy;
+  /** Inject a custom model provider (useful for fault-injection tests). */
+  modelProvider?: import("@agent-workbench/models").ModelProvider;
 }
 
 export interface TestServer {
@@ -73,7 +75,7 @@ export function createTestServer(options: TestServerOptions): TestServer {
   registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
   registerShellTool(toolRegistry, { shellRunner });
 
-  const modelProvider = new MockModelProvider(options.modelTurns ?? []);
+  const modelProvider = options.modelProvider ?? new MockModelProvider(options.modelTurns ?? []);
   const agentRegistry = new AgentRegistry();
   const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
 

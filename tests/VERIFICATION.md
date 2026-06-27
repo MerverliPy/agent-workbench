@@ -1,6 +1,95 @@
 # Test Verification Guide
 
-Phase 14B-2A test baseline: 212 tests, 0 failures, 664 expect() calls.
+Phase 14B-2A baseline: 212 tests, 0 failures, 664 expect() calls.
+Phase 14B-2B adds: fault-injection + contract tests.
+
+## Phase 14B-2B coverage summary
+
+### Fault injection tests
+
+```bash
+# Run all fault-injection tests
+bun test tests/integration/faults/
+
+# Individual files
+bun test tests/integration/faults/model-faults.test.ts
+bun test tests/integration/faults/tool-faults.test.ts
+bun test tests/integration/faults/abort.test.ts
+```
+
+Coverage:
+- **Model faults**: Error on first call, Error after safe tool call, AbortError, empty tool_calls, repeated tool calls
+- **Tool faults**: unknown tool name → failed, malformed write/edit/apply_patch input → failed + file unchanged, malformed/empty bash command → failed + no shell.command_started
+- **Abort faults**: pre-aborted signal before model call, AbortError during model call, abort while waiting for ask-gated permission (write, bash), abort while plan proposed
+
+### Contract tests
+
+```bash
+# SDK/transport contract
+bun test tests/integration/sdk/http-transport.test.ts
+
+# API contract (error envelopes)
+bun test tests/e2e/server-contracts.test.ts
+
+# Protocol/Zod contract
+bun test tests/unit/protocol/contracts.test.ts
+```
+
+Coverage:
+- **API contracts**: unknown route → ErrorEnvelope, invalid JSON body → INVALID_JSON, error includes code/message/requestId, no stack traces, no raw internals
+- **SDK/transport**: invalid JSON success → SdkError, schema validation failure → SdkError, recoverable/details fields preserved, non-envelope error → ApiError fallback, network failure → SdkError, abort signal
+- **Protocol contracts**: ErrorEnvelope valid/invalid, Plan valid/invalid statuses/steps, Session create/update valid/invalid, Permission request/decision valid/invalid, Message valid/invalid, enum validation for RunStatus/ToolCallStatus/SessionStatus
+
+### Manual intentional-break checklist (fault/contract)
+
+These verify that fault-injection and contract tests detect broken behavior.
+**All mutations must be reverted.**
+
+1. **Break model error handling**
+   - In `packages/core/src/session-runner.ts`, remove the AbortError check in the model call catch block
+   - Expected: `bun test tests/integration/faults/model-faults.test.ts` fails — "model throws AbortError → run.status is aborted" becomes "failed" instead
+   - Revert: `git checkout packages/core/src/session-runner.ts`
+
+2. **Break tool unknown handling**
+   - In `packages/core/src/tool-dispatcher.ts`, remove the undefined-tool check and let it throw
+   - Expected: `bun test tests/integration/faults/tool-faults.test.ts` fails — "unknown tool name" test fails (run crashes)
+   - Revert: `git checkout packages/core/src/tool-dispatcher.ts`
+
+3. **Break SDK error mapping**
+   - In `packages/sdk/src/transport/http.ts`, remove the `ErrorEnvelope.safeParse` branch in `parseError`
+   - Expected: `bun test tests/integration/sdk/http-transport.test.ts` fails — "preserves recoverable flag" or "preserves details" assertions fail
+   - Revert: `git checkout packages/sdk/src/transport/http.ts`
+
+4. **Break API validation envelope**
+   - In `apps/server/src/middleware/error-handler.ts`, remove the NOT_FOUND handler or change it to return plain text
+   - Expected: `bun test tests/e2e/server-contracts.test.ts` fails — "unknown route returns structured ErrorEnvelope" fails
+   - Revert: `git checkout apps/server/src/middleware/error-handler.ts`
+
+5. **Break protocol schema contract**
+   - In `packages/protocol/src/schemas/error-envelope.ts`, make `code` optional
+   - Expected: `bun test tests/unit/protocol/contracts.test.ts` fails — "rejects an ErrorEnvelope with missing code" passes but shouldn't
+   - Revert: `git checkout packages/protocol/src/schemas/error-envelope.ts`
+
+6. **Break abort no-false-completion**
+   - In `packages/core/src/session-runner.ts`, change the abort catch to return status "completed" instead of "aborted"
+   - Expected: `bun test tests/integration/faults/abort.test.ts` fails — "model throws AbortError" test expects "aborted" but gets "completed"
+   - Revert: `git checkout packages/core/src/session-runner.ts`
+
+7. **Revert all intentional breaks**
+   ```bash
+   git checkout .
+   bun run test
+   ```
+
+### Repeatability expectations
+
+Fault-injection and contract tests are deterministic. They use `createTestDb` (temp SQLite) and `createTestServer` with `FaultModelProvider` or `MockModelProvider`. No external network calls. No real file system mutation beyond temp directories.
+
+```bash
+TEST_REPEAT_COUNT=5 bun run test:repeat
+```
+
+Expected: all runs pass consistently.
 
 ## Normal validation
 
