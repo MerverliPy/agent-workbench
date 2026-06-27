@@ -1,7 +1,7 @@
 # @agent-workbench/shell
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 10 — Shell Execution
+Implementation status: simple command runner, risk classification, preview/dry-run
 
 ## Purpose
 

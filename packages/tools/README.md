@@ -1,7 +1,7 @@
 # @agent-workbench/tools
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 7 — Read-Only Tools (extended through Phase 9-10)
+Implementation status: read/grep/glob tools, write/edit/patch mutation tools, bash/shell tool, path-guard, tool registry
 
 ## Purpose
 

@@ -1,8 +1,8 @@
 # 19 — Target Repo Tree
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready target repository tree  
-Scope: Phase 0 actual tree, Phase 1 scaffold tree, full target tree, package ownership
+Status: Phase 14B complete; current tree reflects implemented state
+Document type: agent-ready target repository tree
+Scope: Phase 0 actual tree, Phase 1 scaffold tree, full target tree, current state
 
 ## 1. Purpose
 
@@ -379,6 +379,10 @@ packages/core/internal
 | 10 | packages/shell, tools/bash |
 | 11 | packages/core/src/agent |
 | 12 | packages/tokens, apps/tui token-health components |
+| 13 | packages/planner, packages/core plan-gate |
+| 14A | tests/unit, tests/integration, tests/e2e |
+| 14B | tests/integration/faults, tests/integration/security, tests/integration/sdk |
+| 15 | packages/models (provider adapters, planned) |
 
 ## 16. Acceptance Criteria
 

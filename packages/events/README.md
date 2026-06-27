@@ -1,7 +1,7 @@
 # @agent-workbench/events
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 3 — Local Server / Event infrastructure
+Implementation status: shared event names, event helpers, event-streaming types
 
 ## Purpose
 

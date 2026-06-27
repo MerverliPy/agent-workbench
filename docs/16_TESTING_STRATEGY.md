@@ -1,8 +1,8 @@
 # 16 — Testing Strategy
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready testing strategy  
-Scope: unit, integration, e2e, security, boundary, storage, tool, and TUI tests
+Status: Phase 14B complete (hardened test coverage)
+Document type: agent-ready testing strategy
+Scope: unit, integration, e2e, security, boundary, storage, tool, fault injection, and contract tests
 
 ## 1. Purpose
 
@@ -382,6 +382,40 @@ real environment files
 
 ```text
 [ ] token-health status and compaction suggestion tested.
+```
+
+### Phase 13
+
+```text
+[ ] Plan validation tested.
+[ ] Plan gate enforcement tested.
+[ ] Plan permission integration tested.
+[ ] Plan-level deny prevents execution.
+```
+
+### Phase 14A
+
+```text
+[ ] Session runner tested.
+[ ] Tool dispatch tested.
+[ ] Permission engine tested.
+[ ] Path safety tested.
+[ ] Diff preview tested.
+[ ] Shell deny tested.
+[ ] Boundary enforcement tested.
+[ ] All tests use mock providers and temp resources.
+```
+
+### Phase 14B
+
+```text
+[ ] Regression tests for session-runner, plan gate, tool interaction paths.
+[ ] Security tests for path safety, shell deny, plan-gate enforcement.
+[ ] Fault injection tests for model faults, tool faults, abort scenarios.
+[ ] Contract tests for SDK/transport, API error envelopes, protocol/Zod schemas.
+[ ] Manual intentional-break verification procedures documented.
+[ ] Test-repeat passes at default 3 runs.
+[ ] Test-health passes all static checks.
 ```
 
 ## 14. Acceptance Criteria

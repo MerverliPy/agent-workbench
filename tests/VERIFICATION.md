@@ -1,7 +1,10 @@
 # Test Verification Guide
 
-Phase 14B-2A baseline: 212 tests, 0 failures, 664 expect() calls.
-Phase 14B-2B adds: fault-injection + contract tests.
+Phase 14B baseline (2026-06-26):
+- **272 tests**, 0 failures, 841 expect() calls
+- 23 test files across unit/integration/e2e
+- test-health: all static checks pass
+- test-repeat: deterministic across runs
 
 ## Phase 14B-2B coverage summary
 

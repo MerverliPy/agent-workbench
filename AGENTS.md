@@ -57,8 +57,11 @@ Phase 9 File Mutation Tools is accepted.
 Phase 10 Shell Execution is accepted.
 Phase 11 Agent Modes is accepted.
 Phase 12 Token Health is accepted.
+Phase 13 Pre-Run Planner is accepted.
+Phase 14A Automated Tests is accepted.
+Phase 14B Hardening is accepted.
 
-Current work is Phase 13: Pre-Run Planner, unless the user explicitly says otherwise.
+Phase 14B is the current implementation boundary. Phase 15 (provider integration planning) is next and must not start unless explicitly instructed.
 
 Phase 10 scope:
 
@@ -170,6 +173,34 @@ Phase 13 must not implement broad autonomous planner runtime, subagents, delegat
 Do not let planner logic, plan validation, plan gating, or plan execution bypass permissions, agent mode rules, tool gates, diff preview, dry-run, or token-health boundaries.
 
 Do not implement future phases unless the active phase explicitly allows it.
+
+Phase 14A scope:
+
+1. Inspect only the relevant Phase 14A docs, decisions, and the full test structure before creating tests.
+2. Add unit, integration, and e2e automated tests.
+3. Cover session runner, plan gate enforcement, tool dispatch, permission engine, token budgets, path safety, diff preview, shell deny, and boundary enforcement.
+4. Use mock model providers. No real external provider calls.
+5. Use temp directories and temp databases for isolated test runs.
+
+Phase 14A must not implement future-phase behavior.
+
+Phase 14B scope:
+
+1. Inspect only the relevant Phase 14B docs, decisions, and existing tests before adding hardening coverage.
+2. Add regression test coverage for session-runner, plan gate, and tool interaction paths.
+3. Add security test coverage for path safety, shell deny, and plan-gate enforcement.
+4. Add fault injection tests for model faults, tool faults, and abort scenarios.
+5. Add contract tests for SDK/transport, API error envelopes, and protocol/Zod schemas.
+6. Add manual intentional-break verification procedures.
+7. Ensure all tests are deterministic, use mock providers, and run against temp resources.
+
+Phase 14B must not implement new features, provider integration, PTY, subagents, or future-phase behavior.
+
+Phase 15 scope:
+
+1. Provider integration planning only. Do not implement provider adapters or model routing until Phase 15 scope is confirmed.
+2. Phase 15 must not alter tested safety boundaries, permission enforcement, tool gates, planner gates, shell preview, or diff preview.
+3. No subagents, delegation, PTY, terminal emulation, or changes to completed phases.
 
 Protocol Rules
 

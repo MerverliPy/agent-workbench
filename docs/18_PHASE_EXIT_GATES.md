@@ -1,7 +1,7 @@
 # 18 — Phase Exit Gates
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready phase gate checklist  
+Status: Phase 14B complete; Phase 15 planned
+Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
 
 ## 1. Purpose
@@ -270,7 +270,52 @@ Phase 12 is complete only when:
 [ ] Token estimates are clearly marked as estimates when applicable.
 ```
 
-## 16. Cross-Phase Blockers
+## 16. Phase 13 Exit Gate — Pre-Run Planner
+
+Phase 13 is complete only when:
+
+```text
+[ ] Plan data structures and validation exist.
+[ ] Plan gate enforcement exists.
+[ ] Plans identify target files and risky steps.
+[ ] Plans cannot bypass permissions, diff preview, or dry-run.
+[ ] Plans cannot execute tools directly.
+[ ] Risky plans require approval according to policy.
+[ ] Plan events are recorded in ledger.
+[ ] TUI displays plan summaries and risk indicators without owning plan logic.
+```
+
+## 17. Phase 14A Exit Gate — Automated Tests
+
+Phase 14A is complete only when:
+
+```text
+[ ] Unit tests exist for protocol, permissions, tools, tokens, planner, cache, diff.
+[ ] Integration tests exist for core runtime, storage, shell, diff, SDK/transport.
+[ ] E2E tests exist for server health, session lifecycle, TUI boundary, localhost security.
+[ ] Tests cover session runner, plan gate enforcement, tool dispatch, permission engine.
+[ ] Tests cover token budgets, path safety, diff preview, shell deny.
+[ ] All tests use mock model providers only.
+[ ] All tests use temp directories and databases for isolation.
+[ ] Test suites pass deterministically.
+```
+
+## 18. Phase 14B Exit Gate — Hardening
+
+Phase 14B is complete only when:
+
+```text
+[ ] Regression tests exist and pass for session-runner, plan gate, tool interaction paths.
+[ ] Security tests exist and pass for path safety, shell deny, plan-gate enforcement.
+[ ] Fault injection tests exist and pass for model faults, tool faults, abort scenarios.
+[ ] Contract tests exist and pass for SDK/transport, API error envelopes, protocol/Zod schemas.
+[ ] Manual intentional-break verification procedures are documented.
+[ ] All tests use mock providers and temp resources.
+[ ] Test-repeat passes at default 3 runs.
+[ ] Test-health passes all static checks.
+```
+
+## 19. Cross-Phase Blockers
 
 These conditions block progress:
 
@@ -285,7 +330,7 @@ These conditions block progress:
 [ ] Phase 0 contains implementation files.
 ```
 
-## 17. Phase Advancement Checklist
+## 20. Phase Advancement Checklist
 
 Before starting a new phase, answer:
 
@@ -298,7 +343,7 @@ Before starting a new phase, answer:
 [ ] Will this work create files allowed in the current phase?
 ```
 
-## 18. Agent Instructions
+## 21. Agent Instructions
 
 Future agents must:
 
@@ -309,7 +354,7 @@ Future agents must:
 5. Record unresolved issues.
 6. Ask only when required; otherwise proceed with documented defaults.
 
-## 19. Validation Checklist
+## 22. Validation Checklist
 
 ```text
 [ ] Every phase has an exit gate.

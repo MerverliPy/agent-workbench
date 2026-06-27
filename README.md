@@ -1,9 +1,9 @@
 # agent-workbench
 
-Status: Phase 0 — Planning Docs  
-Project type: local-first OpenCode-style agent TUI workbench  
-Documentation depth: agent-ready  
-Implementation status: non-functional planning only
+Status: Phase 14B complete (hardening); Phase 15 next (provider integration planning)
+Project type: local-first OpenCode-style agent TUI workbench
+Latest pushed commit: 76f6316 Implement Phase 14B-2B fault injection contract tests
+Test baseline: 272 tests, 0 failures, 841 expect() calls
 
 ## 1. Project Summary
 
@@ -23,56 +23,33 @@ Custom permission engine
 Custom tool runtime
 ```
 
-## 2. Current Phase
+## 2. Current State
 
-The project is currently in **Phase 0 — Planning Docs**.
+Phases 0–13, 14A, and 14B are complete. Phase 15 (provider integration planning) is next and not started.
 
-Phase 0 is strict non-functional planning. It must produce implementation-ready Markdown documentation only.
+Phase 0 planning docs (docs/00 through docs/19) remain the architectural source of truth. Their "Phase 0" status labels refer to planning origin, not current project phase.
 
-## 3. Phase 0 Allowed Files
+## 3. Implementation Status
 
-Only the following files and folders are allowed in Phase 0:
+All core systems are implemented:
 
-```text
-agent-workbench/
-├─ README.md
-├─ docs/
-└─ decisions/
-```
-
-This batch covers:
-
-```text
-README.md
-docs/00_PROJECT_INTENT.md
-docs/01_TECH_STACK_DECISION.md
-docs/02_ARCHITECTURE.md
-docs/03_BACKEND_FRONTEND_BOUNDARY.md
-docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
-docs/05_PERMISSION_MODEL.md
-docs/06_SECURITY_MODEL.md
-```
-
-## 4. Phase 0 Forbidden Files
-
-Do not create the following in Phase 0:
-
-```text
-package.json
-bun.lock
-apps/
-packages/
-src/
-tests/
-scripts/
-runtime files
-placeholder implementation files
-generated SDK files
-database migrations
-OpenAPI generated output
-```
-
-If a future agent creates any of these during Phase 0, it is violating the current project contract.
+- Terminal UI (apps/tui) — thin client, rendering only
+- Local server (apps/server) — HTTP/SSE control plane
+- Schema-first protocol (packages/protocol) — Zod contracts, OpenAPI
+- Typed SDK (packages/sdk) — validated client transport
+- Core runtime (packages/core) — session runner, tool dispatch, permission orchestration
+- Storage (packages/storage) — SQLite/Drizzle, 10 tables, repositories
+- Read-only tools (packages/tools) — read, grep, glob
+- Permission engine (packages/permissions) — allow/ask/deny, path/command/agent rules
+- File mutation tools (packages/tools) — write, edit, apply_patch, diff preview
+- Shell execution (packages/shell) — command runner, risk classification, preview
+- Agent modes (packages/core) — Build and Plan agents
+- Token health (packages/tokens) — budget tracking, compaction support
+- Pre-run planner (packages/planner) — mutation plans, plan gate enforcement
+- Read/search cache (packages/cache) — invalidation on mutation
+- Dry-run preview (packages/diff, packages/shell) — file and command preview
+- Automated testing — unit, integration, e2e, fault injection, contract tests
+- Hardening — regression, security, fault injection, contract test coverage
 
 ## 5. Target System Model
 
@@ -120,79 +97,74 @@ The system must eventually support:
   - token-health panel
   - dry-run preview for file edits and shell commands
 
-## 7. Phase Order
-
-Future work must follow this order:
+## 7. Phase Completion Summary
 
 ```text
-Phase 0  Planning docs
-Phase 1  Workspace scaffold
-Phase 2  Protocol contract
-Phase 3  Local server
-Phase 4  TUI shell
-Phase 5  Storage
-Phase 6  Core runtime
-Phase 7  Read-only tools
-Phase 8  Permission engine
-Phase 9  File mutation tools
-Phase 10 Shell execution
-Phase 11 Agent modes
-Phase 12 Token health
+Phase 0  Planning docs           COMPLETE
+Phase 1  Workspace scaffold      COMPLETE
+Phase 2  Protocol contract       COMPLETE
+Phase 3  Local server            COMPLETE
+Phase 4  TUI shell               COMPLETE
+Phase 5  Storage                 COMPLETE
+Phase 6  Core runtime            COMPLETE
+Phase 7  Read-only tools         COMPLETE
+Phase 8  Permission engine       COMPLETE
+Phase 9  File mutation tools     COMPLETE
+Phase 10 Shell execution         COMPLETE
+Phase 11 Agent modes             COMPLETE
+Phase 12 Token health            COMPLETE
+Phase 13 Pre-run planner         COMPLETE
+Phase 14A Automated tests        COMPLETE
+Phase 14B Hardening              COMPLETE
+Phase 15 Provider integration    NOT STARTED (next)
 ```
 
-No phase may depend on a later phase. If a later concept is needed earlier, document the interface or placeholder contract, not implementation code.
+## 8. Next Steps
 
-## 8. Current Next Step
+Phase 15 (provider integration planning) is the next milestone. It has not started.
 
-After this batch, continue generating Phase 0 docs:
-
-```text
-docs/07_API_CONTRACT_PLAN.md
-docs/08_DATA_MODEL_PLAN.md
-docs/09_AGENT_MODEL.md
-docs/10_TOOL_RUNTIME_MODEL.md
-docs/11_TOKEN_HEALTH_MODEL.md
-docs/12_TUI_UX_MODEL.md
-docs/13_RUN_LEDGER_MODEL.md
-docs/14_DRY_RUN_MODEL.md
-docs/15_CACHE_MODEL.md
-docs/16_TESTING_STRATEGY.md
-docs/17_RISK_REGISTER.md
-docs/18_PHASE_EXIT_GATES.md
-docs/19_TARGET_REPO_TREE.md
-decisions/*.md
-```
+The implementation baseline is hardened through Phase 14B. Provider integration should build from this baseline without altering tested safety boundaries.
 
 ## 9. Agent Instructions
 
 When continuing this project:
 
-1. Treat these docs as the source of truth.
+1. Treat docs and decisions as the source of truth.
 2. Do not re-ask answered architectural questions.
 3. Do not invent unresolved details.
 4. Mark uncertainty as `Unknown`, `Unresolved`, `Needs confirmation`, or `Provisional`.
-5. Do not create implementation files during Phase 0.
-6. Preserve the TUI/server/core/storage/permission boundaries.
-7. Preserve schema-first API design.
-8. Preserve localhost-only server default.
-9. Preserve full run ledger requirement.
-10. Preserve permission-gated file and shell execution.
+5. Preserve the TUI/server/core/storage/permission boundaries.
+6. Preserve schema-first API design.
+7. Preserve localhost-only server default.
+8. Preserve full run ledger requirement.
+9. Preserve permission-gated file and shell execution.
+10. Phase 15 (provider integration) is next. Do not start it unless explicitly instructed.
 
-## 10. Validation Checklist
+## 10. Verification Commands
 
-Before leaving Phase 0:
+```bash
+# Full test suite
+bun test                           # 272 tests, 0 failures
 
-```text
-[ ] README.md exists.
-[ ] docs/00 through docs/19 exist.
-[ ] decisions/0001 through decisions/0015 exist.
-[ ] No package.json exists.
-[ ] No apps/ folder exists.
-[ ] No packages/ folder exists.
-[ ] No src/ folder exists.
-[ ] No tests/ folder exists.
-[ ] No scripts/ folder exists.
-[ ] All docs state that Phase 0 is non-functional planning only.
-[ ] All risky systems have documented permissions and ledger requirements.
-[ ] The exact next phase is Phase 1 — Workspace Scaffold.
+# Per-category
+bun run test:unit
+bun run test:integration
+bun run test:e2e
+
+# Static health checks
+bash scripts/test-health.sh
+
+# Repeatability (default 3 runs)
+TEST_REPEAT_COUNT=3 bun run test:repeat
+```
+
+Type-check and build verification (from repo root):
+
+```bash
+cd packages/protocol && bun run typecheck
+cd packages/storage && bun run typecheck
+cd packages/core && bun run typecheck
+cd packages/sdk && bun run typecheck
+cd apps/server && bun run typecheck
+cd apps/tui && bun run typecheck
 ```

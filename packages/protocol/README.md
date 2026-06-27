@@ -1,7 +1,7 @@
 # @agent-workbench/protocol
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 2 — Protocol Contract
+Implementation status: Zod schemas, route contracts, OpenAPI generation
 
 ## Purpose
 

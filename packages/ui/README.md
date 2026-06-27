@@ -1,6 +1,6 @@
 # @agent-workbench/ui
 
-Status: Phase 1 — Workspace Scaffold  
+Status: Phase 1 — Workspace Scaffold
 Implementation status: empty package shell
 
 ## Purpose

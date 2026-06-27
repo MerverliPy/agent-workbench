@@ -1,8 +1,8 @@
 # 04 — Implementation Phase Checklist
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready implementation checklist  
-Scope: phases 0 through 12, dependencies, gates, and forbidden shortcuts
+Status: Phase 14B complete; Phase 15 planned
+Document type: agent-ready implementation checklist
+Scope: phases 0 through 15, dependencies, gates, and forbidden shortcuts
 
 ## 1. Purpose
 
@@ -26,6 +26,10 @@ Phase 9  File mutation tools
 Phase 10 Shell execution
 Phase 11 Agent modes
 Phase 12 Token health
+Phase 13 Pre-run planner
+Phase 14A Automated tests
+Phase 14B Hardening
+Phase 15 Provider integration (next, not started)
 ```
 
 ## 3. Phase 0 — Planning Docs
@@ -483,7 +487,105 @@ Keep long sessions usable.
 [ ] Important facts are preserved in summaries.
 ```
 
-## 16. Cross-Phase Rules
+## 16. Phase 13 — Pre-Run Planner
+
+### Purpose
+
+Require execution plans before mutation and risky operations.
+
+### Requirements
+
+```text
+[ ] Create plan data structures and validation.
+[ ] Implement plan gate enforcement.
+[ ] Integrate plan permission evaluation.
+[ ] Add plan event emission.
+[ ] Add plan ledger records.
+[ ] TUI displays plan summaries and risk indicators.
+```
+
+### Exit Gate
+
+```text
+[ ] Plans identify target files and risky steps.
+[ ] Plans cannot bypass permissions, diff preview, or dry-run.
+[ ] Plans cannot execute tools directly.
+[ ] Risky plans require approval according to policy.
+[ ] Plan events are recorded in ledger.
+```
+
+## 17. Phase 14A — Automated Tests
+
+### Purpose
+
+Add comprehensive automated test coverage for all implemented systems.
+
+### Requirements
+
+```text
+[ ] Add unit tests for protocol, permissions, tools, tokens, planner, cache, diff packages.
+[ ] Add integration tests for core runtime, storage, shell, diff, SDK/transport.
+[ ] Add e2e tests for server health, session lifecycle, TUI boundary, localhost security.
+[ ] Cover session runner, plan gate enforcement, tool dispatch, permission engine.
+[ ] Cover token budgets, path safety, diff preview, shell deny.
+[ ] Use mock model providers only. No real external provider calls.
+[ ] Use temp directories and temp databases for isolated test runs.
+```
+
+### Exit Gate
+
+```text
+[ ] All implemented phases have test coverage.
+[ ] Unit, integration, and e2e test suites pass.
+[ ] No tests depend on real model providers.
+[ ] No tests depend on external network access.
+[ ] Tests are deterministic and isolated.
+```
+
+## 18. Phase 14B — Hardening
+
+### Purpose
+
+Harden test coverage with regression, security, fault injection, and contract tests.
+
+### Requirements
+
+```text
+[ ] Add regression test coverage for session-runner, plan gate, tool interaction paths.
+[ ] Add security test coverage for path safety, shell deny, plan-gate enforcement.
+[ ] Add fault injection tests for model faults, tool faults, abort scenarios.
+[ ] Add contract tests for SDK/transport, API error envelopes, protocol/Zod schemas.
+[ ] Add manual intentional-break verification procedures.
+[ ] All tests use mock providers and temp resources.
+```
+
+### Exit Gate
+
+```text
+[ ] Regression tests pass.
+[ ] Security tests pass.
+[ ] Fault injection tests pass.
+[ ] Contract tests pass.
+[ ] Intentional-break procedures verify test detection.
+[ ] Test-repeat passes at default 3 runs.
+[ ] Test-health passes all static checks.
+```
+
+## 19. Phase 15 — Provider Integration (Next, Not Started)
+
+### Purpose
+
+Plan provider integration. Do not implement provider adapters or model routing.
+
+### Requirements
+
+```text
+[ ] Provider integration planning only.
+[ ] Must not alter tested safety boundaries.
+[ ] Must not bypass permission enforcement, tool gates, planner gates, or previews.
+```
+
+## 20. Cross-Phase Rules
 
 Do not:
 
@@ -497,25 +599,29 @@ Do not:
 [ ] Implement automatic compaction without visibility.
 ```
 
-## 17. Phase Completion Status
+## 21. Phase Completion Status
 
 | Phase | Name | Status |
 |---:|---|---|
-| 0 | Planning Docs | In progress |
-| 1 | Workspace Scaffold | Not started |
-| 2 | Protocol Contract | Not started |
-| 3 | Local Server | Not started |
-| 4 | TUI Shell | Not started |
-| 5 | Storage | Not started |
-| 6 | Core Runtime | Not started |
-| 7 | Read-Only Tools | Not started |
-| 8 | Permission Engine | Not started |
-| 9 | File Mutation Tools | Not started |
-| 10 | Shell Execution | Not started |
-| 11 | Agent Modes | Not started |
-| 12 | Token Health | Not started |
+| 0 | Planning Docs | Complete |
+| 1 | Workspace Scaffold | Complete |
+| 2 | Protocol Contract | Complete |
+| 3 | Local Server | Complete |
+| 4 | TUI Shell | Complete |
+| 5 | Storage | Complete |
+| 6 | Core Runtime | Complete |
+| 7 | Read-Only Tools | Complete |
+| 8 | Permission Engine | Complete |
+| 9 | File Mutation Tools | Complete |
+| 10 | Shell Execution | Complete |
+| 11 | Agent Modes | Complete |
+| 12 | Token Health | Complete |
+| 13 | Pre-Run Planner | Complete |
+| 14A | Automated Tests | Complete |
+| 14B | Hardening | Complete |
+| 15 | Provider Integration | Not started |
 
-## 18. Agent Instructions
+## 22. Agent Instructions
 
 Future agents must:
 
@@ -526,7 +632,7 @@ Future agents must:
 5. Avoid hidden implementation assumptions.
 6. Preserve the stack and boundaries.
 
-## 19. Validation Checklist
+## 23. Validation Checklist
 
 ```text
 [ ] Every phase has a purpose.

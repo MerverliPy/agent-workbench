@@ -1,7 +1,7 @@
 # @agent-workbench/sdk
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 2 — Protocol Contract / SDK
+Implementation status: typed client transport, HTTP/SSE, request validation
 
 ## Purpose
 

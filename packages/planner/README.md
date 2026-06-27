@@ -1,7 +1,7 @@
 # @agent-workbench/planner
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 13 — Pre-Run Planner
+Implementation status: plan data structures, validation, risk classification
 
 ## Purpose
 

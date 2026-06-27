@@ -1,7 +1,7 @@
 # @agent-workbench/core
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 6 — Core Runtime
+Implementation status: session runner, tool dispatch, permission orchestration, plan gate
 
 ## Purpose
 

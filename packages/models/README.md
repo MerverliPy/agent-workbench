@@ -1,7 +1,7 @@
 # @agent-workbench/models
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 6 — Core Runtime / Model infrastructure
+Implementation status: mock model provider, model types; provider adapters deferred to Phase 15
 
 ## Purpose
 

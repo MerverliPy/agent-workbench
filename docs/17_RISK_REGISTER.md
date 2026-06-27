@@ -1,7 +1,7 @@
 # 17 — Risk Register
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready risk register  
+Status: Planning artifact (Phase 0 origin); reviewed through Phase 14B
+Document type: agent-ready risk register
 Scope: architectural, security, implementation, UX, data, and operational risks
 
 ## 1. Purpose

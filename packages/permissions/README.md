@@ -1,7 +1,7 @@
 # @agent-workbench/permissions
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 8 — Permission Engine
+Implementation status: allow/ask/deny engine, path/command/agent rules
 
 ## Purpose
 

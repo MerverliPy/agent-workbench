@@ -1,7 +1,7 @@
 # @agent-workbench/tokens
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 12 — Token Health
+Implementation status: budget models, token counting/estimation, compaction support
 
 ## Purpose
 

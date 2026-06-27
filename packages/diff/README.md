@@ -1,7 +1,7 @@
 # @agent-workbench/diff
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 9 — File Mutation Tools
+Implementation status: diff preview, patch apply, dry-run
 
 ## Purpose
 

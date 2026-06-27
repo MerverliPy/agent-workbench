@@ -1,7 +1,7 @@
 # @agent-workbench/cache
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+Status: Phase 7 — Read-Only Tools / Cache
+Implementation status: read/grep/glob cache with invalidation
 
 ## Purpose
 
