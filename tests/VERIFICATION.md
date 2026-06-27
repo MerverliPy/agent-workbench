@@ -1,10 +1,45 @@
 # Test Verification Guide
 
-Phase 14B baseline (2026-06-26):
-- **272 tests**, 0 failures, 841 expect() calls
-- 23 test files across unit/integration/e2e
+Phase 15 baseline (2026-06-26):
+- **323 tests**, 0 failures, 961 expect() calls
+- 27 test files across unit/integration/e2e
 - test-health: all static checks pass
-- test-repeat: deterministic across runs
+- test-repeat: deterministic across 3 runs
+
+## Phase 15 coverage summary
+
+### Provider unit tests
+
+```bash
+bun test tests/unit/models/
+```
+
+Coverage:
+- **OpenAI-compatible provider**: text response mapping, tool call mapping, usage fields, request building (tools, max_tokens, auth header), HTTP error handling (401, 403, 429, 5xx), API key redaction in errors, malformed response handling (non-JSON, missing choices, non-object), abort signal handling
+- **Provider config**: env var parsing (AGENT_WORKBENCH_PROVIDER, OPENAI_API_KEY, OPENAI_BASE_URL, AGENT_WORKBENCH_MODEL), missing key errors, default values
+- **Secret redaction**: API key redaction, Bearer token redaction, string/header/error redaction, nested cause-chain redaction
+
+### Provider route integration tests
+
+```bash
+bun test tests/integration/server/provider-routes.test.ts
+```
+
+Coverage:
+- GET /provider: returns schema-valid provider list, no secrets exposed
+- GET /provider/:providerId: metadata for known provider, 404 for unknown
+- GET /provider/:providerId/model: model list for known provider, 404 for unknown
+- Custom provider from test options is accessible via routes
+
+### Provider implementation
+
+- packages/models: ProviderConfigError, ProviderAuthError, ProviderRateLimitError, ProviderServerError, ProviderResponseError
+- packages/models: OpenAICompatibleProvider implementing ModelProvider with injectable fetch
+- packages/models: ProviderRegistry with stub + optional OpenAI-compatible registration
+- packages/models: parseProviderConfig from environment variables
+- packages/models: redactApiKey, redactAuthorizationHeader, redactString, redactHeaders, redactError
+- apps/server: provider-routes.ts with thin handler for all 3 provider endpoints
+- apps/server: ProviderRegistry integrated into server services and app context
 
 ## Phase 14B-2B coverage summary
 

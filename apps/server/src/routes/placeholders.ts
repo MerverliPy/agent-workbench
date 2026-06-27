@@ -7,11 +7,8 @@ import {
   GetEffectiveConfigRoute,
   GetFileDiffRoute,
   GetFileTreeRoute,
-  GetProviderRoute,
   GetTuiStateRoute,
   ListFilesRoute,
-  ListProviderModelsRoute,
-  ListProvidersRoute,
   ListToolsRoute,
   GetToolRoute,
   PrefillPromptRoute,
@@ -28,6 +25,8 @@ import { createNotImplementedHandler } from "./helpers";
  * Session and message routes were removed from this list in Phase 6.
  * Permission routes were removed from this list in Phase 8 (now real handlers
  * in permission-routes.ts).
+ * Provider routes were removed from this list in Phase 15 (now real handlers
+ * in provider-routes.ts).
  */
 interface PlaceholderRouteDefinition {
   readonly contract: RouteContract;
@@ -38,9 +37,6 @@ const placeholderRoutes: readonly PlaceholderRouteDefinition[] = [
   { contract: GetConfigRoute, routeName: "config.get" },
   { contract: GetEffectiveConfigRoute, routeName: "config.getEffective" },
   { contract: ValidateConfigRoute, routeName: "config.validate" },
-  { contract: ListProvidersRoute, routeName: "provider.list" },
-  { contract: GetProviderRoute, routeName: "provider.get" },
-  { contract: ListProviderModelsRoute, routeName: "provider.listModels" },
   { contract: ListFilesRoute, routeName: "file.list" },
   { contract: ReadFileRoute, routeName: "file.read" },
   { contract: GetFileDiffRoute, routeName: "file.diff" },

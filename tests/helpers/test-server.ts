@@ -5,6 +5,7 @@ import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workben
 import { EventBus } from "@agent-workbench/events";
 import { MockModelProvider } from "./mock-model";
 import type { MockModelTurn } from "./mock-model";
+import { ProviderRegistry } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
@@ -49,6 +50,7 @@ export interface TestServer {
   toolCallRepository: ToolCallRepository;
   fileChangeRepository: FileChangeRepository;
   shellRunner: SimpleCommandRunner;
+  providerRegistry: ProviderRegistry;
 }
 
 export function createTestServer(options: TestServerOptions): TestServer {
@@ -78,6 +80,8 @@ export function createTestServer(options: TestServerOptions): TestServer {
   const modelProvider = options.modelProvider ?? new MockModelProvider(options.modelTurns ?? []);
   const agentRegistry = new AgentRegistry();
   const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
+
+  const providerRegistry = new ProviderRegistry({ defaultProvider: modelProvider });
 
   const sessionRunner = new SessionRunner({
     sessionRepository,
@@ -119,6 +123,7 @@ export function createTestServer(options: TestServerOptions): TestServer {
     tokenHealthService,
     summaryRepository,
     planRepository,
+    providerRegistry,
   };
 
   const app = createApp({ config, services });
@@ -139,5 +144,6 @@ export function createTestServer(options: TestServerOptions): TestServer {
     toolCallRepository,
     fileChangeRepository,
     shellRunner,
+    providerRegistry,
   };
 }

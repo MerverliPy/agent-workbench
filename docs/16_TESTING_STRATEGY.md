@@ -1,6 +1,6 @@
 # 16 — Testing Strategy
 
-Status: Phase 14B complete (hardened test coverage)
+Status: Phase 15 complete
 Document type: agent-ready testing strategy
 Scope: unit, integration, e2e, security, boundary, storage, tool, fault injection, and contract tests
 
@@ -416,6 +416,20 @@ real environment files
 [ ] Manual intentional-break verification procedures documented.
 [ ] Test-repeat passes at default 3 runs.
 [ ] Test-health passes all static checks.
+```
+
+### Phase 15
+
+```text
+[x] Unit tests for OpenAI-compatible provider adapter (text mapping, tool calls, error handling, abort, redaction).
+[x] Unit tests for provider configuration parsing (env vars, missing key, defaults).
+[x] Unit tests for secret redaction utilities (API keys, auth headers, error chains).
+[x] Integration tests for provider routes (schema validation, secrets not exposed, 404 errors).
+[x] All provider tests use fake fetch/mock HTTP only.
+[x] No tests require OPENAI_API_KEY or network access.
+[x] Existing Phase 14B fault/contract tests continue to pass.
+[x] Test-repeat passes at default 3 runs.
+[x] Test-health passes all static checks.
 ```
 
 ## 14. Acceptance Criteria

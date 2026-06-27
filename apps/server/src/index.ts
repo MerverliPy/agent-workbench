@@ -1,6 +1,6 @@
 import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
-import { StubModelProvider } from "@agent-workbench/models";
+import { ProviderRegistry } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
 import {
@@ -63,11 +63,9 @@ registerReadOnlyTools(toolRegistry, { cache: toolCache });
 registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
 registerShellTool(toolRegistry, { shellRunner });
 
-// ── Model provider ───────────────────────────────────────────────────────────
-// Phase 6: stub provider. Real adapters will be added in a future phase.
-const modelProvider = new StubModelProvider({
-  textResponse: "Hello! I am the agent-workbench stub assistant. Real model providers will be added in a future phase.",
-});
+// ── Phase 15: Provider registry ──────────────────────────────────────────────
+const providerRegistry = new ProviderRegistry();
+const modelProvider = providerRegistry.getDefaultProvider();
 
 // ── Phase 11: Agent registry ──────────────────────────────────────────────────
 const agentRegistry = new AgentRegistry();
@@ -111,13 +109,14 @@ const app = createApp({
     tokenHealthService,
     summaryRepository,
     planRepository,
+    providerRegistry,
   },
 });
 
 console.log(`[server] Binding to http://${config.host}:${config.port}`);
 console.log("[server] Phase 10 — Shell Execution active");
 console.log(`[server] Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
-console.log("[server] Using StubModelProvider (real providers are a future phase)");
+console.log("[server] Phase 15 — Provider integration active");
 
 export default {
   port: config.port,

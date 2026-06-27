@@ -61,7 +61,7 @@ Phase 13 Pre-Run Planner is accepted.
 Phase 14A Automated Tests is accepted.
 Phase 14B Hardening is accepted.
 
-Phase 14B is the current implementation boundary. Phase 15 (provider integration planning) is next and must not start unless explicitly instructed.
+Phase 15 is the current implementation boundary. Phase 16 is next and not yet defined.
 
 Phase 10 scope:
 
@@ -198,9 +198,14 @@ Phase 14B must not implement new features, provider integration, PTY, subagents,
 
 Phase 15 scope:
 
-1. Provider integration planning only. Do not implement provider adapters or model routing until Phase 15 scope is confirmed.
-2. Phase 15 must not alter tested safety boundaries, permission enforcement, tool gates, planner gates, shell preview, or diff preview.
-3. No subagents, delegation, PTY, terminal emulation, or changes to completed phases.
+1. One minimal OpenAI-compatible provider adapter behind the existing ModelProvider interface.
+2. Provider configuration from environment variables only.
+3. Provider registry for server wiring.
+4. Real provider route handlers for GET /provider, GET /provider/:providerId, GET /provider/:providerId/model.
+5. Provider error normalization and secret redaction.
+6. Offline tests with fake fetch/mock HTTP.
+7. No streaming, no provider-specific TUI, no broad provider matrix.
+8. No subagents, delegation, PTY, terminal emulation, or changes to completed phases.
 
 Protocol Rules
 

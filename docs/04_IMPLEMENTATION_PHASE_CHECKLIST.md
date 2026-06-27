@@ -1,8 +1,8 @@
 # 04 — Implementation Phase Checklist
 
-Status: Phase 14B complete; Phase 15 planned
+Status: Phase 15 complete; Phase 16 next
 Document type: agent-ready implementation checklist
-Scope: phases 0 through 15, dependencies, gates, and forbidden shortcuts
+Scope: phases 0 through 16, dependencies, gates, and forbidden shortcuts
 
 ## 1. Purpose
 
@@ -29,7 +29,7 @@ Phase 12 Token health
 Phase 13 Pre-run planner
 Phase 14A Automated tests
 Phase 14B Hardening
-Phase 15 Provider integration (next, not started)
+Phase 15 Provider integration (complete)
 ```
 
 ## 3. Phase 0 — Planning Docs
@@ -571,18 +571,26 @@ Harden test coverage with regression, security, fault injection, and contract te
 [ ] Test-health passes all static checks.
 ```
 
-## 19. Phase 15 — Provider Integration (Next, Not Started)
+## 19. Phase 15 — Provider Integration (Complete)
 
 ### Purpose
 
-Plan provider integration. Do not implement provider adapters or model routing.
+Add a minimal OpenAI-compatible provider adapter behind the existing ModelProvider interface.
 
 ### Requirements
 
 ```text
-[ ] Provider integration planning only.
-[ ] Must not alter tested safety boundaries.
-[ ] Must not bypass permission enforcement, tool gates, planner gates, or previews.
+[x] One minimal OpenAI-compatible provider adapter (OpenAICompatibleProvider).
+[x] Provider configuration from environment variables only (AGENT_WORKBENCH_PROVIDER, OPENAI_API_KEY, OPENAI_BASE_URL).
+[x] Provider registry/factory for server wiring.
+[x] Real provider route handlers (GET /provider, GET /provider/:providerId, GET /provider/:providerId/model).
+[x] Provider error normalization (auth, rate-limit, server, response errors).
+[x] Secret redaction (API keys, Authorization headers, Bearer tokens).
+[x] Offline tests with fake fetch/mock HTTP only.
+[x] No streaming, no provider-specific TUI, no broad provider matrix.
+[x] Default tests remain offline and do not require real API keys.
+[x] Must not alter tested safety boundaries.
+[x] Must not bypass permission enforcement, tool gates, planner gates, or previews.
 ```
 
 ## 20. Cross-Phase Rules
@@ -619,7 +627,7 @@ Do not:
 | 13 | Pre-Run Planner | Complete |
 | 14A | Automated Tests | Complete |
 | 14B | Hardening | Complete |
-| 15 | Provider Integration | Not started |
+| 15 | Provider Integration | Complete |
 
 ## 22. Agent Instructions
 

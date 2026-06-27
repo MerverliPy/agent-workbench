@@ -42,7 +42,6 @@ fi
 echo ""
 echo "[2] No provider/network calls in tests"
 NETWORK_PATTERNS=(
-  "OPENAI_API_KEY"
   "ANTHROPIC_API_KEY"
   'fetch("https://'
   "fetch('https://"

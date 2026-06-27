@@ -1,6 +1,6 @@
 # 18 — Phase Exit Gates
 
-Status: Phase 14B complete; Phase 15 planned
+Status: Phase 15 complete; Phase 16 next
 Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
 
@@ -315,7 +315,39 @@ Phase 14B is complete only when:
 [ ] Test-health passes all static checks.
 ```
 
-## 19. Cross-Phase Blockers
+## 19. Phase 15 Exit Gate — Provider Integration
+
+Phase 15 is complete only when:
+
+```text
+[x] OpenAI-compatible provider adapter implements ModelProvider interface.
+[x] Provider adapter maps text responses correctly.
+[x] Provider adapter maps tool calls correctly.
+[x] Provider adapter normalizes usage fields when present.
+[x] Provider adapter handles HTTP auth errors safely.
+[x] Provider adapter handles HTTP rate-limit/server errors safely.
+[x] Provider adapter handles malformed provider JSON safely.
+[x] Provider adapter handles abort signals.
+[x] Provider adapter redacts API keys and Authorization headers from all exposed errors.
+[x] Provider configuration is parsed from environment variables only.
+[x] Missing API key/config produces safe, recoverable configuration errors.
+[x] Config parsing does not log or expose secret values.
+[x] Provider registry provides metadata for provider routes.
+[x] GET /provider returns schema-valid provider list.
+[x] GET /provider/:providerId returns provider metadata or structured not-found error.
+[x] GET /provider/:providerId/model returns model list or structured not-found error.
+[x] Provider routes do not expose secrets.
+[x] StubModelProvider and all test mock providers continue to work unchanged.
+[x] All provider tests use fake fetch/mock HTTP only.
+[x] No tests require OPENAI_API_KEY or network access.
+[x] Existing Phase 14B fault/contract tests continue to pass.
+[x] Test-health passes all static checks.
+[x] Test-repeat passes all 3 runs.
+[x] git diff --check is clean.
+[x] No streaming, no provider-specific TUI, no broad provider matrix.
+```
+
+## 20. Cross-Phase Blockers
 
 These conditions block progress:
 
@@ -330,7 +362,7 @@ These conditions block progress:
 [ ] Phase 0 contains implementation files.
 ```
 
-## 20. Phase Advancement Checklist
+## 21. Phase Advancement Checklist
 
 Before starting a new phase, answer:
 
@@ -343,7 +375,7 @@ Before starting a new phase, answer:
 [ ] Will this work create files allowed in the current phase?
 ```
 
-## 21. Agent Instructions
+## 22. Agent Instructions
 
 Future agents must:
 
@@ -354,7 +386,7 @@ Future agents must:
 5. Record unresolved issues.
 6. Ask only when required; otherwise proceed with documented defaults.
 
-## 22. Validation Checklist
+## 23. Validation Checklist
 
 ```text
 [ ] Every phase has an exit gate.

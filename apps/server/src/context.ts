@@ -1,4 +1,5 @@
 import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
+import type { ProviderRegistry } from "@agent-workbench/models";
 import type { EventBus } from "@agent-workbench/events";
 import type {
   SessionRepository,
@@ -33,6 +34,8 @@ export interface ServerServices {
   readonly summaryRepository: SummaryRepository;
   // Phase 13: plan repository
   readonly planRepository: PlanRepository;
+  // Phase 15: provider registry
+  readonly providerRegistry: ProviderRegistry;
 }
 
 export type ServerAppBindings = {

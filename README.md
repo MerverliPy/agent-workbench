@@ -1,9 +1,9 @@
 # agent-workbench
 
-Status: Phase 14B complete (hardening); Phase 15 next (provider integration planning)
+Status: Phase 15 complete (provider integration); Phase 16 next
 Project type: local-first OpenCode-style agent TUI workbench
-Latest pushed commit: 76f6316 Implement Phase 14B-2B fault injection contract tests
-Test baseline: 272 tests, 0 failures, 841 expect() calls
+Latest pushed commit: 5ffbc80 Update repo docs for Phase 14B wrap-up
+Test baseline: 323 tests, 0 failures, 961 expect() calls
 
 ## 1. Project Summary
 
@@ -25,7 +25,7 @@ Custom tool runtime
 
 ## 2. Current State
 
-Phases 0–13, 14A, and 14B are complete. Phase 15 (provider integration planning) is next and not started.
+Phases 0–15 are complete. Phase 15 adds a minimal OpenAI-compatible provider adapter behind the existing ModelProvider interface, provider configuration from environment variables, and provider metadata routes.
 
 Phase 0 planning docs (docs/00 through docs/19) remain the architectural source of truth. Their "Phase 0" status labels refer to planning origin, not current project phase.
 
@@ -116,14 +116,12 @@ Phase 12 Token health            COMPLETE
 Phase 13 Pre-run planner         COMPLETE
 Phase 14A Automated tests        COMPLETE
 Phase 14B Hardening              COMPLETE
-Phase 15 Provider integration    NOT STARTED (next)
+Phase 15 Provider integration    COMPLETE
 ```
 
 ## 8. Next Steps
 
-Phase 15 (provider integration planning) is the next milestone. It has not started.
-
-The implementation baseline is hardened through Phase 14B. Provider integration should build from this baseline without altering tested safety boundaries.
+Phase 16 is the next milestone. Not yet defined.
 
 ## 9. Agent Instructions
 
@@ -138,13 +136,13 @@ When continuing this project:
 7. Preserve localhost-only server default.
 8. Preserve full run ledger requirement.
 9. Preserve permission-gated file and shell execution.
-10. Phase 15 (provider integration) is next. Do not start it unless explicitly instructed.
+10. Provider configuration is environment-sourced. Default tests remain offline with mock providers.
 
 ## 10. Verification Commands
 
 ```bash
 # Full test suite
-bun test                           # 272 tests, 0 failures
+bun test                           # 323 tests, 0 failures
 
 # Per-category
 bun run test:unit
