@@ -51,6 +51,69 @@ All core systems are implemented:
 - Automated testing — unit, integration, e2e, fault injection, contract tests
 - Hardening — regression, security, fault injection, contract test coverage
 
+## 4. OpenCode Workflow
+
+This project follows an **OpenCode-style agent workflow** — a structured loop of planning, permission-gated execution, review, and verification.
+
+### 4.1 Plan Before Execute
+
+Every mutation or risky operation requires a plan. The agent:
+
+1. Reads relevant files and inspects the current state.
+2. Proposes a bounded plan identifying target files, steps, and risk classification.
+3. Obtains approval before writing, editing, patching, or running shell commands.
+4. Executes the approved plan through the runtime (never through the TUI).
+
+Read-only operations (read, grep, glob) do not require a plan.
+
+### 4.2 Permission Gates
+
+All tool execution passes through the permission engine. The default posture is:
+
+| Operation | Default | Notes |
+|---|---|---|
+| Read (read, grep, glob) | `allow` | No approval needed |
+| Edit / write / patch | `ask` | Requires user approval |
+| Bash / shell commands | `ask` | Requires user approval |
+| Destructive operations | `deny` | Blocked unless explicitly configured |
+
+The TUI never decides policy — it renders prompts and records decisions. All policy evaluation happens server-side in the core runtime.
+
+### 4.3 Architecture Split
+
+The workflow enforces strict boundaries:
+
+- **TUI** — rendering and user input only. Never spawns processes, executes commands, or evaluates permissions.
+- **Server** — thin HTTP/SSE routes. Delegates to core runtime; never executes tools directly.
+- **Core runtime** — orchestrates sessions, tool dispatch, permission evaluation, plan gating, and ledger recording.
+- **Packages** — tools, permissions, shell, storage, tokens, cache each own a single responsibility.
+
+### 4.4 Safety Model
+
+#### 4.4.1 Runtime Safety Guarantees
+
+- No shell command bypasses permission checks.
+- No file mutation bypasses diff preview or plan gate.
+
+#### 4.4.2 Model-Router Workflow Constraints
+
+- No Copilot model is used as the primary autonomous executor.
+- No local-only model is the final authority for high-risk work.
+- Secrets and tokens are not stored in plaintext by default.
+- The server binds to localhost by default.
+
+### 4.5 Verification in Workflow
+
+After changes, run the narrowest relevant check first:
+
+```bash
+bun test                           # full suite
+bun run typecheck                  # in the changed package or app
+bun run lint                       # if configured
+```
+
+See section 10 for the full verification command reference.
+
 ## 5. Target System Model
 
 ```text
