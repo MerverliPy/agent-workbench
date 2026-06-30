@@ -14,6 +14,14 @@ interface OpenAICompletionRequest {
     role: string;
     content: string;
     tool_call_id?: string;
+    tool_calls?: Array<{
+      id: string;
+      type: "function";
+      function: {
+        name: string;
+        arguments: string;
+      };
+    }>;
   }>;
   tools?: Array<{
     type: "function";
@@ -109,11 +117,27 @@ export class OpenAICompatibleProvider implements ModelProvider {
   }
 
   private buildRequestBody(request: ModelRequest): OpenAICompletionRequest {
-    const messages: OpenAICompletionRequest["messages"] = request.messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-      ...(m.toolCallId !== undefined ? { tool_call_id: m.toolCallId } : {}),
-    }));
+    const messages: OpenAICompletionRequest["messages"] = request.messages.map((m) => {
+      const wire: OpenAICompletionRequest["messages"][0] = {
+        role: m.role,
+        content: m.content,
+      };
+      if (m.toolCallId !== undefined) {
+        wire.tool_call_id = m.toolCallId;
+      }
+      if (m.role === "assistant" && m.toolCalls !== undefined && m.toolCalls.length > 0) {
+        wire.tool_calls = m.toolCalls.map((tc) => ({
+          id: tc.id,
+          type: "function" as const,
+          function: {
+            name: tc.name,
+            arguments: typeof tc.input === "string" ? tc.input : JSON.stringify(tc.input),
+          },
+        }));
+        wire.content = "";
+      }
+      return wire;
+    });
 
     const req: OpenAICompletionRequest = {
       model: this.model,

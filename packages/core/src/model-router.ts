@@ -30,6 +30,7 @@ export class ModelRouter {
         role: m.role,
         content: m.content,
         ...(m.toolCallId !== undefined ? { toolCallId: m.toolCallId } : {}),
+        ...(m.toolCalls !== undefined ? { toolCalls: m.toolCalls } : {}),
       })),
       ...(tools !== undefined && tools.length > 0
         ? {

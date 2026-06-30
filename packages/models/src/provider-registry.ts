@@ -1,4 +1,4 @@
-import type { ModelProvider } from "./types";
+import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
 import { StubModelProvider } from "./stub-provider";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible";
 import { parseProviderConfig } from "./provider-config";
@@ -56,6 +56,12 @@ export class ProviderRegistry {
 
     if (openAiResult === "registered") {
       this.defaultProviderId = "openai";
+    } else if (openAiResult === "error") {
+      this.defaultProviderId = "openai";
+      this.providerMap.set("openai", createConfigErrorProvider(
+        "OpenAI provider misconfigured: OPENAI_API_KEY is not set. " +
+        "Set OPENAI_API_KEY or unset AGENT_WORKBENCH_PROVIDER to use the stub."
+      ));
     } else if (options?.defaultProvider !== undefined) {
       this.defaultProviderId = "custom";
     } else {
@@ -151,4 +157,12 @@ export class ProviderRegistry {
       ...(meta.contextLimit !== undefined ? { contextLimit: meta.contextLimit } : {}),
     }];
   }
+}
+
+function createConfigErrorProvider(message: string): ModelProvider {
+  return {
+    async call(_request: ModelRequest): Promise<ModelResponse> {
+      throw new ProviderConfigError(message);
+    },
+  };
 }

@@ -71,6 +71,24 @@ export class ContextBuilder {
 
       const msg: ContextMessage = { role, content: row.content };
 
+      if (role === "assistant" && row.metadataJson !== null && row.metadataJson !== undefined) {
+        try {
+          const meta = JSON.parse(row.metadataJson) as Record<string, unknown>;
+          if (meta["type"] === "tool_calls") {
+            const calls = JSON.parse(row.content) as unknown;
+            if (Array.isArray(calls)) {
+              msg.toolCalls = calls.map((c: Record<string, unknown>) => ({
+                id: typeof c["id"] === "string" ? c["id"] : "",
+                name: typeof c["name"] === "string" ? c["name"] : "unknown",
+                input: c["input"],
+              }));
+            }
+          }
+        } catch {
+          // Ignore malformed metadata or content.
+        }
+      }
+
       if (role === "tool" && row.metadataJson !== null && row.metadataJson !== undefined) {
         try {
           const meta = JSON.parse(row.metadataJson) as Record<string, unknown>;

@@ -20,6 +20,11 @@ export interface ContextMessage {
    * original tool-call ID.
    */
   toolCallId?: string;
+  /**
+   * Present when role === "assistant" and the model requested tool calls.
+   * Used by provider adapters to reconstruct assistant tool-call turns.
+   */
+  toolCalls?: readonly ModelToolCall[];
 }
 
 /**

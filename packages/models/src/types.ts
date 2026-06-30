@@ -12,6 +12,11 @@ export interface ModelMessage {
   content: string;
   /** Required when role === "tool" — links back to the model's tool-call ID. */
   toolCallId?: string;
+  /**
+   * Present when role === "assistant" and the model requested tool calls.
+   * Provider-neutral representation of the tool calls the model emitted.
+   */
+  toolCalls?: readonly ModelToolCall[];
 }
 
 /** A tool specification presented to the model so it can request tool calls. */

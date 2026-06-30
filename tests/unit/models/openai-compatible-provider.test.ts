@@ -242,6 +242,126 @@ describe("OpenAICompatibleProvider — request building", () => {
     const body = JSON.parse(capturedBody!);
     expect(body.messages[1].tool_call_id).toBe("call-123");
   });
+
+  it("produces OpenAI-compatible assistant + tool turn for tool-call loop", async () => {
+    let capturedBody: string | undefined;
+    const fetchImpl = fakeFetch((url, init) => {
+      capturedBody = init?.body as string;
+      return new Response(JSON.stringify({
+        choices: [{ message: { role: "assistant", content: "done" }, finish_reason: "stop" }],
+      }), { status: 200 });
+    });
+
+    const provider = new OpenAICompatibleProvider(makeConfig(), fetchImpl);
+    await provider.call({
+      messages: [
+        { role: "user", content: "Read a file" },
+        {
+          role: "assistant",
+          content: "",
+          toolCalls: [
+            { id: "call-abc", name: "read", input: { path: "file.ts" } },
+          ],
+        },
+        {
+          role: "tool",
+          content: JSON.stringify({ content: "file contents" }),
+          toolCallId: "call-abc",
+        },
+      ],
+    });
+
+    const body = JSON.parse(capturedBody!);
+    expect(body.messages).toHaveLength(3);
+
+    // Assistant message: must have tool_calls array and empty content
+    const assistantMsg = body.messages[1];
+    expect(assistantMsg.role).toBe("assistant");
+    expect(assistantMsg.content).toBe("");
+    expect(assistantMsg.tool_calls).toBeDefined();
+    expect(assistantMsg.tool_calls).toHaveLength(1);
+    expect(assistantMsg.tool_calls[0].id).toBe("call-abc");
+    expect(assistantMsg.tool_calls[0].type).toBe("function");
+    expect(assistantMsg.tool_calls[0].function.name).toBe("read");
+    expect(JSON.parse(assistantMsg.tool_calls[0].function.arguments)).toEqual({ path: "file.ts" });
+
+    // Tool message: must have tool_call_id
+    const toolMsg = body.messages[2];
+    expect(toolMsg.role).toBe("tool");
+    expect(toolMsg.tool_call_id).toBe("call-abc");
+  });
+
+  it("produces OpenAI-compatible format for multiple tool calls in one turn", async () => {
+    let capturedBody: string | undefined;
+    const fetchImpl = fakeFetch((url, init) => {
+      capturedBody = init?.body as string;
+      return new Response(JSON.stringify({
+        choices: [{ message: { role: "assistant", content: "done" }, finish_reason: "stop" }],
+      }), { status: 200 });
+    });
+
+    const provider = new OpenAICompatibleProvider(makeConfig(), fetchImpl);
+    await provider.call({
+      messages: [
+        { role: "user", content: "Read two files" },
+        {
+          role: "assistant",
+          content: "",
+          toolCalls: [
+            { id: "call-1", name: "read", input: { path: "a.ts" } },
+            { id: "call-2", name: "read", input: { path: "b.ts" } },
+          ],
+        },
+        {
+          role: "tool",
+          content: JSON.stringify({ content: "content A" }),
+          toolCallId: "call-1",
+        },
+        {
+          role: "tool",
+          content: JSON.stringify({ content: "content B" }),
+          toolCallId: "call-2",
+        },
+      ],
+    });
+
+    const body = JSON.parse(capturedBody!);
+    expect(body.messages).toHaveLength(4);
+
+    // Assistant message with two tool calls
+    const assistantMsg = body.messages[1];
+    expect(assistantMsg.tool_calls).toHaveLength(2);
+    expect(assistantMsg.tool_calls[0].id).toBe("call-1");
+    expect(assistantMsg.tool_calls[1].id).toBe("call-2");
+
+    // Tool messages each have tool_call_id
+    expect(body.messages[2].tool_call_id).toBe("call-1");
+    expect(body.messages[3].tool_call_id).toBe("call-2");
+  });
+
+  it("does not include tool_calls field for assistant messages without toolCalls", async () => {
+    let capturedBody: string | undefined;
+    const fetchImpl = fakeFetch((url, init) => {
+      capturedBody = init?.body as string;
+      return new Response(JSON.stringify({
+        choices: [{ message: { role: "assistant", content: "ok" }, finish_reason: "stop" }],
+      }), { status: 200 });
+    });
+
+    const provider = new OpenAICompatibleProvider(makeConfig(), fetchImpl);
+    await provider.call({
+      messages: [
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: "Hi there!" },
+      ],
+    });
+
+    const body = JSON.parse(capturedBody!);
+    const assistantMsg = body.messages[1];
+    expect(assistantMsg.role).toBe("assistant");
+    expect(assistantMsg.tool_calls).toBeUndefined();
+    expect(assistantMsg.content).toBe("Hi there!");
+  });
 });
 
 describe("OpenAICompatibleProvider — HTTP error handling", () => {
