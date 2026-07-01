@@ -39,7 +39,7 @@ export interface TestServer {
   services: ServerServices;
   config: ServerConfig;
   storage: StorageConnection;
-  modelProvider: MockModelProvider;
+  modelProvider: import("@agent-workbench/models").ModelProvider;
   eventBus: EventBus;
   sessionRunner: SessionRunner;
   permissionEngine: PermissionEngine;
