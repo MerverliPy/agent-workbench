@@ -1,6 +1,6 @@
 # 26 — Phase 18 Mobile Web Companion UI
 
-Status: Draft — not yet accepted
+Status: In Progress — scaffold complete, pending device testing
 Document type: implementation plan + future roadmap
 Scope: lightweight mobile web companion app connecting to the agent-workbench server via the existing SDK
 

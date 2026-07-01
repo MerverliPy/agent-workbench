@@ -13,7 +13,7 @@
 
 ---
 
-Status: **Phase 16 complete** (streaming provider responses) → **Phase 17 active** (CI/CD + E2E validation)
+Status: **Phase 17 complete** (CI/CD + E2E validation) → **Phase 18 active** (mobile web companion UI)
 
 ---
 
@@ -225,12 +225,7 @@ sequenceDiagram
 
 ## 5. Current State
 
-**Phases 0–16 are complete.** Phase 17 (CI/CD pipeline & end-to-end validation) adds:
-- GitHub Actions CI pipeline (static check → typecheck matrix → tests → E2E)
-- End-to-end validation tests covering the full stack
-- Workspace build step for dist/ resolution
-
-See `docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md` and `decisions/0017-ci-pipeline-and-e2e-validation.md`.
+**Phases 0–17 are complete.** Phase 18 (mobile web companion UI) adds a lightweight, touch-optimized mobile web app at `apps/mobile-web/` that connects to the same server via the existing SDK — no server or core changes required. See `docs/26_PHASE_18_MOBILE_WEB_UI.md` for the full plan.
 
 Phase 0 planning docs (`docs/00` through `docs/19`) remain the architectural source of truth. Their "Phase 0" status labels refer to planning origin, not current project phase.
 
@@ -259,6 +254,7 @@ All core systems are implemented:
 - ✅ **Streaming responses** — SSE event streaming from provider to TUI
 - ✅ **Automated testing** — 357 tests (unit, integration, e2e, fault injection, contract)
 - ✅ **CI/CD pipeline** — GitHub Actions with static check + typecheck + tests + E2E
+- ⚡ **Mobile web companion** (apps/mobile-web) — in progress, scaffold complete (SolidJS + Tailwind + PWA, 7-panel navigation)
 
 ---
 
@@ -283,7 +279,8 @@ Phase 14A Automated tests          COMPLETE
 Phase 14B Hardening                COMPLETE
 Phase 15 Provider integration      COMPLETE
 Phase 16 Streaming responses       COMPLETE
-Phase 17 CI/CD + E2E validation    IN PROGRESS
+Phase 17 CI/CD + E2E validation        COMPLETE
+Phase 18 Mobile web companion UI        IN PROGRESS
 ```
 
 ---
@@ -322,10 +319,10 @@ Phase 17 CI/CD + E2E validation    IN PROGRESS
 
 ## 9. Next Steps
 
-- **Phase 17** (in progress): CI/CD pipeline and end-to-end validation
-- **Phase 18+** (planning): UI polish, multi-provider support, PTY execution, subagents
+- **Phase 18** (in progress): Mobile web companion UI at `apps/mobile-web/` — scaffold complete, pending real device testing
+- **Phase 19+** (planning): Mobile UX depth (voice input, multiple sessions, light theme), multi-provider support, PTY execution
 
-See `docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md` for Phase 17 details.
+See `docs/26_PHASE_18_MOBILE_WEB_UI.md` for the full Phase 18 plan and future roadmap.
 
 ---
 

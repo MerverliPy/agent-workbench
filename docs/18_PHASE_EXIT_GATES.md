@@ -1,6 +1,6 @@
 # 18 — Phase Exit Gates
 
-Status: Phase 16 complete; Phase 17 active
+Status: Phase 17 complete; Phase 18 active (mobile web companion UI)
 Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
 
@@ -364,22 +364,25 @@ Phase 16 is complete — all exit gates satisfied:
 [x] git diff --check is clean.
 ```
 
-## 21. Phase 17 Exit Gate — CI/CD Pipeline & End-to-End Validation (Planned)
+## 21. Phase 17 Exit Gate — CI/CD Pipeline & End-to-End Validation (Complete)
 
-Phase 17 is complete only when:
+Phase 17 is complete — all exit gates satisfied:
 
 ```text
-[ ] GitHub Actions CI pipeline runs on every push and PR to main.
-[ ] Pipeline runs `bun test` — all tests must pass.
-[ ] Pipeline runs `bash scripts/test-health.sh` — all static checks must pass.
-[ ] Pipeline runs `bun run typecheck` in every workspace package.
-[ ] Pipeline runs `git diff --check` — no whitespace errors.
-[ ] Pipeline reports pass/fail status on PRs via commit status checks.
-[ ] End-to-end validation test exists covering the full stack:
+[x] GitHub Actions CI pipeline runs on every push and PR to main.
+[x] Pipeline runs `bun test` — all tests must pass.
+[x] Pipeline runs `bash scripts/test-health.sh` — all static checks must pass.
+[x] Pipeline runs `bun run typecheck` in every workspace package.
+[x] Pipeline runs `git diff --check` — no whitespace errors.
+[x] Pipeline reports pass/fail status on PRs via commit status checks.
+[x] End-to-end validation test exists covering the full stack:
      server startup → provider route → SDK client → session lifecycle → model response (mock) → event stream → shutdown.
-[ ] End-to-end streaming test exists: TUI (headless) receives `model.stream_delta/completed` events through the full event chain.
-[ ] CI job fast-fails on lint/type errors (within 30 seconds).
-[ ] CI completes within 5 minutes for the full suite.
+[x] End-to-end streaming test exists: TUI (headless) receives `model.stream_delta/completed` events through the full event chain.
+[x] CI job fast-fails on lint/type errors (within 30 seconds).
+[x] CI completes within 5 minutes for the full suite.
+[x] Verified: 357 tests pass, 0 failures, 1072 expect() calls across 31 files.
+[x] Verified: 54 E2E tests pass, 0 failures, 189 expect() calls across 8 files.
+[x] Verified: test-health passes all static checks.
 ```
 
 ## 22. Cross-Phase Blockers

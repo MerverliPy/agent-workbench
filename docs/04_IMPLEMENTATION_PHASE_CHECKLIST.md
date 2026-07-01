@@ -1,6 +1,6 @@
 # 04 — Implementation Phase Checklist
 
-Status: Phase 16 complete; Phase 17 active (CI/CD pipeline + E2E validation)
+Status: Phase 17 complete; Phase 18 active (mobile web companion UI)
 Document type: agent-ready implementation checklist
 Scope: phases 0 through 17, dependencies, gates, and forbidden shortcuts
 
@@ -31,7 +31,8 @@ Phase 14A Automated tests
 Phase 14B Hardening
 Phase 15 Provider integration (complete)
 Phase 16 Streaming responses (complete)
-Phase 17 CI/CD + E2E validation (active)
+Phase 17 CI/CD + E2E validation (complete)
+Phase 18 Mobile web companion UI (active)
 ```
 
 ## 3. Phase 0 — Planning Docs
