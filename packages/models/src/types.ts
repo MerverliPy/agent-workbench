@@ -71,6 +71,27 @@ export interface ModelRequest {
 }
 
 /**
+ * A single chunk yielded by a streaming model provider.
+ *
+ * - `content`: incremental text delta (empty for terminal chunks that only
+ *   carry usage metadata or tool calls).
+ * - `usage`: present only on the terminal chunk — final token counts.
+ * - `done`: true when this is the last chunk.
+ * - `stopReason`: present only on the terminal chunk — final stop reason.
+ * - `toolCalls`: present only on the terminal chunk when the model emitted
+ *   tool calls. Tool-call responses remain non-streaming at the interface
+ *   level — deltas are accumulated by the provider and emitted atomically
+ *   in the terminal chunk.
+ */
+export interface ModelStreamChunk {
+  content: string;
+  usage?: ModelUsage;
+  done: boolean;
+  stopReason?: string;
+  toolCalls?: ModelToolCall[];
+}
+
+/**
  * The interface every model provider adapter must implement.
  *
  * Phase 6 ships only StubModelProvider. Real adapters (OpenAI, Anthropic, etc.)
@@ -78,4 +99,18 @@ export interface ModelRequest {
  */
 export interface ModelProvider {
   call(request: ModelRequest): Promise<ModelResponse>;
+
+  /**
+   * Stream a response from the model incrementally.
+   *
+   * Yields `ModelStreamChunk` values until the terminal chunk (done === true).
+   * Providers that do not support streaming throw `ProviderConfigError` from
+   * the returned iterable on first consumption.
+   *
+   * Tool-call responses remain non-streaming — when the model emits tool calls
+   * the stream yields a single terminal chunk carrying the tool calls in the
+   * `toolCalls` field, or the stream throws and the caller falls back to
+   * `call()`.
+   */
+  stream?(request: ModelRequest): AsyncIterable<ModelStreamChunk>;
 }

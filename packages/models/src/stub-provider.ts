@@ -2,6 +2,7 @@ import type {
   ModelProvider,
   ModelRequest,
   ModelResponse,
+  ModelStreamChunk,
   ModelToolCall,
 } from "./types";
 
@@ -71,5 +72,51 @@ export class StubModelProvider implements ModelProvider {
   /** Reset call counter (useful between test runs). */
   resetCallCount(): void {
     this.callCount = 0;
+  }
+
+  /**
+   * Stream the configured text response word-by-word, simulating incremental
+   * model output for offline testing.
+   *
+   * Emits a terminal chunk with usage metadata after the full text is streamed.
+   * Respects abort signals mid-stream.
+   */
+  async *stream(request: ModelRequest): AsyncIterable<ModelStreamChunk> {
+    if (request.signal?.aborted) {
+      throw new DOMException("Model call aborted", "AbortError");
+    }
+
+    // Tool-call mode on first call: yield a terminal chunk with tool calls,
+    // then subsequent calls stream text.
+    this.callCount += 1;
+    if (this.stubbedToolCall !== undefined && this.callCount === 1) {
+      // Tool-call responses are not streamed — yield a single terminal chunk
+      // so the caller completes the loop.
+      return;
+    }
+
+    const words = this.textResponse.split(" ");
+    for (let i = 0; i < words.length; i++) {
+      if (request.signal?.aborted) {
+        throw new DOMException("Model call aborted", "AbortError");
+      }
+
+      const isLast = i === words.length - 1;
+      const content = words[i] + (isLast ? "" : " ");
+
+      yield {
+        content,
+        done: isLast,
+        ...(isLast
+          ? {
+              stopReason: "stop" as const,
+              usage: {
+                inputTokens: request.messages.length * 10,
+                outputTokens: 5,
+              },
+            }
+          : {}),
+      };
+    }
   }
 }

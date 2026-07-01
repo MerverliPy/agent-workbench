@@ -197,3 +197,52 @@ export interface PlanState {
 }
 
 export const [currentPlan, setCurrentPlan] = createSignal<PlanState | null>(null);
+
+// ── Phase 16: Streaming model response state ──────────────────────────────
+
+/**
+ * Content of the currently streaming assistant message.
+ * Empty when no streaming is in progress.
+ */
+export const [streamingContent, setStreamingContent] = createSignal<string>("");
+
+/**
+ * ID of the currently streaming message slot. Set when streaming starts
+ * and cleared when streaming completes.
+ */
+export const [streamingMessageId, setStreamingMessageId] = createSignal<string | null>(null);
+
+/**
+ * Append text to the current streaming content.
+ * Called on each model.stream_delta event.
+ */
+export function appendStreamingContent(delta: string): void {
+  setStreamingContent((prev) => prev + delta);
+}
+
+/**
+ * Finalize the streaming message: clear streaming state and append
+ * the complete message to the timeline.
+ */
+export function finalizeStreamingMessage(): void {
+  const content = streamingContent();
+  const msgId = streamingMessageId();
+  if (content.length > 0 && msgId !== null) {
+    appendMessage({
+      id: msgId,
+      role: "assistant",
+      content,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  setStreamingContent("");
+  setStreamingMessageId(null);
+}
+
+/**
+ * Cancel streaming and clean up state without appending.
+ */
+export function cancelStreaming(): void {
+  setStreamingContent("");
+  setStreamingMessageId(null);
+}

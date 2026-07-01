@@ -51,6 +51,28 @@ export class EventPublisher {
     this.publish(EventName.MODEL_CALL_FAILED, { error });
   }
 
+  // ── Streaming model responses (Phase 16) ──────────────────────────────────
+
+  publishStreamDelta(delta: string): void {
+    this.publish(EventName.MODEL_STREAM_DELTA, { delta });
+  }
+
+  publishStreamComplete(
+    content: string,
+    usage?: ModelUsage,
+    stopReason?: string
+  ): void {
+    this.publish(EventName.MODEL_STREAM_COMPLETE, {
+      content,
+      usage,
+      stopReason,
+    });
+  }
+
+  publishStreamError(message: string): void {
+    this.publish(EventName.MODEL_STREAM_ERROR, { message });
+  }
+
   // ── Tool calls ──────────────────────────────────────────────────────────────
 
   publishToolCallRequested(toolCallId: string, toolName: string): void {

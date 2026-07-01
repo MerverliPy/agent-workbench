@@ -119,6 +119,11 @@ export const EventName = {
   PLAN_STEP_FAILED: "plan.step_failed",
   PLAN_COMPLETED: "plan.completed",
   PLAN_FAILED: "plan.failed",
+
+  // ── Streaming (Phase 16) ────────────────────────────────────────────────
+  MODEL_STREAM_DELTA: "model.stream_delta",
+  MODEL_STREAM_COMPLETE: "model.stream_complete",
+  MODEL_STREAM_ERROR: "model.stream_error",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

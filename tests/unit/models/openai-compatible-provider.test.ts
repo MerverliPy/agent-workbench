@@ -519,3 +519,146 @@ describe("OpenAICompatibleProvider — abort signal", () => {
     expect(fetchCalled).toBe(false);
   });
 });
+
+// ── Phase 16: Streaming tests ─────────────────────────────────────────────
+
+/**
+ * Create a mock fetch that returns an SSE stream from an array of chunks.
+ */
+function sseStreamFetch(chunks: string[]): typeof fetch {
+  const encoder = new TextEncoder();
+  return fakeFetch(() => {
+    const stream = new ReadableStream({
+      async start(controller) {
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(chunk));
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  });
+}
+
+describe("OpenAICompatibleProvider.stream — text streaming", () => {
+  it("yields content deltas from SSE chunks", async () => {
+    const sseChunks = [
+      'data: {"choices":[{"delta":{"content":"Hello"},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{"content":" world"},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
+      "data: [DONE]\n\n",
+    ];
+
+    const provider = new OpenAICompatibleProvider(
+      makeConfig(),
+      sseStreamFetch(sseChunks)
+    );
+
+    const chunks: import("@agent-workbench/models").ModelStreamChunk[] = [];
+    for await (const chunk of provider.stream({
+      messages: [{ role: "user", content: "Hi" }],
+    })) {
+      chunks.push(chunk);
+    }
+
+    expect(chunks.length).toBeGreaterThanOrEqual(2);
+    expect(chunks[0]!.content).toBe("Hello");
+    expect(chunks[0]!.done).toBe(false);
+    expect(chunks[1]!.content).toBe(" world");
+    expect(chunks[1]!.done).toBe(false);
+
+    const last = chunks[chunks.length - 1]!;
+    expect(last.done).toBe(true);
+    expect(last.stopReason).toBe("stop");
+    expect(last.content).toBe("");
+  });
+
+  it("has stream method (supports streaming)", () => {
+    const provider = new OpenAICompatibleProvider(makeConfig());
+    expect(typeof provider.stream).toBe("function");
+  });
+
+  it("throws AbortError when signal is already aborted", async () => {
+    const provider = new OpenAICompatibleProvider(makeConfig());
+    const controller = new AbortController();
+    controller.abort();
+
+    const iterable = provider.stream({
+      messages: [{ role: "user", content: "hi" }],
+      signal: controller.signal,
+    });
+    const iterator = iterable[Symbol.asyncIterator]();
+    try {
+      await iterator.next();
+      expect.unreachable("Expected abort error");
+    } catch (err) {
+      expect((err as Error).name).toBe("AbortError");
+    }
+  });
+});
+
+describe("OpenAICompatibleProvider.stream — tool calls", () => {
+  it("accumulates tool call deltas and emits in terminal chunk", async () => {
+    const sseChunks = [
+      'data: {"choices":[{"delta":{"role":"assistant","content":null},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-abc","type":"function","function":{"name":"read_file","arguments":""}}]},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\\"path\\":"}}]},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":" \\"/tmp/test.txt\\"}"}}]},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n\n',
+      "data: [DONE]\n\n",
+    ];
+
+    const provider = new OpenAICompatibleProvider(
+      makeConfig(),
+      sseStreamFetch(sseChunks)
+    );
+
+    const chunks: import("@agent-workbench/models").ModelStreamChunk[] = [];
+    for await (const chunk of provider.stream({
+      messages: [{ role: "user", content: "Read a file" }],
+      tools: [{ name: "read_file", description: "Read a file", inputSchema: {} }],
+    })) {
+      chunks.push(chunk);
+    }
+
+    const last = chunks[chunks.length - 1]!;
+    expect(last.done).toBe(true);
+    expect(last.stopReason).toBe("tool_calls");
+    expect(last.toolCalls).toBeDefined();
+    expect(last.toolCalls!.length).toBe(1);
+    expect(last.toolCalls![0]!.id).toBe("call-abc");
+    expect(last.toolCalls![0]!.name).toBe("read_file");
+    expect(last.toolCalls![0]!.input).toEqual({ path: "/tmp/test.txt" });
+  });
+});
+
+describe("OpenAICompatibleProvider.stream — HTTP error handling", () => {
+  it("throws ProviderAuthError on 401", async () => {
+    const fetchImpl = fakeFetch(() =>
+      new Response("Unauthorized", { status: 401 })
+    );
+
+    const provider = new OpenAICompatibleProvider(makeConfig(), fetchImpl);
+    const iterable = provider.stream({
+      messages: [{ role: "user", content: "Test" }],
+    });
+    const iterator = iterable[Symbol.asyncIterator]();
+    await expect(iterator.next()).rejects.toThrow(ProviderAuthError);
+  });
+
+  it("throws ProviderServerError on 500", async () => {
+    const fetchImpl = fakeFetch(() =>
+      new Response("Server Error", { status: 500 })
+    );
+
+    const provider = new OpenAICompatibleProvider(makeConfig(), fetchImpl);
+    const iterable = provider.stream({
+      messages: [{ role: "user", content: "Test" }],
+    });
+    const iterator = iterable[Symbol.asyncIterator]();
+    await expect(iterator.next()).rejects.toThrow(ProviderServerError);
+  });
+});

@@ -1,4 +1,4 @@
-import type { ModelProvider, ModelRequest, ModelResponse, ModelToolCall, ModelUsage } from "../types";
+import type { ModelProvider, ModelRequest, ModelResponse, ModelStreamChunk, ModelToolCall, ModelUsage } from "../types";
 import type { ProviderConfig } from "../provider-config";
 import {
   ProviderAuthError,
@@ -114,6 +114,204 @@ export class OpenAICompatibleProvider implements ModelProvider {
     }
 
     return this.normalizeResponse(raw);
+  }
+
+  /**
+   * Stream a model response from an OpenAI-compatible API using SSE.
+   *
+   * Yields `ModelStreamChunk` values for each content delta. Tool-call
+   * deltas are accumulated and emitted only in the terminal chunk — tool
+   * responses remain non-streaming at the interface level.
+   *
+   * Abort signals are honoured mid-stream. Errors are redacted using the
+   * same rules as `call()`.
+   */
+  async *stream(request: ModelRequest): AsyncIterable<ModelStreamChunk> {
+    if (request.signal?.aborted) {
+      throw new DOMException("Model call aborted", "AbortError");
+    }
+
+    const body = this.buildRequestBody(request);
+    const streamBody = { ...body, stream: true };
+    const url = `${this.baseUrl}/chat/completions`;
+
+    const fetchOptions: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(streamBody),
+    };
+    if (request.signal !== undefined) {
+      fetchOptions.signal = request.signal;
+    }
+
+    let response: Response;
+    try {
+      response = await this.fetchImpl(url, fetchOptions);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        throw err;
+      }
+      throw new ProviderResponseError(
+        safeErrorMessage("Provider request failed", err, this.apiKey)
+      );
+    }
+
+    if (!response.ok) {
+      await this.handleHttpError(response);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      // Fall back to non-streaming if the response body is not readable
+      const raw = await response.json();
+      const normalized = this.normalizeResponse(raw);
+
+      yield {
+        content: normalized.kind.type === "text" ? normalized.kind.content : "",
+        done: true,
+        ...(normalized.usage ? { usage: normalized.usage } : {}),
+        ...(normalized.stopReason ? { stopReason: normalized.stopReason } : {}),
+      };
+      return;
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    // Accumulated tool call state for the final chunk
+    let accumulatedToolCalls: ModelToolCall[] | undefined;
+    let finalFinishReason: string | undefined;
+    let finalUsage: ModelUsage | undefined;
+
+    while (true) {
+      if (request.signal?.aborted) {
+        throw new DOMException("Model call aborted", "AbortError");
+      }
+
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      // Keep the last potentially incomplete line in the buffer
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed === "" || trimmed.startsWith(":")) continue; // comment or empty
+        if (trimmed === "data: [DONE]") continue; // stream end signal
+
+        if (!trimmed.startsWith("data: ")) continue;
+
+        const jsonStr = trimmed.slice(6);
+        let data: Record<string, unknown>;
+        try {
+          data = JSON.parse(jsonStr) as Record<string, unknown>;
+        } catch {
+          // Malformed JSON line — skip
+          continue;
+        }
+
+        // Extract usage if present (may come in a standalone chunk)
+        const usage = this.extractUsage(data);
+        if (usage !== undefined) {
+          finalUsage = usage;
+        }
+
+        const choices = data["choices"];
+        if (!Array.isArray(choices) || choices.length === 0) continue;
+
+        const choice = choices[0] as Record<string, unknown>;
+
+        // Capture finish reason
+        if (typeof choice["finish_reason"] === "string" && choice["finish_reason"] !== "null") {
+          finalFinishReason = choice["finish_reason"];
+        }
+
+        const delta = choice["delta"] as Record<string, unknown> | undefined;
+        if (!delta || typeof delta !== "object") continue;
+
+        // Extract text content delta
+        const contentDelta = typeof delta["content"] === "string" ? delta["content"] : "";
+
+        // Extract tool call deltas (accumulate for terminal chunk)
+        const tcDelta = delta["tool_calls"];
+        if (Array.isArray(tcDelta)) {
+          for (const tc of tcDelta) {
+            const entry = tc as Record<string, unknown>;
+            const idx = typeof entry["index"] === "number" ? entry["index"] : 0;
+            const fn = entry["function"] as Record<string, unknown> | undefined;
+
+            if (!fn) continue;
+
+            // Accumulate: append to existing or create new
+            if (!accumulatedToolCalls) {
+              accumulatedToolCalls = [];
+            }
+            while (accumulatedToolCalls.length <= idx) {
+              accumulatedToolCalls.push({
+                id: "",
+                name: "",
+                input: "",
+              });
+            }
+            // Merge delta into the accumulated slot
+            const slot = accumulatedToolCalls[idx]!;
+            if (typeof entry["id"] === "string") {
+              slot.id += entry["id"];
+            }
+            if (fn && typeof fn["name"] === "string") {
+              slot.name += fn["name"];
+            }
+            if (fn && typeof fn["arguments"] === "string") {
+              const prevInput = typeof slot.input === "string" ? slot.input : "";
+              slot.input = prevInput + fn["arguments"];
+            }
+          }
+          // Don't yield text for tool-call chunks
+          continue;
+        }
+
+        // Yield text delta if non-empty
+        if (contentDelta.length > 0) {
+          yield {
+            content: contentDelta,
+            done: false,
+          };
+        }
+      }
+    }
+
+    // Terminal chunk
+    if (accumulatedToolCalls && accumulatedToolCalls.length > 0) {
+      // Parse tool-call arguments from accumulated strings
+      for (const tc of accumulatedToolCalls) {
+        if (typeof tc.input === "string" && tc.input.length > 0) {
+          try {
+            tc.input = JSON.parse(tc.input);
+          } catch {
+            // Keep as string if not valid JSON
+          }
+        }
+      }
+      yield {
+        content: "",
+        done: true,
+        stopReason: finalFinishReason ?? "tool_use",
+        toolCalls: accumulatedToolCalls,
+        ...(finalUsage ? { usage: finalUsage } : {}),
+      };
+    } else {
+      yield {
+        content: "",
+        done: true,
+        stopReason: finalFinishReason ?? "stop",
+        ...(finalUsage ? { usage: finalUsage } : {}),
+      };
+    }
   }
 
   private buildRequestBody(request: ModelRequest): OpenAICompletionRequest {

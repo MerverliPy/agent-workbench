@@ -1,6 +1,6 @@
 import type { JSX } from "@opentui/solid";
 import { For, Show } from "solid-js";
-import { messages } from "../../state/app";
+import { messages, streamingContent, streamingMessageId } from "../../state/app";
 
 /** Role display labels. */
 const ROLE_LABELS: Record<string, string> = {
@@ -55,6 +55,15 @@ export function MessageTimeline(): JSX.Element {
             </box>
           )}
         </For>
+
+        {/* Phase 16: Streaming message — rendered incrementally as deltas arrive */}
+        <Show when={streamingMessageId() !== null && streamingContent().length > 0}>
+          <box flexDirection="column" paddingX={1} paddingY={0} flexShrink={0}>
+            <text content={`[assistant]  (streaming...)`} />
+            <text content={streamingContent()} flexGrow={1} />
+            <text content="▊" />
+          </box>
+        </Show>
       </Show>
     </scrollbox>
   );

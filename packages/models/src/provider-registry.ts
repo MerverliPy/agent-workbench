@@ -21,6 +21,8 @@ export interface ProviderModelEntry {
   name: string;
   capabilities: string[];
   contextLimit?: number;
+  /** True when the provider supports streaming (Phase 16). */
+  streaming?: boolean;
 }
 
 const STUB_PROVIDER_ID = "stub";
@@ -166,11 +168,14 @@ export class ProviderRegistry {
   listModels(providerId: string): ProviderModelEntry[] {
     const meta = this.metaMap.get(providerId);
     if (meta === undefined) return [];
+    const provider = this.providerMap.get(providerId);
+    const supportsStream = provider !== undefined && "stream" in provider && typeof provider.stream === "function";
     return [{
       id: meta.modelId,
       providerId: meta.id,
       name: meta.modelName,
       capabilities: meta.capabilities,
+      streaming: supportsStream,
       ...(meta.contextLimit !== undefined ? { contextLimit: meta.contextLimit } : {}),
     }];
   }

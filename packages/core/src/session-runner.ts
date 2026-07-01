@@ -417,11 +417,54 @@ export class SessionRunner {
 
       let modelResponse;
       try {
-        modelResponse = await this.modelRouter.route(
-          context,
-          this.deps.toolRegistry.list(),
-          signal
-        );
+        if (this.modelRouter.supportsStreaming()) {
+          // ── Streaming path (Phase 16) ────────────────────────────────────
+          let accumulatedContent = "";
+
+          for await (const chunk of this.modelRouter.routeStream(
+            context,
+            this.deps.toolRegistry.list(),
+            signal
+          )) {
+            if (chunk.content.length > 0) {
+              accumulatedContent += chunk.content;
+              events.publishStreamDelta(chunk.content);
+            }
+
+            if (chunk.done) {
+              if (chunk.toolCalls && chunk.toolCalls.length > 0) {
+                // Tool-call response from streaming — construct a synthetic
+                // ModelResponse and dispatch through the existing tool path.
+                modelResponse = {
+                  kind: { type: "tool_calls" as const, calls: chunk.toolCalls },
+                  ...(chunk.usage ? { usage: chunk.usage } : {}),
+                  ...(chunk.stopReason ? { stopReason: chunk.stopReason } : {}),
+                };
+              } else {
+                // Text response — construct the final ModelResponse
+                modelResponse = {
+                  kind: { type: "text" as const, content: accumulatedContent },
+                  ...(chunk.usage ? { usage: chunk.usage } : {}),
+                  ...(chunk.stopReason ? { stopReason: chunk.stopReason } : {}),
+                };
+              }
+
+              events.publishStreamComplete(
+                accumulatedContent,
+                modelResponse.usage,
+                modelResponse.stopReason
+              );
+              break; // exit the for-await loop
+            }
+          }
+        } else {
+          // ── Non-streaming path (original) ────────────────────────────────
+          modelResponse = await this.modelRouter.route(
+            context,
+            this.deps.toolRegistry.list(),
+            signal
+          );
+        }
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Unknown model error";
@@ -440,8 +483,21 @@ export class SessionRunner {
         return { runId, assistantMessageId, status: "failed", error: message };
       }
 
-      ledger.recordModelCallCompleted(iteration, modelResponse.usage);
-      events.publishModelCallCompleted(modelResponse.usage);
+      // Guard: modelResponse must be set by this point.
+      // In the streaming path, the terminal chunk always assigns it.
+      if (modelResponse === undefined) {
+        const msg = "Model call ended without producing a response";
+        ledger.recordModelCallFailed(iteration, msg);
+        events.publishModelCallFailed(msg);
+        ledger.recordRunFailed(msg);
+        events.publishRunFailed(msg);
+        return { runId, assistantMessageId, status: "failed", error: msg };
+      }
+
+      const resolved = modelResponse;
+
+      ledger.recordModelCallCompleted(iteration, resolved.usage);
+      events.publishModelCallCompleted(resolved.usage);
 
       // Phase 12: re-compute token health after model usage is available.
       this.emitTokenHealth(sessionId, events, ledger);

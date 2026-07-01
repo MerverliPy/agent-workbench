@@ -11,6 +11,10 @@ import {
   removePendingPermissionRequest,
   appendMessage,
   appendSystemNotice,
+  appendStreamingContent,
+  finalizeStreamingMessage,
+  cancelStreaming,
+  setStreamingMessageId,
   commandPaletteOpen,
   setCommandPaletteOpen,
   setPermissionModalOpen,
@@ -346,6 +350,36 @@ export function App(): JSX.Element {
           `Tool result truncated (${originalLen} → ${truncatedLen} chars)`
         );
       }
+      return;
+    }
+
+    // ── Phase 16: Streaming model response events ──────────────────────
+
+    if (type === "model.stream_delta") {
+      const payload = event.payload as Record<string, unknown>;
+      const delta = payload["delta"] as string | undefined;
+      if (delta && delta.length > 0) {
+        // First delta: create a streaming message slot
+        if (streamingMessageId() === null) {
+          setStreamingMessageId(event.id);
+        }
+        appendStreamingContent(delta);
+      }
+      return;
+    }
+
+    if (type === "model.stream_complete") {
+      finalizeStreamingMessage();
+      return;
+    }
+
+    if (type === "model.stream_error") {
+      const payload = event.payload as Record<string, unknown>;
+      const message = payload["message"] as string | undefined;
+      appendSystemNotice(
+        `Stream error: ${message ?? "unknown error"}`
+      );
+      cancelStreaming();
       return;
     }
 

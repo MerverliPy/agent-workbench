@@ -6,6 +6,7 @@ export type {
   ModelResponseKind,
   ModelResponse,
   ModelRequest,
+  ModelStreamChunk,
   ModelProvider,
 } from "./types";
 
