@@ -92,14 +92,13 @@ interface ConnectionSettings {
 | **Server settings** | Configurable `baseUrl`. Stored in localStorage. Test connection button. |
 | **Agent indicator** | Shows current agent mode. Tap to switch between Build / Plan. |
 | **Streaming indicator** | Pulsing dot while model response is streaming in. |
+| **Navigation drawer** | Tap icon in top-left or top-right corner to open a slide-out panel selector. Bottom-sheet style drawer shows available panels: Settings, File Browser, Git Tree, Sessions, Activity Log, and Help. |
+| **Panel system** | Each panel is a self-contained view that replaces the chat view in the layout. Panels fetch data via the SDK and render mobile-optimized content. Navigation drawer button is always visible in the status bar. |
 
 **Not in scope (deferred):**
-- Diff viewer / file tree
-- Token health panel
-- Run ledger panel
-- Command palette
-- Multiple sessions
-- Agent logs / debug output
+- Token health panel (comes in Phase 20)
+- Run ledger panel (deferred to Phase 20)
+- Command palette (comes in Phase 20)
 - Push notifications
 
 ### 2.4 Screen Layout
@@ -107,23 +106,30 @@ interface ConnectionSettings {
 ```mermaid
 graph TB
     subgraph "Mobile Screen (375x812 iPhone)"
-        SB[Status Bar<br/>Connection + Agent]
+        SB[Status Bar<br/>🔘 Nav Button | Connection Dot | Agent Badge]
         CV[Chat View<br/>Scrollable Messages]
         PI[Prompt Input<br/>Text + Send]
         PP[Permission Prompt<br/>Overlay Card]
     end
 
+    subgraph "Navigation Drawer (Slide-out from left)"
+        ND[Panel List<br/>────────<br/>💬 Chat<br/>📁 File Browser<br/>🌿 Git Tree<br/>📋 Sessions<br/>📊 Activity Log<br/>⚙️ Settings<br/>❓ Help]
+    end
+
     PP -->|Approve| SB
     PP -->|Deny| SB
     PI -->|Submit| CV
-    SB -->|Tap Settings| SS[Settings Sheet<br/>Server URL]
+    SB -->|Tap ☰| ND
+    ND -->|Select Panel| CV
+    ND -->|Select Settings| SS[Settings Sheet<br/>Server URL]
 ```
 
 The layout is a single column, full viewport height:
-1. **Status bar** (40px) — connection dot + agent badge. Tap opens settings.
-2. **Chat view** (flex-grow) — scrollable, pull-to-refresh.
-3. **Prompt input** (auto-height) — textarea + send button, sticks to bottom.
-4. **Permission overlay** (modal card) — slides up from bottom when permission requested.
+1. **Status bar** (40px) — hamburger nav button (left), connection dot (center), agent badge (right).
+2. **Chat view** (flex-grow) — scrollable, pull-to-refresh. Replaced by panel content when a panel is active.
+3. **Prompt input** (auto-height) — textarea + send button, sticks to bottom. Hidden when a non-chat panel is active.
+4. **Navigation drawer** (overlay) — slides in from the left when the nav button is tapped. Shows available panels as a vertical list with icons. Tap a panel to switch to it. Tap outside or swipe right to dismiss.
+5. **Permission overlay** (modal card) — slides up from bottom when permission requested. Always on top of the current view.
 
 ### 2.5 Event Routing (Replicated from Desktop TUI)
 
@@ -175,6 +181,145 @@ When the server emits `model.stream_delta` events, the mobile web must render in
 - On `model.stream_complete`, finalize the message and remove the indicator
 - On error, append error notice and cancel streaming
 
+### 2.8 Navigation Drawer & Panel System
+
+The navigation drawer is a **slide-out panel selector** anchored to the left edge. It appears when the user taps the hamburger icon (☰) in the top-left corner of the status bar. Each entry in the drawer is a vertically stacked row with an emoji icon, a label, and an optional status indicator badge.
+
+#### 2.8.1 Drawer UX
+
+- **Open:** Tap ☰ button in status bar
+- **Close:** Tap outside the drawer, swipe it right-to-left, or tap the currently active panel
+- **Active panel indicator:** A colored strip or highlight on the currently active panel row
+- **Badged items:** Panels that have unread or updated content show a small numeric or dot badge (e.g., session with new messages)
+- **Animation:** The drawer slides in from the left over a semi-transparent backdrop. ~250ms spring animation.
+
+#### 2.8.2 Panel Catalog
+
+| # | Panel | Icon | Description | SDK Endpoint | Phase |
+|---|-------|------|-------------|-------------|-------|
+| 1 | **💬 Chat** | 💬 | The main agent conversation view. Default active panel. | SSE events, `sdk.messages.submit()` | 18 |
+| 2 | **📁 File Browser** | 📁 | Browse directories and read files on the host machine. Shows a navigable tree + file content preview. | `sdk.files.list()`, `sdk.files.read()` | 18 |
+| 3 | **🌿 Git Tree** | 🌿 | Git status overview: branch, uncommitted changes, recent commits. View diffs per file. | `sdk.tools.execute("bash", ...)` with `git status`, `git log`, `git diff` | 18 |
+| 4 | **📋 Sessions** | 📋 | List active and recent sessions. Tap to switch session, create new, or delete old ones. Shows message count per session. | `sdk.sessions.list()`, `sdk.sessions.create()`, SSE `session.*` events | 18 |
+| 5 | **📊 Activity Log** | 📊 | Audit trail of recent runtime events: tool calls, permission decisions, shell commands, errors. Compact list with timestamps and status icons. | `sdk.events` SSE stream, filtered for non-chat events | 18 |
+| 6 | **⚙️ Settings** | ⚙️ | Server connection URL, auto-connect toggle, reconnect interval, agent preference, theme picker (future), app info. | `sdk.health.check()`, `localStorage` | 18 |
+| 7 | **❓ Help** | ❓ | In-app setup guide: how to connect via Tailscale / LAN / tunnel, QR code generator for server URL, keyboard shortcuts reference, version info, link to GitHub repo. | None (static content) | 18 |
+
+#### 2.8.3 Panel Detail: File Browser
+
+The File Browser panel lets users explore the host machine's filesystem:
+
+```
+┌─────────────────────────┐
+│ ← Back    📁 /home/user │ Header
+├─────────────────────────┤
+│ 📁  projects            │
+│ 📁  downloads           │ Directory
+│ 📄  README.md    2.3KB │ listing
+│ 📄  package.json  890B │
+│ 📄  tsconfig.json 1.1KB│
+├─────────────────────────┤
+│ /home/user/README.md    │ File
+│ ─────────────────────── │ preview
+│ # Project Title         │ area
+│                         │ (scrollable)
+│ ## Getting Started      │
+└─────────────────────────┘
+```
+
+- **Directory listing:** Shows folders and files sorted by type then name. Each entry shows name + size. Tap folder to navigate in. Tap file to preview.
+- **File preview:** Shows file content in a scrollable monospace area with line numbers. Max preview size: 100KB. Larger files show a warning.
+- **Breadcrumb path:** Shows current directory path at the top as tappable segments.
+- **Refresh:** Pull down to refresh directory listing.
+
+Implementation uses the existing `sdk.files` resource which wraps `packages/tools` read/glob operations.
+
+#### 2.8.4 Panel Detail: Git Tree
+
+The Git Tree panel gives a quick pulse check on the repository's git state:
+
+```
+┌─────────────────────────┐
+│ 🌿 main            ↑1   │ Branch + ahead/behind
+├─────────────────────────┤
+│ 📝 Uncommitted (3 files)│
+│  M src/index.ts         │ Changed
+│  M package.json         │ files
+│ ?? new-file.ts          │
+├─────────────────────────┤
+│ 🕐 Recent Commits       │
+│  f69649c docs: Add P18  │ Commit
+│  2706c55 docs: Compreh  │ history
+│  b5e3e7e Phase 17: CI   │
+├─────────────────────────┤
+│ [View Full Diff]        │ Action buttons
+│ [Commit All]            │
+└─────────────────────────┘
+```
+
+- **Branch badge:** Current branch name with ahead/behind count
+- **File status:** Uncommitted changes grouped by status (M, A, D, ??). Tap a file to view its diff inline.
+- **Recent commits:** Last 10 commits. Tap to see full commit message + diff.
+- **Actions:** "View Full Diff" (opens in chat as bash tool output), "Commit All" (opens commit message input → submits to SDK bash tool execution).
+
+Implementation uses `sdk.tools.execute("bash", { command: "git status --short --branch" })` and similar git commands through the permission-gated shell tool path.
+
+#### 2.8.5 Panel Detail: Sessions
+
+```
+┌─────────────────────────┐
+│ 📋 Sessions    [+ New]  │ Header + create button
+├─────────────────────────┤
+│ ● Refactor auth   active│ Session
+│  12 messages, 3m ago   │ cards
+├─────────────────────────┤
+│ ○ Fix login bug         │
+│  8 messages, 15m ago   │
+├─────────────────────────┤
+│ ○ Add API docs          │
+│  4 messages, 1h ago    │
+└─────────────────────────┘
+```
+
+- List of sessions fetched via `sdk.sessions.list()`.
+- Active session highlighted with colored dot.
+- Tap to switch session (calls `sdk.sessions.get()` → loads messages).
+- "[+ New]" button in header to create a fresh session.
+- Swipe left on a session card to delete (with confirmation).
+
+#### 2.8.6 Panel Detail: Activity Log
+
+A compact, scrollable audit trail showing recent runtime events. Each event row shows:
+
+```
+┌──────────────────────────┐
+│ 📊 Activity Log          │
+├──────────────────────────┤
+│ 🔧 10:23:45  read        │
+│     ./README.md (OK)     │
+│ 🛡️ 10:23:46  Permission  │
+│     write → approved     │
+│ 📝 10:23:47  File change │
+│     src/index.ts (edit)  │
+│ 🐚 10:23:50  Shell       │
+│     git status (exit 0)  │
+│ ⚠️ 10:24:01  Error       │
+│     File not found       │
+└──────────────────────────┘
+```
+
+Events are categorized by type (tool, permission, file, shell, error) with an icon prefix. The panel subscribes to the SSE event stream but filters for non-chat events. The last ~50 events are kept in memory.
+
+#### 2.8.7 Panel Transitions
+
+When switching panels:
+
+- The **chat view** and **prompt input** are replaced by the panel's content
+- The **status bar** remains visible (with nav button) at all times
+- The **navigation drawer** dismisses after a panel is selected
+- When switching back to Chat, prompts and messages are preserved in state
+- Permission prompts always take precedence — if a `permission.requested` event arrives while a non-chat panel is active, the permission card overlays the current panel
+
 ---
 
 ## 3. File Structure
@@ -200,12 +345,22 @@ apps/mobile-web/
     ├── state/
     │   └── app.ts                 # SolidJS signals: messages, connection, permissions, streaming
     ├── components/
-    │   ├── StatusBar.tsx           # Connection dot + agent badge
+    │   ├── StatusBar.tsx           # Connection dot + agent badge + ☰ nav button
+    │   ├── NavDrawer.tsx           # Slide-out panel selector from left edge
     │   ├── ChatView.tsx            # Scrollable message list
     │   ├── MessageBubble.tsx       # Single message (user/assistant/system with styling)
     │   ├── StreamingIndicator.tsx  # Pulsing dot during active streaming
     │   ├── PromptInput.tsx         # Textarea + send button
     │   ├── PermissionPrompt.tsx    # Swipe-up permission card
+    │   ├── panels/
+    │   │   ├── PanelContainer.tsx  # Panel router — renders the active panel's content
+    │   │   ├── ChatPanel.tsx       # Main agent conversation (wraps ChatView + PromptInput)
+    │   │   ├── FileBrowserPanel.tsx # Directory tree + file preview
+    │   │   ├── GitTreePanel.tsx    # Git status, diffs, commit history
+    │   │   ├── SessionsPanel.tsx   # Session list, create, switch, delete
+    │   │   ├── ActivityLogPanel.tsx # Filtered event stream display
+    │   │   ├── SettingsPanel.tsx   # Server URL config + agent preference
+    │   │   └── HelpPanel.tsx       # Static setup guide, QR code, version info
     │   ├── ConnectionSettings.tsx  # Server URL config sheet
     │   └── AgentSelector.tsx       # Build/Plan toggle
     └── styles/
@@ -266,32 +421,54 @@ No server, core, or other packages are touched.
 - Two thumb-friendly buttons: green Approve + red Deny
 - Sends `POST /permission` with the decision via SDK
 
-### Task 6: Settings & agent selector
+### Task 6: Navigation drawer & panel system
 
-- `ConnectionSettings.tsx` — URL input, "Test Connection" button, save/reset
+- `NavDrawer.tsx` — slide-out drawer from left edge, animated with spring physics
+- `PanelContainer.tsx` — panel router that renders the active panel's content body
+- `state/app.ts` — add `activePanel` signal: `"chat" | "files" | "git" | "sessions" | "activity" | "settings" | "help"`
+- Wire the drawer to switch the active panel
+- Ensure the permission prompt overlays any panel
+
+### Task 7: Panel implementations (File Browser, Git Tree, Sessions)
+
+- `FileBrowserPanel.tsx` — directory listing via `sdk.files.list()`, file preview via `sdk.files.read()`, breadcrumb navigation, pull-to-refresh
+- `GitTreePanel.tsx` — git status via `sdk.tools.execute("bash", { command: "git status --short --branch" })`, commit log, file diff viewing
+- `SessionsPanel.tsx` — session list via `sdk.sessions.list()`, create via `sdk.sessions.create()`, delete with swipe gesture
+
+### Task 8: Panel implementations (Activity Log, Settings, Help)
+
+- `ActivityLogPanel.tsx` — subscribes to SSE event stream, filters for non-chat events (tool, shell, permission, file, error), displays last ~50 with timestamps and category icons
+- `SettingsPanel.tsx` — server URL input, auto-connect toggle, reconnect interval slider, agent mode selector, app version
+- `HelpPanel.tsx` — static content: Tailscale/LAN/tunnel setup guide, QR code generator from entered server URL, GitHub link, version
+
+### Task 9: Settings & agent selector
+
+- `ConnectionSettings.tsx` — URL input, "Test Connection" button, save/reset (embedded in SettingsPanel)
 - `AgentSelector.tsx` — Build / Plan toggle, calls `sdk.sessions.update()`
 
-### Task 7: Root App component
+### Task 10: Root App component
 
 - `App.tsx` — lifecycle: health check → SSE subscription → message submission
-- Wire all components together
+- Wire all components together including PanelContainer and NavDrawer
 - Handle error states: server unreachable, connection lost, stream failures
 
-### Task 8: PWA configuration
+### Task 11: PWA configuration
 
 - `manifest.json` — app name, icons, theme-color (`#0f172a` dark slate)
 - Register service worker for offline fallback page
 - Test "Add to Home Screen" on iOS Safari and Android Chrome
 
-### Task 9: Mobile-specific polish
+### Task 12: Mobile-specific polish
 
 - Pull-to-refresh for chat view (reconnect check)
 - Swipe to dismiss permission prompt
+- Swipe right to dismiss navigation drawer
 - Haptic feedback simulation (CSS `:active` scale transforms)
 - Keyboard avoidance when prompt input is focused
 - Safe area insets for notch phones (iOS `env(safe-area-inset-*)`)
+- Panel transition animations (slide left/right between panels)
 
-### Task 10: Testing
+### Task 13: Testing
 
 - Manual verification on:
   - iPhone SE / 14 Pro / 15 (Safari)
@@ -411,6 +588,16 @@ Checklist:
   [ ] Chat view renders messages correctly
   [ ] Streaming text renders incrementally
   [ ] Permission prompt shows and approves/denies
+  [ ] Navigation drawer opens/closes with animation
+  [ ] All 7 panels render in the drawer list
+  [ ] File Browser panel: directories list, files preview, breadcrumb nav
+  [ ] Git Tree panel: branch, status, commits display correctly
+  [ ] Sessions panel: list, create, switch, delete work
+  [ ] Activity Log panel: events display with timestamps and icons
+  [ ] Settings panel: URL saves, test connection works
+  [ ] Help panel: static content renders, QR code generates
+  [ ] Panel transitions preserve chat state when switching back
+  [ ] Permission prompt overlays non-chat panels
   [ ] Connection settings saves and restores
   [ ] Agent mode toggles correctly
   [ ] Reconnection works after server restart
@@ -428,6 +615,14 @@ Phase 18 is complete when:
 - [ ] Chat messages render from SSE events
 - [ ] Streaming model responses render incrementally
 - [ ] Permission prompts display and respond to approve/deny
+- [ ] Navigation drawer opens from hamburger button and lists all 7 panels
+- [ ] File Browser panel browses directories and previews files
+- [ ] Git Tree panel shows branch, status, and commit history
+- [ ] Sessions panel lists, creates, and switches sessions
+- [ ] Activity Log panel displays non-chat events with categorization
+- [ ] Settings panel persists server URL and auto-connect preference
+- [ ] Help panel renders setup guide and QR code
+- [ ] Panel transitions preserve chat state when switching back to Chat
 - [ ] Connection settings persist across page refreshes
 - [ ] PWA manifest enables "Add to Home Screen"
 - [ ] All desktop TUI tests still pass (zero regressions)
