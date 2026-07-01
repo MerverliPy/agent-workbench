@@ -11,6 +11,7 @@
   "scripts": {
     "phase": "echo Phase 1 workspace scaffold only",
     "validate": "echo See PHASE_1_VALIDATION.md",
+    "build": "bash scripts/build-all.sh",
     "test": "cd tests && bun test",
     "test:unit": "cd tests && bun test unit",
     "test:integration": "cd tests && bun test integration",
