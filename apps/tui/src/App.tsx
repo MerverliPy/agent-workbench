@@ -14,6 +14,7 @@ import {
   appendStreamingContent,
   finalizeStreamingMessage,
   cancelStreaming,
+  streamingMessageId,
   setStreamingMessageId,
   commandPaletteOpen,
   setCommandPaletteOpen,
