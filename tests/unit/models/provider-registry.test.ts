@@ -81,7 +81,7 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
 
     await expect(
       provider.call({ messages: [{ role: "user", content: "Hello" }] })
-    ).rejects.toThrow("OPENAI_API_KEY is not set");
+    ).rejects.toThrow("API key is not set");
   });
 
   it("error message does not expose secrets or internal paths", async () => {

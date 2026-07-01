@@ -59,8 +59,8 @@ export class ProviderRegistry {
     } else if (openAiResult === "error") {
       this.defaultProviderId = "openai";
       this.providerMap.set("openai", createConfigErrorProvider(
-        "OpenAI provider misconfigured: OPENAI_API_KEY is not set. " +
-        "Set OPENAI_API_KEY or unset AGENT_WORKBENCH_PROVIDER to use the stub."
+        "OpenAI provider misconfigured: the API key is not set. " +
+        "Unset AGENT_WORKBENCH_PROVIDER to use the stub provider."
       ));
     } else if (options?.defaultProvider !== undefined) {
       this.defaultProviderId = "custom";
