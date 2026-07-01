@@ -1,9 +1,9 @@
 # agent-workbench
 
-Status: Phase 15 complete (provider integration); Phase 16 next
+Status: Phase 16 in progress (streaming provider responses)
 Project type: local-first OpenCode-style agent TUI workbench
-Latest pushed commit: 5ffbc80 Update repo docs for Phase 14B wrap-up
-Test baseline: 323 tests, 0 failures, 961 expect() calls
+Latest pushed commit: 69eba42 Fix ProviderRegistry error message to not expose env var names
+Test baseline: 334 tests, 0 failures, 1003 expect() calls
 
 ## 1. Project Summary
 
@@ -25,7 +25,7 @@ Custom tool runtime
 
 ## 2. Current State
 
-Phases 0–15 are complete. Phase 15 adds a minimal OpenAI-compatible provider adapter behind the existing ModelProvider interface, provider configuration from environment variables, and provider metadata routes.
+Phases 0–15 are complete. Phase 16 (streaming provider responses) is in progress — adds `stream()` to the `ModelProvider` interface, implements streaming in `OpenAICompatibleProvider`, and routes streaming deltas through the existing event architecture to the TUI for incremental text rendering.
 
 Phase 0 planning docs (docs/00 through docs/19) remain the architectural source of truth. Their "Phase 0" status labels refer to planning origin, not current project phase.
 
@@ -180,11 +180,12 @@ Phase 13 Pre-run planner         COMPLETE
 Phase 14A Automated tests        COMPLETE
 Phase 14B Hardening              COMPLETE
 Phase 15 Provider integration    COMPLETE
+Phase 16 Streaming responses     IN PROGRESS
 ```
 
 ## 8. Next Steps
 
-Phase 16 is the next milestone. Not yet defined.
+Phase 16 adds streaming model responses from the OpenAI-compatible provider through the existing SSE event architecture to the TUI. See `docs/24_PHASE_16_STREAMING_RESPONSES.md` and `decisions/0016-streaming-provider-responses.md` for the full scope.
 
 ## 9. Agent Instructions
 
@@ -205,7 +206,7 @@ When continuing this project:
 
 ```bash
 # Full test suite
-bun test                           # 323 tests, 0 failures
+bun test                           # 334 tests, 0 failures
 
 # Per-category
 bun run test:unit

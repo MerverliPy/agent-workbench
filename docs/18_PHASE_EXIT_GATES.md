@@ -347,7 +347,24 @@ Phase 15 is complete only when:
 [x] No streaming, no provider-specific TUI, no broad provider matrix.
 ```
 
-## 20. Cross-Phase Blockers
+## 20. Phase 16 Exit Gate — Streaming Provider Responses
+
+Phase 16 is complete only when:
+
+```text
+[ ] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
+[ ] Stub and OpenAI provider both support streaming.
+[ ] Non-streaming providers continue to work unchanged (fallback path).
+[ ] Tool-call responses remain non-streaming.
+[ ] Only final complete messages are persisted — deltas are ephemeral.
+[ ] TUI renders streaming text incrementally without tool/policy/storage authority.
+[ ] Stream errors are redacted.
+[ ] All existing tests pass.
+[ ] Test-health passes all static checks.
+[ ] git diff --check is clean.
+```
+
+## 21. Cross-Phase Blockers
 
 These conditions block progress:
 

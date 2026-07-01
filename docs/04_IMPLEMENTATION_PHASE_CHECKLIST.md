@@ -593,7 +593,48 @@ Add a minimal OpenAI-compatible provider adapter behind the existing ModelProvid
 [x] Must not bypass permission enforcement, tool gates, planner gates, or previews.
 ```
 
-## 20. Cross-Phase Rules
+## 20. Phase 16 — Streaming Provider Responses
+
+### Purpose
+
+Add streaming model responses from the provider through the existing event architecture to the TUI.
+
+### Requirements
+
+```text
+[ ] ModelStreamChunk type defined in packages/models.
+[ ] ModelProvider.stream() interface defined with fallback for non-streaming providers.
+[ ] StubModelProvider.stream() emits fake chunks for offline testing.
+[ ] OpenAICompatibleProvider.stream() parses real SSE chunks with stream:true.
+[ ] ModelRouter.routeStream() wraps provider.stream() with message mapping.
+[ ] Streaming event schemas (model.stream_delta, .stream_complete, .stream_error) in protocol.
+[ ] SessionRunner emits deltas as events, buffers for final message, persists only on completion.
+[ ] SessionRunner falls back to call() for providers without stream().
+[ ] SDK EventsResource exposes onStreamDelta/onStreamComplete.
+[ ] TUI assistant message rendering appends deltas incrementally.
+[ ] Streaming flag added to provider model metadata.
+[ ] Streaming tests with mock provider: unit, integration, e2e.
+[ ] No streaming for tool calls (tool-call responses remain atomic).
+[ ] Stream error events are redacted (same rules as Phase 15).
+[ ] AbortSignal mid-stream produces clean error event.
+```
+
+### Exit Gate
+
+```text
+[ ] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
+[ ] Stub and OpenAI provider both support streaming.
+[ ] Non-streaming providers continue to work unchanged (fallback path).
+[ ] Tool-call responses remain non-streaming.
+[ ] Only final complete messages are persisted — deltas are ephemeral.
+[ ] TUI renders streaming text incrementally without tool/policy/storage authority.
+[ ] Stream errors are redacted.
+[ ] All existing tests pass.
+[ ] Test-health passes all static checks.
+[ ] git diff --check is clean.
+```
+
+## 21. Cross-Phase Rules
 
 Do not:
 
@@ -607,7 +648,7 @@ Do not:
 [ ] Implement automatic compaction without visibility.
 ```
 
-## 21. Phase Completion Status
+## 22. Phase Completion Status
 
 | Phase | Name | Status |
 |---:|---|---|
@@ -628,8 +669,9 @@ Do not:
 | 14A | Automated Tests | Complete |
 | 14B | Hardening | Complete |
 | 15 | Provider Integration | Complete |
+| 16 | Streaming Responses | In Progress |
 
-## 22. Agent Instructions
+## 23. Agent Instructions
 
 Future agents must:
 
