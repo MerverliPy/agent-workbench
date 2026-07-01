@@ -1,6 +1,6 @@
 # 18 — Phase Exit Gates
 
-Status: Phase 15 complete; Phase 16 next
+Status: Phase 16 complete; Phase 17 next
 Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
 
@@ -347,24 +347,42 @@ Phase 15 is complete only when:
 [x] No streaming, no provider-specific TUI, no broad provider matrix.
 ```
 
-## 20. Phase 16 Exit Gate — Streaming Provider Responses
+## 20. Phase 16 Exit Gate — Streaming Provider Responses (Complete)
 
-Phase 16 is complete only when:
+Phase 16 is complete — all exit gates satisfied:
 
 ```text
-[ ] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
-[ ] Stub and OpenAI provider both support streaming.
-[ ] Non-streaming providers continue to work unchanged (fallback path).
-[ ] Tool-call responses remain non-streaming.
-[ ] Only final complete messages are persisted — deltas are ephemeral.
-[ ] TUI renders streaming text incrementally without tool/policy/storage authority.
-[ ] Stream errors are redacted.
-[ ] All existing tests pass.
-[ ] Test-health passes all static checks.
-[ ] git diff --check is clean.
+[x] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
+[x] Stub and OpenAI provider both support streaming.
+[x] Non-streaming providers continue to work unchanged (fallback path).
+[x] Tool-call responses remain non-streaming.
+[x] Only final complete messages are persisted — deltas are ephemeral.
+[x] TUI renders streaming text incrementally without tool/policy/storage authority.
+[x] Stream errors are redacted.
+[x] All existing tests pass (346 pass, 0 fail).
+[x] Test-health passes all static checks.
+[x] git diff --check is clean.
 ```
 
-## 21. Cross-Phase Blockers
+## 21. Phase 17 Exit Gate — CI/CD Pipeline & End-to-End Validation (Planned)
+
+Phase 17 is complete only when:
+
+```text
+[ ] GitHub Actions CI pipeline runs on every push and PR to main.
+[ ] Pipeline runs `bun test` — all tests must pass.
+[ ] Pipeline runs `bash scripts/test-health.sh` — all static checks must pass.
+[ ] Pipeline runs `bun run typecheck` in every workspace package.
+[ ] Pipeline runs `git diff --check` — no whitespace errors.
+[ ] Pipeline reports pass/fail status on PRs via commit status checks.
+[ ] End-to-end validation test exists covering the full stack:
+     server startup → provider route → SDK client → session lifecycle → model response (mock) → event stream → shutdown.
+[ ] End-to-end streaming test exists: TUI (headless) receives `model.stream_delta/completed` events through the full event chain.
+[ ] CI job fast-fails on lint/type errors (within 30 seconds).
+[ ] CI completes within 5 minutes for the full suite.
+```
+
+## 22. Cross-Phase Blockers
 
 These conditions block progress:
 
@@ -379,7 +397,7 @@ These conditions block progress:
 [ ] Phase 0 contains implementation files.
 ```
 
-## 21. Phase Advancement Checklist
+## 23. Phase Advancement Checklist
 
 Before starting a new phase, answer:
 
@@ -392,7 +410,7 @@ Before starting a new phase, answer:
 [ ] Will this work create files allowed in the current phase?
 ```
 
-## 22. Agent Instructions
+## 24. Agent Instructions
 
 Future agents must:
 
@@ -403,7 +421,7 @@ Future agents must:
 5. Record unresolved issues.
 6. Ask only when required; otherwise proceed with documented defaults.
 
-## 23. Validation Checklist
+## 25. Validation Checklist
 
 ```text
 [ ] Every phase has an exit gate.

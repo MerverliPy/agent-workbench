@@ -1,6 +1,6 @@
 # 0016 — Streaming Provider Responses
 
-Status: Accepted
+Status: Accepted and Implemented
 Phase: Phase 16 — Streaming Provider Responses
 Decision type: Architecture Decision Record
 
@@ -144,24 +144,24 @@ and for tool-call responses.
 ## Validation Checklist
 
 ```text
-[ ] ModelProvider.stream() interface defined in packages/models.
-[ ] StubModelProvider.stream() emits fake chunks for offline testing.
-[ ] OpenAICompatibleProvider.stream() parses real SSE chunks.
-[ ] ModelRouter.routeStream() wraps provider.stream() with message mapping.
-[ ] SessionRunner emits model.stream_delta for each chunk.
-[ ] SessionRunner emits model.stream_complete on terminal chunk.
-[ ] SessionRunner persists only the final complete message.
-[ ] SessionRunner falls back to call() for providers without stream().
-[ ] Protocol defines model.stream_delta, model.stream_complete,
+[x] ModelProvider.stream() interface defined in packages/models.
+[x] StubModelProvider.stream() emits fake chunks for offline testing.
+[x] OpenAICompatibleProvider.stream() parses real SSE chunks.
+[x] ModelRouter.routeStream() wraps provider.stream() with message mapping.
+[x] SessionRunner emits model.stream_delta for each chunk.
+[x] SessionRunner emits model.stream_complete on terminal chunk.
+[x] SessionRunner persists only the final complete message.
+[x] SessionRunner falls back to call() for providers without stream().
+[x] Protocol defines model.stream_delta, model.stream_complete,
     model.stream_error event schemas.
-[ ] SDK EventsResource exposes onStreamDelta/onStreamComplete callbacks.
-[ ] TUI assistant message rendering appends deltas incrementally.
-[ ] TUI shows streaming indicator while stream is active.
-[ ] Stream error events are redacted (no secrets, no internal paths).
-[ ] AbortSignal mid-stream produces a clean error event.
-[ ] All existing tests continue to pass.
-[ ] Test-health passes all static checks.
-[ ] git diff --check is clean.
+[x] SDK EventsResource exposes onStreamDelta/onStreamComplete callbacks.
+[x] TUI assistant message rendering appends deltas incrementally.
+[x] TUI shows streaming indicator while stream is active.
+[x] Stream error events are redacted (no secrets, no internal paths).
+[x] AbortSignal mid-stream produces a clean error event.
+[x] All existing tests continue to pass (346 pass, 0 fail).
+[x] Test-health passes all static checks.
+[x] git diff --check is clean.
 ```
 
 ## Notes for Future Agents

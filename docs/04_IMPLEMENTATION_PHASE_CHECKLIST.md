@@ -1,8 +1,8 @@
 # 04 — Implementation Phase Checklist
 
-Status: Phase 15 complete; Phase 16 next
+Status: Phase 16 complete; Phase 17 next
 Document type: agent-ready implementation checklist
-Scope: phases 0 through 16, dependencies, gates, and forbidden shortcuts
+Scope: phases 0 through 17, dependencies, gates, and forbidden shortcuts
 
 ## 1. Purpose
 
@@ -593,7 +593,7 @@ Add a minimal OpenAI-compatible provider adapter behind the existing ModelProvid
 [x] Must not bypass permission enforcement, tool gates, planner gates, or previews.
 ```
 
-## 20. Phase 16 — Streaming Provider Responses
+## 20. Phase 16 — Streaming Provider Responses (Complete)
 
 ### Purpose
 
@@ -602,36 +602,36 @@ Add streaming model responses from the provider through the existing event archi
 ### Requirements
 
 ```text
-[ ] ModelStreamChunk type defined in packages/models.
-[ ] ModelProvider.stream() interface defined with fallback for non-streaming providers.
-[ ] StubModelProvider.stream() emits fake chunks for offline testing.
-[ ] OpenAICompatibleProvider.stream() parses real SSE chunks with stream:true.
-[ ] ModelRouter.routeStream() wraps provider.stream() with message mapping.
-[ ] Streaming event schemas (model.stream_delta, .stream_complete, .stream_error) in protocol.
-[ ] SessionRunner emits deltas as events, buffers for final message, persists only on completion.
-[ ] SessionRunner falls back to call() for providers without stream().
-[ ] SDK EventsResource exposes onStreamDelta/onStreamComplete.
-[ ] TUI assistant message rendering appends deltas incrementally.
-[ ] Streaming flag added to provider model metadata.
-[ ] Streaming tests with mock provider: unit, integration, e2e.
-[ ] No streaming for tool calls (tool-call responses remain atomic).
-[ ] Stream error events are redacted (same rules as Phase 15).
-[ ] AbortSignal mid-stream produces clean error event.
+|[x] ModelStreamChunk type defined in packages/models.
+|[x] ModelProvider.stream() interface defined with fallback for non-streaming providers.
+|[x] StubModelProvider.stream() emits fake chunks for offline testing.
+|[x] OpenAICompatibleProvider.stream() parses real SSE chunks with stream:true.
+|[x] ModelRouter.routeStream() wraps provider.stream() with message mapping.
+|[x] Streaming event schemas (model.stream_delta, .stream_complete, .stream_error) in protocol.
+|[x] SessionRunner emits deltas as events, buffers for final message, persists only on completion.
+|[x] SessionRunner falls back to call() for providers without stream().
+|[x] SDK EventsResource exposes onStreamDelta/onStreamComplete.
+|[x] TUI assistant message rendering appends deltas incrementally.
+|[x] Streaming flag added to provider model metadata.
+|[x] Streaming tests with mock provider: unit, integration, e2e.
+|[x] No streaming for tool calls (tool-call responses remain atomic).
+|[x] Stream error events are redacted (same rules as Phase 15).
+|[x] AbortSignal mid-stream produces clean error event.
 ```
 
 ### Exit Gate
 
 ```text
-[ ] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
-[ ] Stub and OpenAI provider both support streaming.
-[ ] Non-streaming providers continue to work unchanged (fallback path).
-[ ] Tool-call responses remain non-streaming.
-[ ] Only final complete messages are persisted — deltas are ephemeral.
-[ ] TUI renders streaming text incrementally without tool/policy/storage authority.
-[ ] Stream errors are redacted.
-[ ] All existing tests pass.
-[ ] Test-health passes all static checks.
-[ ] git diff --check is clean.
+|[x] Streaming works end-to-end: provider SSE → ModelRouter → SessionRunner → EventPublisher → server SSE → SDK → TUI.
+|[x] Stub and OpenAI provider both support streaming.
+|[x] Non-streaming providers continue to work unchanged (fallback path).
+|[x] Tool-call responses remain non-streaming.
+|[x] Only final complete messages are persisted — deltas are ephemeral.
+|[x] TUI renders streaming text incrementally without tool/policy/storage authority.
+|[x] Stream errors are redacted.
+|[x] All existing tests pass.
+|[x] Test-health passes all static checks.
+|[x] git diff --check is clean.
 ```
 
 ## 21. Cross-Phase Rules
@@ -669,7 +669,8 @@ Do not:
 | 14A | Automated Tests | Complete |
 | 14B | Hardening | Complete |
 | 15 | Provider Integration | Complete |
-| 16 | Streaming Responses | In Progress |
+| 16 | Streaming Responses | Complete |
+| 17 | CI/CD Pipeline & E2E Validation | In Progress |
 
 ## 23. Agent Instructions
 

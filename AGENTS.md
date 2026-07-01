@@ -61,7 +61,7 @@ Phase 13 Pre-Run Planner is accepted.
 Phase 14A Automated Tests is accepted.
 Phase 14B Hardening is accepted.
 
-Phase 15 is the current implementation boundary. Phase 16 is next and not yet defined.
+Phase 16 (streaming provider responses) is the current implementation boundary. Phase 16 is complete — all exit gates verified, 346 tests passing. Phase 17 (CI/CD pipeline + end-to-end validation) is the next implementation phase. See docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md when available.
 
 Phase 10 scope:
 

@@ -1,9 +1,9 @@
 # agent-workbench
 
-Status: Phase 16 in progress (streaming provider responses)
+Status: Phase 16 complete (streaming provider responses)
 Project type: local-first OpenCode-style agent TUI workbench
-Latest pushed commit: 69eba42 Fix ProviderRegistry error message to not expose env var names
-Test baseline: 334 tests, 0 failures, 1003 expect() calls
+Latest pushed commit: f5197f7 Implement Phase 16 streaming provider responses
+Test baseline: 346 tests, 0 failures, 1039 expect() calls
 
 ## 1. Project Summary
 
@@ -25,7 +25,7 @@ Custom tool runtime
 
 ## 2. Current State
 
-Phases 0–15 are complete. Phase 16 (streaming provider responses) is in progress — adds `stream()` to the `ModelProvider` interface, implements streaming in `OpenAICompatibleProvider`, and routes streaming deltas through the existing event architecture to the TUI for incremental text rendering.
+Phases 0–16 are complete. Phase 17 (CI/CD pipeline & end-to-end validation) is the current implementation phase — adds a GitHub Actions CI pipeline and end-to-end validation tests covering the full stack from server startup through SDK client through mock model response to event stream shutdown. See `docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md` and `decisions/0017-ci-pipeline-and-e2e-validation.md`.
 
 Phase 0 planning docs (docs/00 through docs/19) remain the architectural source of truth. Their "Phase 0" status labels refer to planning origin, not current project phase.
 
@@ -180,12 +180,12 @@ Phase 13 Pre-run planner         COMPLETE
 Phase 14A Automated tests        COMPLETE
 Phase 14B Hardening              COMPLETE
 Phase 15 Provider integration    COMPLETE
-Phase 16 Streaming responses     IN PROGRESS
+Phase 16 Streaming responses     COMPLETE
 ```
 
 ## 8. Next Steps
 
-Phase 16 adds streaming model responses from the OpenAI-compatible provider through the existing SSE event architecture to the TUI. See `docs/24_PHASE_16_STREAMING_RESPONSES.md` and `decisions/0016-streaming-provider-responses.md` for the full scope.
+Phase 16 (complete) added streaming model responses from the OpenAI-compatible provider through the existing SSE event architecture to the TUI, with fallback for non-streaming providers. Phase 17 is being defined — see `docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md` when available.
 
 ## 9. Agent Instructions
 
@@ -206,7 +206,7 @@ When continuing this project:
 
 ```bash
 # Full test suite
-bun test                           # 334 tests, 0 failures
+bun test                           # 346 tests, 0 failures
 
 # Per-category
 bun run test:unit

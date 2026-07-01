@@ -1,7 +1,7 @@
 # 24 — Phase 16 Streaming Provider Responses
 
-Status: Draft — not yet accepted
-Document type: implementation plan
+Status: Complete — implemented and verified
+Document type: implementation plan (historical)
 Scope: streaming model responses from provider through protocol/SDK/server to TUI
 
 ## 1. Summary
