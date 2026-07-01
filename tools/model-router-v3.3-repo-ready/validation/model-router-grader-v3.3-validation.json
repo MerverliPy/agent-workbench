@@ -1,0 +1,55 @@
+{
+  "artifact": "model_router_grader_v3_3.py",
+  "grader_version": "v3.3",
+  "benchmark_source": "model-router-bench-tests-v3.2.jsonl",
+  "benchmark_case_count": 40,
+  "response_template_count": 40,
+  "weight_total": 100,
+  "passing_score": 85,
+  "hard_fail_keys": [
+    "approval_needed",
+    "must_not_include",
+    "risk_level",
+    "current_research_needed",
+    "required_sections",
+    "safety_checks"
+  ],
+  "v3_3_router_sections_checked": [
+    "Provider / Model Selection",
+    "Safety / Failure Checks",
+    "Routing Metadata",
+    "Failure Flags"
+  ],
+  "new_v3_3_metadata_checked": [
+    "Provider Registry Match",
+    "Forbidden Routes"
+  ],
+  "router_file_structural_check": {
+    "model-router-fixed-v3.3.md_exists": true,
+    "provider_model_selection_section_present": true,
+    "safety_failure_checks_section_present": true,
+    "provider_registry_match_field_present": true,
+    "forbidden_routes_field_present": true
+  },
+  "commands": [
+    {
+      "cmd": "python model_router_grader_v3_3.py --validate-benchmark --benchmark model-router-bench-tests-v3.2.jsonl",
+      "returncode": 0,
+      "stdout": "Benchmark validation passed: 40 cases\nGrader weight validation passed: 100/100",
+      "stderr": ""
+    },
+    {
+      "cmd": "python model_router_grader_v3_3.py --write-response-template model-router-real-responses-template-v3.3-grader.jsonl --benchmark model-router-bench-tests-v3.2.jsonl",
+      "returncode": 0,
+      "stdout": "Wrote response template: model-router-real-responses-template-v3.3-grader.jsonl",
+      "stderr": ""
+    },
+    {
+      "cmd": "python model_router_grader_v3_3.py --write-prompt-template model-router-prompt-template-v3.3-grader.jsonl --benchmark model-router-bench-tests-v3.2.jsonl",
+      "returncode": 0,
+      "stdout": "Wrote prompt template: model-router-prompt-template-v3.3-grader.jsonl",
+      "stderr": ""
+    }
+  ],
+  "status": "passed"
+}

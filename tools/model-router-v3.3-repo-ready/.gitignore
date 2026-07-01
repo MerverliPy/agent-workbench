@@ -1,0 +1,6 @@
+# Local benchmark outputs
+model-router-real-responses-v*.jsonl
+reports/*.tmp
+__pycache__/
+*.pyc
+.DS_Store

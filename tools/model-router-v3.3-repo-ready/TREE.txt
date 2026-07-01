@@ -1,0 +1,93 @@
+- PACKAGE_MANIFEST.json
+- QUICKSTART.md
+- README.md
++ archives/
+  - model-router-grader-v3.3-package.zip
+  - model-router-manual-benchmark-automation-v3.2.zip
+  - model-router-real-benchmark-results-v3.2-chatgpt-executed.zip
+  - model-router-v3.2-benchmark-upgrade-package.zip
+  - model-router-v3.3-artifacts.zip
+  - model-router-v3.3-improvement-plan-package.zip
++ benchmarks/
+  - model-router-bench-tests-v3.2.jsonl
++ changelogs/
+  - model-router-grader-v3.2.1-change-log.md
+  - model-router-grader-v3.3-change-log.md
+  - model-router-v3.2-change-log.md
+  - model-router-v3.3-change-log.md
++ diffs/
+  - model-router-grader-v3.2.1-to-v3.3.diff
+  - model-router-v3.1-to-v3.2.diff
+  - model-router-v3.2-to-v3.3.diff
++ docs/
+  - README-model-router-grader-v3.3.md
+  - README-model-router-manual-benchmark-automation-v3.2.md
+  - README-model-router-v3.2-benchmark-upgrade.md
+  - README-model-router-v3.3-package.md
+  - model-router-expanded-llm-registry-v1.md
+  - model-router-llm-expansion-plan.md
+  - model-router-v3.3-improvement-plan.md
++ grader/
+  - model_router_grader.py
+  - model_router_grader_v3_3.py
++ manual-prompts/
+  + model-router-manual-prompts-v3.2/
+    - INDEX.md
+    - MRV3-001.md
+    - MRV3-002.md
+    - MRV3-003.md
+    - MRV3-004.md
+    - MRV3-005.md
+    - MRV3-006.md
+    - MRV3-007.md
+    - MRV3-008.md
+    - MRV3-009.md
+    - MRV3-010.md
+    - MRV3-011.md
+    - MRV3-012.md
+    - MRV3-013.md
+    - MRV3-014.md
+    - MRV3-015.md
+    - MRV3-016.md
+    - MRV3-017.md
+    - MRV3-018.md
+    - MRV3-019.md
+    - MRV3-020.md
+    - MRV3-021.md
+    - MRV3-022.md
+    - MRV3-023.md
+    - MRV3-024.md
+    - MRV3-025.md
+    - MRV3-026.md
+    - MRV3-027.md
+    - MRV3-028.md
+    - MRV3-029.md
+    - MRV3-030.md
+    - MRV3-031.md
+    - MRV3-032.md
+    - MRV3-033.md
+    - MRV3-034.md
+    - MRV3-035.md
+    - MRV3-036.md
+    - MRV3-037.md
+    - MRV3-038.md
+    - MRV3-039.md
+    - MRV3-040.md
++ prompts/
+  - model-router-fixed-v3.3.md
+  - model-router.md
++ reports/
+  - model-router-real-benchmark-run-notes-v3.2-chatgpt-executed.md
+  - model-router-real-grade-report-v3.2.1-chatgpt-executed.json
+  - model-router-real-grade-report-v3.2.1-chatgpt-executed.md
+  - model-router-real-grade-report-v3.3-PENDING.md
+  - model-router-real-responses-v3.2-FILLED-chatgpt-executed.jsonl
++ scripts/
+  - collect_model_router_benchmark_v3_2.py
+  - run_model_router_benchmark_v3_2.sh
++ templates/
+  - model-router-prompt-template-v3.3.jsonl
+  - model-router-real-responses-template-v3.3.jsonl
++ validation/
+  - model-router-grader-v3.3-validation.json
+  - model-router-v3.3-validation.json

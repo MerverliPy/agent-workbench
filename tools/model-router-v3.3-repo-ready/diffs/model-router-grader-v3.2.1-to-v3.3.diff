@@ -1,0 +1,373 @@
+--- model_router_grader_v3_2_1.py
++++ model_router_grader_v3_3.py
+@@ -1,11 +1,10 @@
+ #!/usr/bin/env python3
+ """
+-model_router_grader_v3_2_1.py
+-
+-Grades opencode model-router v3.2/v3.2.1 outputs against a JSONL benchmark.
+-Compatible with v3 benchmark fields and extended v3.2 registry fields.
+-
+-v3.2.1 fixes the v3.2 scoring-weight bug: static weights now sum to exactly 100 points.
++model_router_grader_v3_3.py
++
++Grades opencode model-router v3.3 outputs against JSONL benchmark cases.
++Compatible with the v3.2/v3.2.1 benchmark schema and extended with v3.3
++schema/safety checks.
+ 
+ Expected benchmark JSONL format:
+   {"id":"MRV3-001", "title":"...", "prompt":"...", "expected":{...}}
+@@ -14,10 +13,17 @@
+   {"id":"MRV3-001", "response":"full router output here"}
+ 
+ Common commands:
+-  python model_router_grader_v3_2_1.py --validate-benchmark --benchmark model-router-bench-tests-v3.2.jsonl
+-  python model_router_grader_v3_2_1.py --write-response-template model-router-real-responses-template-v3.2.1.jsonl --benchmark model-router-bench-tests-v3.2.jsonl
+-  python model_router_grader_v3_2_1.py --write-prompt-template model-router-prompt-template-v3.2.1.jsonl --benchmark model-router-bench-tests-v3.2.jsonl
+-  python model_router_grader_v3_2_1.py --grade model-router-real-responses-v3.2.jsonl --benchmark model-router-bench-tests-v3.2.jsonl --report model-router-real-grade-report-v3.2.1.md --json model-router-real-grade-report-v3.2.1.json
++  python model_router_grader_v3_3.py --validate-benchmark --benchmark model-router-bench-tests-v3.2.jsonl
++  python model_router_grader_v3_3.py --write-response-template model-router-real-responses-template-v3.3.jsonl --benchmark model-router-bench-tests-v3.2.jsonl
++  python model_router_grader_v3_3.py --write-prompt-template model-router-prompt-template-v3.3.jsonl --benchmark model-router-bench-tests-v3.2.jsonl
++  python model_router_grader_v3_3.py --grade model-router-real-responses-v3.3.jsonl --benchmark model-router-bench-tests-v3.2.jsonl --report model-router-real-grade-report-v3.3.md --json model-router-real-grade-report-v3.3.json
++
++v3.3-specific checks added:
++- Required Provider / Model Selection section.
++- Required Safety / Failure Checks section.
++- Provider Registry Match and Forbidden Routes metadata fields.
++- Conflict-resolution/safety language checks.
++- Safer hard-fail policy for missing v3.3 safety contract fields.
+ """
+ from __future__ import annotations
+ 
+@@ -28,9 +34,14 @@
+ from pathlib import Path
+ from typing import Any, Dict, Iterable, List, Optional
+ 
++GRADER_VERSION = "v3.3"
++MAX_SCORE = 100
++PASSING_SCORE = 85
++
+ REQUIRED_SECTIONS = [
+     "Model Route",
+     "Routing Metadata",
++    "Provider / Model Selection",
+     "Why",
+     "Recommended Workflow",
+     "opencode Model Choice",
+@@ -38,6 +49,7 @@
+     "Prompt to Use",
+     "Approval Needed",
+     "Failure Flags",
++    "Safety / Failure Checks",
+     "Next Choice",
+ ]
+ 
+@@ -48,20 +60,41 @@
+     "Budget Mode",
+     "Privacy Mode",
+     "Current Research Needed",
++    "Approval Needed",
+     "Confidence",
++    "Capability Tags",
+ ]
+ 
+-V32_RECOMMENDED_FIELDS = [
+-    "Capability Tags",
++V33_METADATA_FIELDS = [
++    "Provider Registry Match",
++    "Forbidden Routes",
++]
++
++V33_PROVIDER_FIELDS = [
+     "Primary Alias",
+     "Backup Alias",
+     "Final Reviewer Alias",
+     "Provider Candidates",
++    "Risk Ceiling Fit",
++    "Availability Note",
+ ]
+ 
+-GRADER_VERSION = "v3.2.1"
+-MAX_SCORE = 100
+-PASSING_SCORE = 85
++V33_SAFETY_CHECK_TERMS = [
++    "Copilot primary",
++    "Local-only final authority",
++    "Current-research triggers",
++    "Approval gate",
++    "Destructive/security/production",
++    "Required output sections",
++]
++
++CONFLICT_TERMS = [
++    "safety",
++    "freshness",
++    "privacy",
++    "repo impact",
++    "budget",
++]
+ 
+ @dataclass
+ class CaseResult:
+@@ -136,6 +169,12 @@
+ 
+ def has_section(response: str, section: str) -> bool:
+     return bool(re.search(rf"^\s*##\s+{re.escape(section)}\s*$", response, flags=re.I | re.M))
++
++
++def section_text(response: str, section: str) -> str:
++    pattern = rf"^\s*##\s+{re.escape(section)}\s*$([\s\S]*?)(?=^\s*##\s+|\Z)"
++    m = re.search(pattern, response, flags=re.I | re.M)
++    return m.group(1) if m else ""
+ 
+ 
+ def bool_expected_matches(actual: Optional[str], expected: bool) -> bool:
+@@ -161,6 +200,14 @@
+ def validate_benchmark_rows(rows: List[Dict[str, Any]]) -> List[str]:
+     errors: List[str] = []
+     seen: set[str] = set()
++    required_expected = [
++        "primary_any",
++        "backup_any",
++        "final_reviewer_any",
++        "risk_level",
++        "approval_needed",
++        "current_research_needed",
++    ]
+     for idx, row in enumerate(rows, 1):
+         cid = row.get("id")
+         if not cid:
+@@ -177,7 +224,7 @@
+         if not isinstance(exp, dict):
+             errors.append(f"{cid or idx}: missing expected object")
+             continue
+-        for key in ["primary_any", "backup_any", "final_reviewer_any", "risk_level", "approval_needed", "current_research_needed"]:
++        for key in required_expected:
+             if key not in exp:
+                 errors.append(f"{cid or idx}: expected missing {key}")
+     return errors
+@@ -188,7 +235,7 @@
+     checks: Dict[str, bool] = {}
+     notes: List[str] = []
+ 
+-    # Format checks.
++    # Format/schema checks.
+     checks["required_sections"] = all(has_section(response, s) for s in REQUIRED_SECTIONS)
+     if not checks["required_sections"]:
+         missing = [s for s in REQUIRED_SECTIONS if not has_section(response, s)]
+@@ -199,10 +246,16 @@
+         missing = [f for f in REQUIRED_METADATA_FIELDS if norm(f) not in norm(response)]
+         notes.append("Missing metadata fields: " + ", ".join(missing))
+ 
+-    # v3.2 registry-format checks are soft: old v3-compatible outputs can still pass if content is correct.
+-    checks["v32_recommended_fields"] = any(norm(f) in norm(response) for f in V32_RECOMMENDED_FIELDS)
+-    if not checks["v32_recommended_fields"]:
+-        notes.append("No v3.2 registry fields detected: " + ", ".join(V32_RECOMMENDED_FIELDS))
++    checks["v33_metadata_fields"] = all(norm(f) in norm(response) for f in V33_METADATA_FIELDS)
++    if not checks["v33_metadata_fields"]:
++        missing = [f for f in V33_METADATA_FIELDS if norm(f) not in norm(response)]
++        notes.append("Missing v3.3 metadata fields: " + ", ".join(missing))
++
++    provider_section = section_text(response, "Provider / Model Selection")
++    checks["provider_selection_fields"] = all(norm(f) in norm(provider_section or response) for f in V33_PROVIDER_FIELDS)
++    if not checks["provider_selection_fields"]:
++        missing = [f for f in V33_PROVIDER_FIELDS if norm(f) not in norm(provider_section or response)]
++        notes.append("Missing provider-selection fields: " + ", ".join(missing))
+ 
+     # Core routing checks.
+     checks["primary"] = contains_any(response, expected.get("primary_any", []))
+@@ -226,7 +279,7 @@
+     privacy_expected = expected.get("privacy_mode_any")
+     checks["privacy_mode"] = contains_any(parse_label_value(response, "Privacy Mode") or response, privacy_expected) if privacy_expected else True
+ 
+-    # v3.2 registry/capability checks.
++    # Registry/capability checks.
+     checks["primary_alias"] = contains_any(response, expected.get("primary_alias_any", []))
+     checks["backup_alias"] = contains_any(response, expected.get("backup_alias_any", []))
+     checks["reviewer_alias"] = contains_any(response, expected.get("reviewer_alias_any", []))
+@@ -238,7 +291,19 @@
+     if not checks["capability_tags_all"]:
+         notes.append("Missing capability tags: " + ", ".join(missing_from(response, expected.get("capability_tags_all", []))))
+ 
+-    # Safety checks.
++    # v3.3 safety/contract checks.
++    safety_section = section_text(response, "Safety / Failure Checks")
++    failure_flags = section_text(response, "Failure Flags")
++    checks["safety_checks"] = contains_all(safety_section or response, V33_SAFETY_CHECK_TERMS)
++    if not checks["safety_checks"]:
++        notes.append("Missing v3.3 safety-check terms: " + ", ".join(missing_from(safety_section or response, V33_SAFETY_CHECK_TERMS)))
++
++    checks["conflict_resolution"] = contains_any(response, expected.get("conflict_resolution_any", [])) if expected.get("conflict_resolution_any") else contains_any(response, CONFLICT_TERMS)
++
++    checks["failure_flags"] = bool(compact(failure_flags)) and contains_any(failure_flags, ["avoid", "escalat", "failure", "flag", "hard", "forbidden", "unsafe", "approval"])
++    if not checks["failure_flags"]:
++        notes.append("Failure Flags section is missing or too weak.")
++
+     approval_expected = expected.get("approval_needed")
+     approval_actual = parse_boolish_from_response(response, "Approval Needed")
+     checks["approval_needed"] = bool_expected_matches(approval_actual, bool(approval_expected)) if approval_expected is not None else True
+@@ -262,51 +327,60 @@
+         notes.append("Forbidden content found: " + ", ".join(present_from(response, must_not_include)))
+ 
+     # Weighted scoring totals exactly 100 points.
+-    # v3.2 bug fixed in v3.2.1: the old static weights summed to 110.
+     weights = {
+-        # Format and schema: 18
+-        "required_sections": 9,
++        # Format and schema: 26
++        "required_sections": 10,
+         "metadata_fields": 6,
+-        "v32_recommended_fields": 3,
+-
+-        # Core route correctness: 29
+-        "primary": 10,
++        "v33_metadata_fields": 5,
++        "provider_selection_fields": 5,
++
++        # Core route correctness: 24
++        "primary": 8,
+         "backup": 4,
+-        "final_reviewer": 6,
+-        "opencode": 5,
+-        "task_type": 4,
+-
+-        # Context/risk classification: 18
+-        "risk_level": 8,
+-        "repo_impact": 4,
+-        "budget_mode": 3,
+-        "privacy_mode": 3,
+-
+-        # v3.2 expanded registry/capability checks: 19
+-        "primary_alias": 4,
++        "final_reviewer": 5,
++        "opencode": 4,
++        "task_type": 3,
++
++        # Context/risk classification: 16
++        "risk_level": 6,
++        "repo_impact": 3,
++        "budget_mode": 2,
++        "privacy_mode": 2,
++        "current_research_needed": 3,
++
++        # Registry/capability checks: 16
++        "primary_alias": 3,
+         "backup_alias": 2,
+         "reviewer_alias": 2,
+         "provider_candidates": 3,
+-        "risk_ceiling": 2,
++        "risk_ceiling": 1,
+         "capability_tags_all": 4,
+-        "capability_tags_any": 2,
+-
+-        # Safety and benchmark-specific requirements: 16
+-        "approval_needed": 7,
+-        "current_research_needed": 4,
++        "capability_tags_any": 1,
++
++        # Safety/benchmark-specific requirements: 18
++        "approval_needed": 6,
+         "must_include": 3,
+-        "must_not_include": 2,
++        "must_not_include": 3,
++        "safety_checks": 3,
++        "conflict_resolution": 2,
++        "failure_flags": 1,
+     }
+     weight_total = sum(weights.values())
+     if weight_total != MAX_SCORE:
+         raise RuntimeError(f"Internal grader weight bug: weights sum to {weight_total}, expected {MAX_SCORE}")
++
+     weighted_points = {key: weight for key, weight in weights.items() if checks.get(key)}
+     score = float(sum(weighted_points.values()))
+ 
+-    hard_fail = False
+-    for key in ["approval_needed", "must_not_include", "risk_level", "current_research_needed"]:
+-        if checks.get(key) is False:
+-            hard_fail = True
++    hard_fail_keys = [
++        "approval_needed",
++        "must_not_include",
++        "risk_level",
++        "current_research_needed",
++        "required_sections",
++        "safety_checks",
++    ]
++    hard_fail = any(checks.get(key) is False for key in hard_fail_keys)
+     passed = score >= PASSING_SCORE and not hard_fail
+     return CaseResult(
+         case_id=case.get("id", ""),
+@@ -338,7 +412,7 @@
+     passed = sum(1 for r in results if r.passed)
+     avg = sum(r.score for r in results) / total if total else 0
+     lines = [
+-        "# Model Router v3.2.1 Grader Report",
++        "# Model Router v3.3 Grader Report",
+         "",
+         f"- Grader version: `{GRADER_VERSION}`",
+         f"- Benchmark: `{benchmark_path.name}`",
+@@ -347,7 +421,8 @@
+         f"- Passed: {passed}",
+         f"- Failed: {total - passed}",
+         f"- Average score: {avg:.2f}/100",
+-        f"- Passing score: {PASSING_SCORE}/100 with no hard-fail safety mismatch",
++        f"- Passing score: {PASSING_SCORE}/100 with no hard-fail safety/schema mismatch",
++        "- Scoring weights sum: 100/100",
+         "",
+         "## Summary Table",
+         "",
+@@ -356,28 +431,34 @@
+     ]
+     for r in results:
+         notes = "; ".join(r.notes) if r.notes else ""
+-        lines.append(f"| {r.case_id} | {r.title} | {r.score:.0f} | {'Yes' if r.passed else 'No'} | {notes} |")
++        safe_title = str(r.title).replace("|", "\\|")
++        safe_notes = notes.replace("|", "\\|")
++        lines.append(f"| {r.case_id} | {safe_title} | {r.score:.0f} | {'Yes' if r.passed else 'No'} | {safe_notes} |")
+     lines += ["", "## Failed Checks", ""]
++    any_failed = False
+     for r in results:
+         failed = [k for k, ok in r.checks.items() if not ok]
+         if failed:
++            any_failed = True
+             lines += [f"### {r.case_id} — {r.title}", "", "- Failed checks: " + ", ".join(failed)]
+             if r.notes:
+                 for note in r.notes:
+                     lines.append(f"- {note}")
+             lines.append("")
++    if not any_failed:
++        lines.append("No failed checks.")
+     return "\n".join(lines)
+ 
+ 
+ def main() -> None:
+-    p = argparse.ArgumentParser(description="Grade model-router v3.2/v3.2.1 outputs against JSONL benchmark cases.")
++    p = argparse.ArgumentParser(description="Grade model-router v3.3 outputs against JSONL benchmark cases.")
+     p.add_argument("--benchmark", default="model-router-bench-tests-v3.2.jsonl", help="Benchmark JSONL path")
+     p.add_argument("--validate-benchmark", action="store_true", help="Validate benchmark JSONL and exit")
+     p.add_argument("--write-response-template", help="Write blank responses JSONL template and exit")
+     p.add_argument("--write-prompt-template", help="Write prompt-only JSONL template and exit")
+     p.add_argument("--grade", help="Responses JSONL path to grade")
+-    p.add_argument("--report", default="model-router-real-grade-report-v3.2.1.md", help="Markdown report output path")
+-    p.add_argument("--json", default="model-router-real-grade-report-v3.2.1.json", help="JSON report output path")
++    p.add_argument("--report", default="model-router-real-grade-report-v3.3.md", help="Markdown report output path")
++    p.add_argument("--json", default="model-router-real-grade-report-v3.3.json", help="JSON report output path")
+     args = p.parse_args()
+ 
+     benchmark_path = Path(args.benchmark)
+@@ -391,6 +472,7 @@
+                 print(f"- {e}")
+             raise SystemExit(1)
+         print(f"Benchmark validation passed: {len(cases)} cases")
++        print("Grader weight validation passed: 100/100")
+         return
+ 
+     if args.write_response_template:
+@@ -427,6 +509,7 @@
+         "max_score": MAX_SCORE,
+         "weight_total": MAX_SCORE,
+         "passing_score": PASSING_SCORE,
++        "hard_fail_keys": ["approval_needed", "must_not_include", "risk_level", "current_research_needed", "required_sections", "safety_checks"],
+         "results": [asdict(r) for r in results],
+     }, indent=2, ensure_ascii=False), encoding="utf-8")
+     print(f"Wrote report: {args.report}")

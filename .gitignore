@@ -26,3 +26,8 @@ coverage/
 *.sqlite
 *.sqlite3
 *.db
+
+# Local/generated router artifacts
+model-router-v3.3-repo-ready.zip
+tools/model-router-v3.3-repo-ready/archives/
+tools/model-router-v3.3-repo-ready/reports/

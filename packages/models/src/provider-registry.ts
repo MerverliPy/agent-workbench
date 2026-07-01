@@ -86,10 +86,27 @@ export class ProviderRegistry {
   }
 
   private tryRegisterOpenAIProvider(fetchImpl?: typeof fetch): "registered" | "skipped" | "error" {
+    const requestedProvider = process.env.AGENT_WORKBENCH_PROVIDER?.trim();
+    const explicitlyRequestedOpenAI =
+      requestedProvider === "openai" || requestedProvider === "openai-compatible";
+
     let config;
     try {
       config = parseProviderConfig();
-    } catch {
+    } catch (err: unknown) {
+      if (explicitlyRequestedOpenAI && err instanceof ProviderConfigError) {
+        this.metaMap.set("openai", {
+          id: "openai",
+          name: "OpenAI Compatible",
+          status: "error",
+          description: "OPENAI_API_KEY is not set",
+          modelId: "",
+          modelName: "",
+          capabilities: [],
+        });
+        return "error";
+      }
+
       return "skipped";
     }
 
