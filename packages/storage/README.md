@@ -1,11 +1,17 @@
-# @agent-workbench/storage
+# 🗄️ @agent-workbench/storage
 
-Status: Phase 5 — Storage
-Implementation status: initial schema, db, repositories
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-5-blue)]()
+
+SQLite/Drizzle schema, migrations, and repositories for local durable state.
+
+## Status
+
+**Complete** — Phase 5. Full schema with 10 tables, 9 repositories, migration support.
 
 ## Purpose
 
-SQLite/Drizzle schema, migrations, and repositories for local durable state.
+SQLite/Drizzle persistence layer. Provides schema definitions, migrations, and typed repositories for all local durable state.
 
 ## Stack
 
@@ -28,7 +34,7 @@ An explicit path can be passed via `createStorageConnection({ dbPath })`.
 10 tables covering the Phase 5 exit gate:
 
 | Table | Purpose |
-|---|---|
+|-------|---------|
 | `sessions` | Session identity and lifecycle |
 | `messages` | User, assistant, system, tool, summary messages |
 | `tool_calls` | Tool invocation requests and results |
@@ -68,7 +74,7 @@ bun run db:migrate
 
 ## Public API
 
-```ts
+```typescript
 import {
   createStorageConnection,
   defaultDbPath,
@@ -85,9 +91,22 @@ import {
 } from "@agent-workbench/storage";
 ```
 
+## Usage
+
+```typescript
+import { createStorageConnection, runMigrations } from "@agent-workbench/storage";
+
+const db = createStorageConnection({ dbPath: "./workbench.db" });
+await runMigrations(db);
+
+const sessions = new SessionRepository(db);
+const session = await sessions.create({ name: "My Session" });
+```
+
 ## Scope Guard
 
-Storage does not own:
+Storage does **not** own:
+
 - Core runtime orchestration
 - Tool execution
 - Shell execution
@@ -104,3 +123,5 @@ Storage does not own:
 - `provider_auth` table (not in Phase 5 exit gate; requires encryption)
 - Migration rollback policy
 - Test infrastructure
+
+👉 See [`docs/08_DATA_MODEL_PLAN.md`](../docs/08_DATA_MODEL_PLAN.md), [`docs/05_PERMISSION_MODEL.md`](../docs/05_PERMISSION_MODEL.md)

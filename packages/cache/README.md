@@ -1,23 +1,50 @@
-# @agent-workbench/cache
+# 💾 @agent-workbench/cache
 
-Status: Phase 7 — Read-Only Tools / Cache
-Implementation status: read/grep/glob cache with invalidation
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-7-blue)]()
+
+Session-scoped read/search cache with invalidation on mutation.
+
+## Status
+
+**Complete** — Phase 7. Read/grep/glob cache with automatic invalidation when file mutations occur.
 
 ## Purpose
 
-Session-scoped read/search cache and invalidation behavior.
+Caches results from read-only tools (read, grep, glob) to avoid redundant I/O. Invalidates affected entries when file mutations are detected.
 
-## Current Rules
+## Key Modules
 
-- This package is scaffold-only.
-- `src/.gitkeep` exists only to preserve the folder.
-- No runtime implementation logic has been added.
-- Do not add implementation code until the phase checklist allows it.
+| Module | Export | Responsibility |
+|--------|--------|---------------|
+| `tool-cache` | `ToolCache` | Session-scoped cache with invalidation |
+
+## Usage
+
+```typescript
+import { ToolCache } from "@agent-workbench/cache";
+
+const cache = new ToolCache();
+
+// Cache a read operation
+cache.set("read:./README.md:1-100", "file content...");
+
+// Check cache
+const cached = cache.get("read:./README.md:1-100");
+
+// Invalidate on mutation
+cache.invalidatePath("./README.md");
+```
+
+## Commands
+
+```bash
+bun run typecheck
+bun run build
+```
 
 ## Boundary
 
-Refer to:
+Does **not** own: tool definitions, permission policy, runtime orchestration, storage schema.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/15_CACHE_MODEL.md`](../docs/15_CACHE_MODEL.md)

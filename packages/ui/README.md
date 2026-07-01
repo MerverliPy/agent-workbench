@@ -1,11 +1,17 @@
-# @agent-workbench/ui
+# 🎨 @agent-workbench/ui
 
-Status: Phase 1 — Workspace Scaffold
-Implementation status: empty package shell
+[![Status](https://img.shields.io/badge/status-scaffold-yellow)]()
+[![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
+
+Shared display formatting, theme tokens, and non-authoritative UI helpers.
+
+## Status
+
+**Scaffold** — Phase 1. Package structure only. No runtime implementation yet.
 
 ## Purpose
 
-Shared display formatting, theme tokens, and non-authoritative UI helpers.
+Will provide shared UI primitives, theme tokens, and display formatting utilities used by the TUI and CLI apps.
 
 ## Current Rules
 
@@ -16,8 +22,6 @@ Shared display formatting, theme tokens, and non-authoritative UI helpers.
 
 ## Boundary
 
-Refer to:
+Does **not** own: TUI rendering (apps/tui), CLI rendering (apps/cli), any runtime logic.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md)

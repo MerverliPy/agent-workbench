@@ -1,19 +1,41 @@
-# @agent-workbench/server
+# 🌐 @agent-workbench/server
 
-Status: Phase 3 — Local Server
-Implementation status: local HTTP/SSE control plane
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-3..17-blue)]()
+
+Local HTTP/SSE control plane. Owns routes, middleware, and server lifecycle.
+
+## Status
+
+**Complete** — Phases 3 (base server), 15 (provider routes), 16 (streaming), 17 (CI pipeline). Full Hono app with all route modules.
 
 ## Purpose
 
-Local HTTP/SSE control plane package. Owns routes, middleware, and server lifecycle only.
+Provides the local HTTP and SSE server that the TUI and SDK connect to. Routes requests to the core runtime, manages server lifecycle, and enforces localhost-only binding by default.
 
 ## Current Scope
 
-- Hono app and server startup.
-- Request validation using `@agent-workbench/protocol` route contracts.
-- Structured `ErrorEnvelope` responses.
-- Localhost-only default binding.
-- SSE transport plumbing for later runtime phases.
+- Hono app and server startup with configurable host/port
+- Request validation using `@agent-workbench/protocol` route contracts
+- Structured `ErrorEnvelope` responses
+- Localhost-only default binding (`127.0.0.1`)
+- SSE transport for streaming model responses
+- Provider metadata routes (no secrets exposed)
+- Permission, session, message, tool, agent, plan, and token-health routes
+
+## Key Routes
+
+| Module | Routes | Purpose |
+|--------|--------|---------|
+| `global` | `GET /health` | Health check |
+| `session-routes` | `POST/GET /session` | Session lifecycle |
+| `message-routes` | `POST /session/:id/message` | Message submission & streaming |
+| `provider-routes` | `GET /provider`, `/provider/:id`, `/provider/:id/model` | Provider metadata |
+| `permission-routes` | `POST /permission` | Permission request/response |
+| `plan-routes` | `POST /plan` | Plan creation & validation |
+| `agent-routes` | `GET /agent` | Agent mode listing |
+| `token-health-routes` | `GET /token-health` | Token health queries |
+| `placeholders` | Various | 501 not implemented stubs for future routes |
 
 ## Current Boundaries
 
@@ -22,10 +44,19 @@ Local HTTP/SSE control plane package. Owns routes, middleware, and server lifecy
 - Consume protocol contracts and schemas instead of hand-writing duplicate DTOs.
 - Non-global routes may remain validated placeholders until later phases own their backing behavior.
 
-## Boundary
+## How to Run
 
-Refer to:
+```bash
+# Start the server
+bun run start
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+# Development with auto-reload
+bun run dev
+
+# Typecheck
+bun run typecheck
+```
+
+The server binds to `http://localhost:3000` by default. Configure via `HOST` and `PORT` env vars.
+
+👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md), [`docs/19_TARGET_REPO_TREE.md`](../docs/19_TARGET_REPO_TREE.md)

@@ -1,11 +1,17 @@
-# @agent-workbench/config
+# ⚙️ @agent-workbench/config
 
-Status: Phase 1 — Workspace Scaffold
-Implementation status: empty package shell
+[![Status](https://img.shields.io/badge/status-scaffold-yellow)]()
+[![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
+
+Layered config loading, resolution, validation, and secret references.
+
+## Status
+
+**Scaffold** — Phase 1. Package structure only. No runtime implementation yet.
 
 ## Purpose
 
-Layered config loading, resolution, validation, and secret references.
+Will provide layered configuration loading, resolution, validation, and secret reference handling.
 
 ## Current Rules
 
@@ -16,8 +22,6 @@ Layered config loading, resolution, validation, and secret references.
 
 ## Boundary
 
-Refer to:
+Does **not** own: model provider config (handled in `packages/models`), server config, storage, runtime orchestration.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md)

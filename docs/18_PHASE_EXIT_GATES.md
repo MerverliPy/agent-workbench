@@ -1,6 +1,6 @@
 # 18 — Phase Exit Gates
 
-Status: Phase 16 complete; Phase 17 next
+Status: Phase 16 complete; Phase 17 active
 Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
 

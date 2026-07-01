@@ -4,8 +4,8 @@
 
 Generated from the local OpenCode diagnostic log.
 
-- Target repo: `/home/calvin/agent-workbench`
-- Router package: `/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready`
+- Target repo: `$REPO_ROOT` (repository root)
+- Router package: `$REPO_ROOT/tools/model-router-v3.3-repo-ready`
 - Default implementation model: `deepseek/deepseek-v4-flash`
 - Small/cheap model: `opencode-go/deepseek-v4-flash`
 - Router/planning model: `deepseek/deepseek-v4-pro`
@@ -91,37 +91,37 @@ Recommended live mappings for this environment:
 The active benchmark file is:
 
 ```text
-/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl
+$REPO_ROOT/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl
 ```
 
 The active grader is:
 
 ```text
-/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py
+$REPO_ROOT/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py
 ```
 
 The v3.3 response template is:
 
 ```text
-/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/templates/model-router-real-responses-template-v3.3.jsonl
+$REPO_ROOT/tools/model-router-v3.3-repo-ready/templates/model-router-real-responses-template-v3.3.jsonl
 ```
 
 To validate the benchmark file:
 
 ```bash
-python3 "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py" \
-  --benchmark "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl" \
+python3 "$REPO_ROOT/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py" \
+  --benchmark "$REPO_ROOT/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl" \
   --validate-benchmark
 ```
 
 To grade collected v3.3 responses:
 
 ```bash
-python3 "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py" \
-  --benchmark "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl" \
+python3 "$REPO_ROOT/tools/model-router-v3.3-repo-ready/grader/model_router_grader.py" \
+  --benchmark "$REPO_ROOT/tools/model-router-v3.3-repo-ready/benchmarks/model-router-bench-tests-v3.2.jsonl" \
   --grade model-router-real-responses-v3.3.jsonl \
-  --report "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/reports/model-router-real-grade-report-v3.3.md" \
-  --json "/home/calvin/agent-workbench/tools/model-router-v3.3-repo-ready/reports/model-router-real-grade-report-v3.3.json"
+  --report "$REPO_ROOT/tools/model-router-v3.3-repo-ready/reports/model-router-real-grade-report-v3.3.md" \
+  --json "$REPO_ROOT/tools/model-router-v3.3-repo-ready/reports/model-router-real-grade-report-v3.3.json"
 ```
 
 ## Git workflow

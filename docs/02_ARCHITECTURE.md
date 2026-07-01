@@ -12,20 +12,49 @@ The architecture must keep the TUI, local server, core runtime, tools, permissio
 
 ## 2. High-Level Architecture
 
-```text
-User terminal
-  ↓
-apps/tui
-  ↓
-packages/sdk
-  ↓
-apps/server
-  ↓
-packages/core
-  ↓
-packages/models + packages/tools + packages/permissions
-  ↓
-packages/storage + packages/events + packages/tokens
+```mermaid
+graph TB
+    subgraph "Presentation"
+        TERM[User Terminal]
+        TUI[apps/tui<br/>OpenTUI + SolidJS]
+    end
+    subgraph "Communication"
+        SDK[packages/sdk<br/>Typed HTTP/SSE Client]
+        SRV[apps/server<br/>Hono + SSE]
+    end
+    subgraph "Orchestration"
+        CORE[packages/core<br/>SessionRunner, ToolDispatch<br/>PlanGate, TokenHealth]
+    end
+    subgraph "Services"
+        PROTO[packages/protocol<br/>Zod Schemas]
+        TOOLS[packages/tools<br/>Tool Registry]
+        PERM[packages/permissions<br/>Allow/Ask/Deny]
+        SHELL[packages/shell<br/>Command Runner]
+        STORE[packages/storage<br/>SQLite + Drizzle]
+        TOK[packages/tokens<br/>Budget + Compaction]
+        DIFF[packages/diff<br/>Patch Preview/Apply]
+        PLNR[packages/planner<br/>Plan Validation]
+        CACHE[packages/cache<br/>Read/Grep/Glob Cache]
+        MODELS[packages/models<br/>Provider Adapters]
+        EVT[packages/events<br/>Event Bus]
+    end
+
+    TERM --> TUI
+    TUI --> SDK
+    CLASSES --> SDK
+    SDK --> SRV
+    SRV --> CORE
+    CORE --> PROTO
+    CORE --> PERM
+    CORE --> TOOLS
+    CORE --> STORE
+    CORE --> PLNR
+    CORE --> TOK
+    TOOLS --> SHELL
+    TOOLS --> DIFF
+    TOOLS --> CACHE
+    TOOLS --> MODELS
+    CORE --> EVT
 ```
 
 ## 3. Core Architectural Rule

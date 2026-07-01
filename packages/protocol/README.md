@@ -1,23 +1,65 @@
-# @agent-workbench/protocol
+# 📜 @agent-workbench/protocol
 
-Status: Phase 2 — Protocol Contract
-Implementation status: Zod schemas, route contracts, OpenAPI generation
-
-## Purpose
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-2-blue)]()
 
 Zod schemas, route contracts, error envelopes, event envelopes, and OpenAPI metadata.
 
-## Current Rules
+## Status
 
-- This package is scaffold-only.
-- `src/.gitkeep` exists only to preserve the folder.
-- No runtime implementation logic has been added.
-- Do not add implementation code until the phase checklist allows it.
+**Complete** — Phase 2. All route contracts and schemas are implemented.
+
+## Purpose
+
+Schema-first protocol layer that serves as the single source of truth for all data shapes in the system. Used by the server, SDK, TUI, and all packages to ensure type-safe communication.
+
+## Route Contracts
+
+| Module | Routes defined |
+|--------|---------------|
+| `session` | Session lifecycle (create, list, get) |
+| `message` | Message submission, streaming |
+| `provider` | Provider metadata (list, get, model) |
+| `tool` | Tool invocation |
+| `file` | File operations |
+| `permission` | Permission request/response |
+| `agent` | Agent mode listing |
+| `plan` | Plan creation and validation |
+| `token-health` | Token health queries |
+| `health` | Server health check |
+| `config` | Configuration endpoints |
+| `auth` | Authentication |
+| `event` | Event-streaming |
+| `tui` | TUI-specific bindings |
+| `info` | Server metadata |
+
+## Schemas
+
+| Module | Exports |
+|--------|---------|
+| `common` | Shared types, error envelopes |
+| `session` | Session types |
+| `provider` | Provider configuration types |
+| `run` | Run record types |
+
+## Exports
+
+```typescript
+// All schemas and route contracts
+export * from "./schemas";
+export * from "./routes";
+export * from "./openapi";
+```
+
+## Commands
+
+```bash
+bun run typecheck
+bun run build
+```
 
 ## Boundary
 
-Refer to:
+Does **not** own: server implementation, SDK client, runtime orchestration, storage, tool definitions.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/07_API_CONTRACT_PLAN.md`](../docs/07_API_CONTRACT_PLAN.md)

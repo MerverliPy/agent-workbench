@@ -16,27 +16,28 @@ The TUI is a client. It is not trusted to execute, authorize, mutate, or persist
 
 ## 2. Boundary Summary
 
-```text
-apps/tui
-  owns display and user input
+```mermaid
+graph LR
+    subgraph "Client (Not Trusted)"
+        TUI[apps/tui<br/>Display & Input Only]
+    end
+    subgraph "Communication"
+        SDK[packages/sdk<br/>Typed Transport]
+        SRV[apps/server<br/>HTTP/SSE Validation]
+    end
+    subgraph "Backend (Trusted)"
+        CORE[packages/core<br/>Agent Runtime]
+        PERM[packages/permissions<br/>Policy Decisions]
+        TOOLS[packages/tools<br/>Controlled Capabilities]
+        STORE[packages/storage<br/>Durable State]
+    end
 
-packages/sdk
-  owns typed client transport
-
-apps/server
-  owns HTTP/SSE API and validation
-
-packages/core
-  owns agent runtime
-
-packages/permissions
-  owns permission decisions
-
-packages/tools
-  owns controlled capabilities
-
-packages/storage
-  owns durable local state
+    TUI -->|SDK| SDK
+    SDK -->|HTTP/SSE| SRV
+    SRV -->|Delegates| CORE
+    CORE -->|Evaluates| PERM
+    CORE -->|Dispatches| TOOLS
+    CORE -->|Persists| STORE
 ```
 
 ## 3. TUI Responsibilities

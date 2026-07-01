@@ -1,11 +1,17 @@
-# @agent-workbench/cli
+# 🖥️ @agent-workbench/cli
 
-Status: Phase 1 — Workspace Scaffold  
-Implementation status: empty package shell
+[![Status](https://img.shields.io/badge/status-scaffold-yellow)]()
+[![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
+
+CLI entrypoint package. Owns process startup and command routing only.
+
+## Status
+
+**Scaffold** — Phase 1. Package structure only. No runtime implementation yet.
 
 ## Purpose
 
-CLI entrypoint package. Owns process startup and command routing only.
+Will provide the terminal CLI entry point for headless/non-TUI usage of the agent-workbench runtime.
 
 ## Current Rules
 
@@ -16,8 +22,6 @@ CLI entrypoint package. Owns process startup and command routing only.
 
 ## Boundary
 
-Refer to:
+Does **not** own: TUI rendering, server startup, core runtime, storage, tools, permissions.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md), [`docs/19_TARGET_REPO_TREE.md`](../docs/19_TARGET_REPO_TREE.md)

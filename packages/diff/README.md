@@ -1,23 +1,71 @@
-# @agent-workbench/diff
+# 📐 @agent-workbench/diff
 
-Status: Phase 9 — File Mutation Tools
-Implementation status: diff preview, patch apply, dry-run
-
-## Purpose
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-9-blue)]()
 
 Patch preview, patch apply/revert, file snapshots, and file dry-run support.
 
-## Current Rules
+## Status
 
-- This package is scaffold-only.
-- `src/.gitkeep` exists only to preserve the folder.
-- No runtime implementation logic has been added.
-- Do not add implementation code until the phase checklist allows it.
+**Complete** — Phase 9. Diff preview generation, patch application, mutation revert, and file content hashing all implemented.
+
+## Purpose
+
+Provides safe file mutation through diff-first operations. Every mutation generates a preview before application, supports rollback via content hashing.
+
+## Key Modules
+
+| Module | Export | Responsibility |
+|--------|--------|---------------|
+| `preview` | `generateDiffPreview`, `extractDiffParams` | Unified diff generation and parameter extraction |
+| `apply` | `applyMutation`, `canApplyPatch` | Patch application with safety checks |
+| `revert` | `revertMutation`, `contentHash` | Rollback mutations via stored content hashes |
+
+## Types
+
+```typescript
+export type {
+  DiffParams,             // Parameters for diff generation
+  WriteDiffParams,        // Write operation diff params
+  EditDiffParams,         // Edit operation diff params
+  ApplyPatchDiffParams,   // Patch application params
+  ApplyResult,            // Patch application result
+  ApplyError,             // Patch application error
+  RevertResult,           // Revert result
+  RevertError,            // Revert error
+  RevertInput,            // Revert parameters
+  CanApplyResult,         // Pre-apply safety check
+} from "@agent-workbench/diff";
+```
+
+## Usage
+
+```typescript
+import { generateDiffPreview, applyMutation } from "@agent-workbench/diff";
+
+const preview = generateDiffPreview({
+  type: "edit",
+  filePath: "./src/index.ts",
+  oldString: "function old()",
+  newString: "function new()",
+});
+
+const result = applyMutation({
+  type: "write",
+  filePath: "./src/new-file.ts",
+  content: "export const greeting = 'hello';",
+});
+```
+
+## Commands
+
+```bash
+bun run typecheck
+bun run build
+```
 
 ## Boundary
 
-Refer to:
+Does **not** own: tool definitions, permission policy, runtime orchestration, storage, TUI rendering.
 
-- `docs/03_BACKEND_FRONTEND_BOUNDARY.md`
-- `docs/18_PHASE_EXIT_GATES.md`
-- `docs/19_TARGET_REPO_TREE.md`
+👉 See [`docs/14_DRY_RUN_MODEL.md`](../docs/14_DRY_RUN_MODEL.md)
