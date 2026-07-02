@@ -13,7 +13,7 @@ for pkg in protocol models storage tokens diff telemetry plugin-sdk auth; do
 done
 
 # Level 1: depend on level 0 packages
-for pkg in events sdk shell permissions cache planner collab; do
+for pkg in events sdk shell permissions cache planner collab eval; do
   echo "  [build] packages/$pkg"
   (cd "$ROOT/packages/$pkg" && bun run build 2>&1) || exit 1
 done

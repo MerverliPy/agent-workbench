@@ -1,0 +1,27 @@
+{
+  "name": "@agent-workbench/eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Model experimentation, evaluation, and prompt management. Eval runner, A/B comparison, prompt store, and playground.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/events": "workspace:*",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
+}
