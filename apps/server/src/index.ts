@@ -9,6 +9,7 @@ import {
 } from "@agent-workbench/models";
 import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
 import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
@@ -136,6 +137,21 @@ if (pluginLoadResult.loaded > 0 || pluginLoadResult.failed > 0) {
   logger.info(`Plugins: ${pluginLoadResult.loaded} loaded, ${pluginLoadResult.failed} failed`);
 }
 
+// ── Phase 27: Auth ─────────────────────────────────────────────────────────
+const authManager = new AuthManager();
+if (authManager.isEnabled) {
+  logger.info("Auth is enabled — bearer token required for API access");
+  logger.info(`  Generate a token: curl -X POST http://${config.host}:${config.port}/auth/token \\`);
+  logger.info(`    -H "Content-Type: application/json" \\`);
+  logger.info(`    -d '{"secret":"<AGENT_WORKBENCH_AUTH_SECRET>","label":"my-device"}'`);
+  if (authManager.isTlsEnabled) {
+    logger.info("TLS is enabled — server will serve HTTPS");
+  }
+} else {
+  logger.info("Auth is disabled — all API requests are unauthenticated");
+  logger.info(`  Set AGENT_WORKBENCH_AUTH_SECRET and AGENT_WORKBENCH_AUTH_ENABLED=true to enable`);
+}
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -182,11 +198,16 @@ const app = createApp({
     metricsExporter,
     errorReporter,
     requestLogger,
+    toolCallRepository,
     pluginRegistry,
+    auth: authManager,
   },
 });
 
 logger.info(`Binding to http://${config.host}:${config.port}`);
+if (authManager.isTlsEnabled) {
+  logger.info("Phase 27 — TLS enabled, serving HTTPS");
+}
 logger.info("Phase 10 — Shell Execution active");
 logger.info(`Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
 logger.info("Phase 15 — Provider integration active");
@@ -220,8 +241,27 @@ const shutdown = async (signal: string) => {
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
-export default {
-  port: config.port,
-  hostname: config.host,
-  fetch: app.fetch,
-};
+// ── Start server (HTTP or HTTPS) ───────────────────────────────────────────
+if (authManager.isTlsEnabled) {
+  const tls = new TlsConfig();
+  const { key, cert } = await tls.ensureCertificate();
+
+  Bun.serve({
+    port: config.port,
+    hostname: config.host,
+    fetch: app.fetch,
+    tls: { key, cert },
+    development: process.env["NODE_ENV"] !== "production",
+  });
+
+  logger.info(`🔒 HTTPS server ready at https://${config.host}:${config.port}`);
+} else {
+  Bun.serve({
+    port: config.port,
+    hostname: config.host,
+    fetch: app.fetch,
+    development: process.env["NODE_ENV"] !== "production",
+  });
+
+  logger.info(`🔓 HTTP server ready at http://${config.host}:${config.port}`);
+}

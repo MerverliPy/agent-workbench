@@ -23,6 +23,9 @@ import { registerPlaceholderRoutes } from "./routes/placeholders";
 import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
 import { registerObservabilityRoutes } from "./routes/observability-routes";
 import { registerPluginRoutes } from "./routes/plugin-routes";
+import { registerAuthRoutes } from "./routes/auth-routes";
+import { registerCollabRoutes } from "./routes/collab-routes";
+import { authMiddleware } from "@agent-workbench/auth";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
@@ -64,6 +67,17 @@ export function createApp(options: CreateAppOptions) {
     })
   );
 
+  // Phase 27: Authentication middleware — protects all routes except
+  // exempt paths (/health, /auth/token, /info).
+  if (options.services.auth.isEnabled) {
+    app.use("*", authMiddleware({
+      auth: options.services.auth,
+      excludePaths: ["/global/health", "/global/info", "/auth/token", "/auth/status", "/metrics"],
+    }));
+  }
+
+  registerAuthRoutes(app, { auth: options.services.auth });
+  registerCollabRoutes(app, options.services);
   registerGlobalRoutes(app, {
     config: options.config,
     startedAt,

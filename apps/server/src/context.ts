@@ -3,9 +3,11 @@ import type { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, P
 import type { EventBus } from "@agent-workbench/events";
 import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import type { AuthManager } from "@agent-workbench/auth";
 import type {
   SessionRepository,
   MessageRepository,
+  ToolCallRepository,
   LedgerRepository,
   PermissionRepository,
   SummaryRepository,
@@ -17,6 +19,7 @@ import type { WorkspaceRepository } from "@agent-workbench/storage";
 /** Per-request variables set by middleware. */
 export interface RequestContextVariables {
   readonly requestId: string;
+  readonly auth?: import("@agent-workbench/auth").AuthContext;
 }
 
 /** Services injected at app-creation time and available to all route handlers. */
@@ -30,6 +33,8 @@ export interface ServerServices {
   readonly permissionRepository: PermissionRepository;
   readonly permissionEngine: PermissionEngine;
   readonly permissionGate: PermissionGate;
+  // Phase 9: tool call repository
+  readonly toolCallRepository: ToolCallRepository;
   // Phase 11: agent registry
   readonly agentRegistry: AgentRegistry;
   // Phase 12: token health
@@ -53,6 +58,8 @@ export interface ServerServices {
   readonly requestLogger: RequestLogger;
   // Phase 26: plugin system
   readonly pluginRegistry: PluginRegistry;
+  // Phase 27: authentication
+  readonly auth: AuthManager;
 }
 
 export type ServerAppBindings = {

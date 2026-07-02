@@ -35,6 +35,8 @@
     "@agent-workbench/tools": "workspace:*",
     "@agent-workbench/telemetry": "workspace:*",
     "@agent-workbench/plugin-sdk": "workspace:*",
+    "@agent-workbench/auth": "workspace:*",
+    "@agent-workbench/collab": "workspace:*",
     "hono": "^4.12.27",
     "ulid": "^2.3.0",
     "zod": "^4.4.3"

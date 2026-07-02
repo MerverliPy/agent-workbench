@@ -2,30 +2,38 @@
  * agent-workbench CLI — entry point for plugin management and other commands.
  *
  * Usage:
- *   agent-workbench plugin list
- *   agent-workbench plugin install <source>
- *   agent-workbench plugin enable <name>
- *   agent-workbench plugin disable <name>
- *   agent-workbench plugin uninstall <name>
+ *   agent-workbench plugin list|install|enable|disable|uninstall
+ *   agent-workbench init <template> [path]
+ *
+ * Templates: typescript, bun
  */
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import { existsSync, mkdirSync, readdirSync, cpSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 function printUsage(): void {
-  console.log(`agent-workbench — CLI for managing agent-workbench plugins
+  console.log(`agent-workbench — CLI for managing agent-workbench
 
 Usage:
+  agent-workbench plugin <command> [args]     Manage plugins
+  agent-workbench init <template> [path]      Scaffold a new project
+
+Plugin Commands:
   agent-workbench plugin list                      List installed plugins
-  agent-workbench plugin install <source>          Install a plugin (local:/path, npm:name)
+  agent-workbench plugin install <source>          Install a plugin (local:/path)
   agent-workbench plugin enable <name>             Enable a plugin
   agent-workbench plugin disable <name>            Disable a plugin
   agent-workbench plugin uninstall <name>          Uninstall a plugin
 
+Init Command:
+  agent-workbench init typescript [path]           Empty TypeScript project
+  agent-workbench init bun [path]                  Bun project with test setup
+
 Examples:
   agent-workbench plugin list
   agent-workbench plugin install local:~/my-plugin
-  agent-workbench plugin enable my-plugin
-  agent-workbench plugin disable my-plugin
-  agent-workbench plugin uninstall my-plugin
+  agent-workbench init typescript ./my-project
 `);
 }
 
@@ -166,6 +174,48 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
+async function handleInitCommand(template: string, outputPath: string): Promise<number> {
+  const __dirname = resolve(fileURLToPath(import.meta.url), "..");
+  const templatesDir = resolve(__dirname, "..", "templates");
+
+  const availableTemplates: Record<string, string> = {
+    typescript: join(templatesDir, "typescript"),
+    bun: join(templatesDir, "bun"),
+  };
+
+  const templateDir = availableTemplates[template];
+  if (!templateDir) {
+    console.error(`Error: Unknown template "${template}".`);
+    console.error(`  Available templates: ${Object.keys(availableTemplates).join(", ")}`);
+    return 1;
+  }
+
+  if (!existsSync(templateDir)) {
+    console.error(`Error: Template directory not found: ${templateDir}`);
+    return 1;
+  }
+
+  const targetDir = resolve(outputPath);
+  if (existsSync(targetDir)) {
+    console.error(`Error: Target path already exists: ${targetDir}`);
+    return 1;
+  }
+
+  // Copy template to target
+  mkdirSync(targetDir, { recursive: true });
+  cpSync(templateDir, targetDir, { recursive: true });
+
+  console.log(`✅ Created project at: ${targetDir}`);
+  console.log(`   Template: ${template}`);
+  console.log(``);
+  console.log(`   Next steps:`);
+  console.log(`     cd ${outputPath}`);
+  console.log(`     bun install`);
+  console.log(`     bun run start`);
+
+  return 0;
+}
+
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
 
@@ -185,6 +235,16 @@ async function main(): Promise<number> {
         return 1;
       }
       return handlePluginCommand(subArgs[0]!, subArgs.slice(1));
+
+    case "init": {
+      const tmpl = subArgs[0];
+      if (!tmpl) {
+        console.error("Error: 'init' requires a template name (typescript, bun)");
+        return 1;
+      }
+      const path = subArgs[1] ?? ".";
+      return handleInitCommand(tmpl, path);
+    }
 
     default:
       console.error(`Error: Unknown command: ${command}`);
