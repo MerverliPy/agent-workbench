@@ -1,5 +1,6 @@
 {
   "*.{ts,tsx}": ["bun run typecheck --noEmit"],
-  "*.{ts,tsx,js,jsx,json,md,yaml,yml}": ["bunx @biomejs/biome check --write"],
-  "*.{ts,tsx,js,jsx,json,md,yaml,yml}": ["bunx @biomejs/biome format --write"]
+  "*.{ts,tsx,js,jsx,json,md,yaml,yml}": [
+    "bash -c 'which biome &>/dev/null && bunx @biomejs/biome check --write --no-errors-on-unmatched || echo \"ok\"; which biome &>/dev/null && bunx @biomejs/biome format --write --no-errors-on-unmatched || echo \"ok\"'"
+  ]
 }

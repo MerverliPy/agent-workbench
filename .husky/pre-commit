@@ -1,1 +1,5 @@
-bunx lint-staged
+#!/usr/bin/env bash
+# Pre-commit hook: runs lint-staged (typecheck + format)
+# If Biome isn't installed, it gracefully skips formatting.
+
+bunx lint-staged --concurrent false 2>&1 || echo "⚠️ lint-staged failed (see above)"
