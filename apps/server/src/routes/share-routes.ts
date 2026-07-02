@@ -12,6 +12,7 @@
 import { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
 import { exportSession } from "@agent-workbench/collab";
+import type { PresenceManager } from "@agent-workbench/collab";
 import { ApiError } from "../errors";
 import { handleAppError } from "../middleware/error-handler";
 
@@ -175,6 +176,31 @@ export function registerShareRoutes(app: Hono<ServerAppBindings>, services: Serv
         err instanceof Error
           ? new ApiError({ status: 500, code: "SHARE_REVOKE_FAILED", message: err.message, recoverable: false })
           : new ApiError({ status: 500, code: "SHARE_REVOKE_FAILED", message: "Unknown error", recoverable: false }),
+        c,
+      );
+    }
+  });
+
+  // ── GET /session/:sessionId/presence — Active users ──────────────────────
+  app.get("/session/:sessionId/presence", async (c) => {
+    try {
+      const sessionId = c.req.param("sessionId");
+
+      const session = services.sessionRepository.findById(sessionId);
+      if (!session) {
+        return c.json(
+          new ApiError({ status: 404, code: "NOT_FOUND", message: `Session not found: ${sessionId}`, recoverable: true }),
+          404,
+        );
+      }
+
+      const presence = services.presenceManager.getPresence(sessionId);
+      return c.json(presence);
+    } catch (err) {
+      return handleAppError(
+        err instanceof Error
+          ? new ApiError({ status: 500, code: "PRESENCE_FAILED", message: err.message, recoverable: false })
+          : new ApiError({ status: 500, code: "PRESENCE_FAILED", message: "Unknown error", recoverable: false }),
         c,
       );
     }

@@ -15,6 +15,7 @@ import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
 import type { AuthManager } from "@agent-workbench/auth";
 import type { SharedSessionManager } from "@agent-workbench/collab";
+import type { PresenceManager } from "@agent-workbench/collab";
 import type { ShareManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
@@ -171,6 +172,22 @@ export function createTestServer(options: TestServerOptions): TestServer {
       startCleanup: () => undefined,
       stopCleanup: () => undefined,
     } as unknown as SharedSessionManager,
+    // Phase 27: presence disabled in tests
+    presenceManager: {
+      enterSession: () => ({ userId: "test", label: "test", role: "viewer" as const, joinedAt: new Date().toISOString(), lastActivityAt: new Date().toISOString() }),
+      leaveSession: () => false,
+      heartbeat: () => false,
+      leaveAllSessions: () => 0,
+      getPresence: () => ({ sessionId: "", activeUsers: [], totalUsers: 0 }),
+      getUsers: () => [],
+      getUserCount: () => 0,
+      isUserPresent: () => false,
+      getUserSessions: () => [],
+      getAllPresence: () => ({}),
+      get totalActiveSessions() { return 0; },
+      get totalActiveUsers() { return 0; },
+      get totalUniqueUsers() { return 0; },
+    } as unknown as PresenceManager,
     // Phase 27: session sharing disabled in tests
     shareManager: {
       create: () => ({ token: "shr_test", sessionId: "test", url: "http://localhost/share/shr_test", expiresAt: new Date(Date.now() + 86400000).toISOString(), label: "test" }),

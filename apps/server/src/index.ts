@@ -11,6 +11,7 @@ import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-wo
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
 import { SharedSessionManager } from "@agent-workbench/collab";
+import { PresenceManager } from "@agent-workbench/collab";
 import { ShareManager } from "@agent-workbench/collab";
 import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
@@ -161,6 +162,9 @@ logger.info("Collaboration — shared session presence ready");
 const shareManager = new ShareManager({ eventBus, baseUrl: `http://${config.host}:${config.port}` });
 logger.info("Collaboration — session sharing ready");
 
+const presenceManager = new PresenceManager(sharedSessionManager);
+logger.info("Collaboration — real-time presence ready");
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -212,6 +216,7 @@ const app = createApp({
     auth: authManager,
     sharedSessionManager,
     shareManager,
+    presenceManager,
   },
 });
 

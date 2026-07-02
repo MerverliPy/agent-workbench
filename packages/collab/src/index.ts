@@ -22,6 +22,8 @@ export { ShareManager } from "./share-manager";
 export type { ShareRecord, CreateShareOptions, ShareResult } from "./share-manager";
 export { SharedSessionManager } from "./shared-session";
 export type { SharedSessionUser, SharedSessionRole, JoinSessionOptions } from "./shared-session";
+export { PresenceManager } from "./presence";
+export type { SessionPresence, EnterSessionOptions } from "./presence";
 export type {
   SessionExport,
   ExportedMessage,
