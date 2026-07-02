@@ -1,6 +1,6 @@
 # 27 — Project Roadmap
 
-Status: Active planning — Phase 18 (mobile web companion UI) in progress
+Status: Phase 26 complete — Phase 27 (remote access) next
 Document type: Roadmap for Phases 19–30
 Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 
@@ -9,16 +9,16 @@ Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 ## 1. Roadmap Overview
 
 ```
-Phase 18 ◀ active  ████████████████████░░  mobile web companion UI
-Phase 19 ▌         ██████████████████████  live provider integration
-Phase 20A▌         ██████████████████████  mobile web: non-chat panels
-Phase 20B▌         ██████████████████████  mobile web: chat + streaming
-Phase 21 ▌         ██████████████████████  TUI polish & UX completion
-Phase 22 ▌         ██████████████████████  multi-session & workspace mgmt
-Phase 23 ▌         ██████████████████████  PTY terminal execution
-Phase 24 ██ active ████████████████████░░  provider marketplace & smart routing
-Phase 25 ██ active ████████████████████░░  observability & production readiness
-Phase 26 ▌         ░░░░░░░░░░░░░░░░░░░░  plugin system & extensibility
+Phase 18 ✅ complete ██████████████████████  mobile web companion UI
+Phase 19 ✅ complete ██████████████████████  live provider integration
+Phase 20A✅ complete ██████████████████████  mobile web: non-chat panels
+Phase 20B✅ complete ██████████████████████  mobile web: chat + streaming
+Phase 21 ✅ complete ██████████████████████  TUI polish & UX completion
+Phase 22 ✅ complete ██████████████████████  multi-session & workspace mgmt
+Phase 23 ✅ complete ██████████████████████  PTY terminal execution
+Phase 24 ✅ complete ██████████████████████  provider marketplace & smart routing
+Phase 25 ✅ complete ██████████████████████  observability & production readiness
+Phase 26 ✅ complete ██████████████████████  plugin system & extensibility
 Phase 27 ▌         ░░░░░░░░░░░░░░░░░░░░  remote access & collaboration
 Phase 28 ▌         ░░░░░░░░░░░░░░░░░░░░  desktop application (Tauri)
 Phase 29 ▌         ░░░░░░░░░░░░░░░░░░░░  model experimentation & eval
@@ -29,18 +29,19 @@ Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░�
 
 | Wave | Phases | Estimated | Focus |
 |------|--------|-----------|-------|
-| **Now** | 18 | Active | Mobile web companion |
-| **Short-term** | 19–21 | 3–4 weeks | Core feature completion |
-| **Medium-term** | 22–25 | 2–3 months | Power user features |
-| **Long-term** | 26–30 | 4–6 months | Ecosystem & enterprise |
+| **Complete** | 0–17 | Done | Foundation, core runtime, safety |
+| **Complete** | 18–21 | Done | Interfaces (mobile web, TUI polish) |
+| **Complete** | 22–26 | Done | Ecosystem (PTY, marketplace, observability, plugins) |
+| **Short-term** | 27–28 | 4–6 weeks | Remote access & desktop |
+| **Long-term** | 29–30 | 3–4 months | Evaluation & enterprise |
 
 ---
 
-## 2. Phase 18: Mobile Web Companion UI ◀ ACTIVE
+## 2. Phase 18: Mobile Web Companion UI ✅ COMPLETE
 
-### Priority: 🔴 CRITICAL (in progress)
+### Priority: 🟢 Complete
 ### Dependencies: Phase 17 (CI/CD pipeline)
-### Estimated: 1 week remaining (scaffold complete)
+### Status: Complete
 
 ### Purpose
 
@@ -400,11 +401,11 @@ packages/core/src/
 
 ---
 
-## 7. Phase 24: Provider Marketplace & Smart Routing ◀ ACTIVE
+## 7. Phase 24: Provider Marketplace & Smart Routing ✅ COMPLETE
 
-### Priority: 🔴 CRITICAL (implementation in progress)
+### Priority: 🟢 Complete
 ### Dependencies: Phase 19
-### Estimated: ~95% complete (exit gates need testing & schema integration)
+### Status: Complete
 
 ### Purpose
 
@@ -467,11 +468,11 @@ Smart routing rules:
 
 ---
 
-## 8. Phase 25: Observability & Production Readiness ◀ ACTIVE
+## 8. Phase 25: Observability & Production Readiness ✅ COMPLETE
 
-### Priority: 🔴 CRITICAL (implementation in progress)
+### Priority: 🟢 Complete
 ### Dependencies: Phase 24 (provider metrics)
-### Estimated: ~90% complete (dashboard app remaining)
+### Status: Complete
 
 ### Purpose
 
