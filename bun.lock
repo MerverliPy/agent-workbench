@@ -44,6 +44,7 @@
         "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/shell": "workspace:*",
         "@agent-workbench/storage": "workspace:*",
+        "@agent-workbench/telemetry": "workspace:*",
         "@agent-workbench/tokens": "workspace:*",
         "@agent-workbench/tools": "workspace:*",
         "hono": "^4.12.27",
@@ -193,6 +194,13 @@
         "drizzle-kit": "^0.31.0",
       },
     },
+    "packages/telemetry": {
+      "name": "@agent-workbench/telemetry",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
+    },
     "packages/tokens": {
       "name": "@agent-workbench/tokens",
       "version": "0.0.0",
@@ -274,6 +282,8 @@
     "@agent-workbench/shell": ["@agent-workbench/shell@workspace:packages/shell"],
 
     "@agent-workbench/storage": ["@agent-workbench/storage@workspace:packages/storage"],
+
+    "@agent-workbench/telemetry": ["@agent-workbench/telemetry@workspace:packages/telemetry"],
 
     "@agent-workbench/tests": ["@agent-workbench/tests@workspace:tests"],
 

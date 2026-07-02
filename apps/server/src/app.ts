@@ -7,6 +7,7 @@ import { handleAppError } from "./middleware/error-handler";
 import { requestIdMiddleware } from "./middleware/request-id";
 import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { metricsMiddleware } from "./middleware/metrics-middleware";
+import { tracingMiddleware } from "./middleware/tracing";
 import { registerGlobalRoutes } from "./routes/global";
 import { registerSessionRoutes } from "./routes/session-routes";
 import { registerMessageRoutes } from "./routes/message-routes";
@@ -20,6 +21,7 @@ import { registerFileRoutes } from "./routes/file-routes";
 import { registerGitRoutes } from "./routes/git-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
+import { registerObservabilityRoutes } from "./routes/observability-routes";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
@@ -30,10 +32,12 @@ export interface CreateAppOptions {
 export function createApp(options: CreateAppOptions) {
   const app = new Hono<ServerAppBindings>();
   const startedAt = options.startedAt ?? Date.now();
+  const { tracer, metricsExporter } = options.services;
 
   app.use("*", requestIdMiddleware);
   app.use("*", rateLimitMiddleware());
-  app.use("*", metricsMiddleware);
+  app.use("*", metricsMiddleware(metricsExporter));
+  app.use("*", tracingMiddleware(tracer));
   app.use(
     "*",
     cors({
@@ -77,6 +81,7 @@ export function createApp(options: CreateAppOptions) {
   registerGitRoutes(app);
   registerWorkspaceRoutes(app, options.services);
   registerMarketplaceRoutes(app, options.services);
+  registerObservabilityRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

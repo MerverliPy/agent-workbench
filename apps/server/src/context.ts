@@ -1,6 +1,7 @@
 import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
 import type { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
 import type { EventBus } from "@agent-workbench/events";
+import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import type {
   SessionRepository,
   MessageRepository,
@@ -44,13 +45,13 @@ export interface ServerServices {
   readonly smartRouter: SmartRouter;
   readonly costTracker: CostTracker;
   readonly providerHealthMonitor: ProviderHealthMonitor;
+  // Phase 25: observability
+  readonly tracer: Tracer;
+  readonly metricsExporter: MetricsExporter;
+  readonly errorReporter: ErrorReporter;
+  readonly requestLogger: RequestLogger;
 }
 
 export type ServerAppBindings = {
   Variables: RequestContextVariables;
-  /**
-   * Hono does not provide a built-in "services" slot, so we thread services
-   * through app options and close over them in each route-registration
-   * function. This type exists for documentation purposes only.
-   */
 };

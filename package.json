@@ -20,7 +20,8 @@
     "test:repeat": "bash scripts/test-repeat.sh",
     "test:health": "bash scripts/test-health.sh",
     "coverage": "bun test --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "ln -sf ../../../packages/telemetry tests/node_modules/@agent-workbench/telemetry 2>/dev/null; true"
   },
   "keywords": [
     "agent-workbench",

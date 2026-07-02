@@ -7,6 +7,7 @@ import {
   CostTracker,
   ProviderHealthMonitor,
 } from "@agent-workbench/models";
+import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
@@ -118,6 +119,12 @@ const agentRegistry = new AgentRegistry();
 // ── Phase 12: Token health service ──────────────────────────────────────────────
 const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
 
+// ── Phase 25: Observability ─────────────────────────────────────────────────
+const tracer = new Tracer({ maxSpans: 10_000 });
+const metricsExporter = new MetricsExporter();
+const errorReporter = new ErrorReporter({ maxErrors: 1000 });
+const requestLogger = new RequestLogger({ level: "info" });
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -160,6 +167,10 @@ const app = createApp({
     smartRouter,
     costTracker,
     providerHealthMonitor,
+    tracer,
+    metricsExporter,
+    errorReporter,
+    requestLogger,
   },
 });
 

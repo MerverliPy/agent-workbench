@@ -1,0 +1,22 @@
+{
+  "name": "@agent-workbench/telemetry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenTelemetry tracing, Prometheus metrics, error reporting, and structured logging.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
+}

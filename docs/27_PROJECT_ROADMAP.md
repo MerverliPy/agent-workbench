@@ -17,7 +17,7 @@ Phase 21 ▌         ███████████████████�
 Phase 22 ▌         ██████████████████████  multi-session & workspace mgmt
 Phase 23 ▌         ██████████████████████  PTY terminal execution
 Phase 24 ██ active ████████████████████░░  provider marketplace & smart routing
-Phase 25 ▌         ░░░░░░░░░░░░░░░░░░░░  observability & production readiness
+Phase 25 ██ active ████████████████████░░  observability & production readiness
 Phase 26 ▌         ░░░░░░░░░░░░░░░░░░░░  plugin system & extensibility
 Phase 27 ▌         ░░░░░░░░░░░░░░░░░░░░  remote access & collaboration
 Phase 28 ▌         ░░░░░░░░░░░░░░░░░░░░  desktop application (Tauri)
@@ -467,15 +467,38 @@ Smart routing rules:
 
 ---
 
-## 8. Phase 25: Observability & Production Readiness
+## 8. Phase 25: Observability & Production Readiness ◀ ACTIVE
 
-### Priority: 🟡 HIGH
+### Priority: 🔴 CRITICAL (implementation in progress)
 ### Dependencies: Phase 24 (provider metrics)
-### Estimated: 2 weeks
+### Estimated: ~90% complete (dashboard app remaining)
 
 ### Purpose
 
 Make agent-workbench observable and production-grade. Add distributed tracing, alerting, error reporting, and a status dashboard.
+
+### Current State (2026-07-02)
+
+```text
+[✅] packages/telemetry/ — new package (Tracer, MetricsExporter, ErrorReporter, RequestLogger)
+[✅] OpenTelemetry-style tracing: spans for HTTP requests with parent-child relationships
+[✅] Metrics exporter: Prometheus-compatible counters, gauges, latency histograms
+[✅] Error reporting with session context (trace ID, session ID, run ID)
+[✅] Structured JSON logging with configurable log levels (debug/info/warn/error)
+[✅] Tracing middleware: span per HTTP request, auto-close on ok/error
+[✅] Audit-log middleware: immutable ring-buffer audit trail
+[✅] Metrics middleware enhanced with histogram recording
+[✅] /metrics endpoint: Prometheus text format
+[✅] /health/detailed: provider health status with latency percentiles
+[✅] /observability/spans: recent spans with duration, status, trace IDs
+[✅] /observability/errors: recent errors with session/trace context
+[✅] /observability/tracer: tracer stats (span count, recent spans summary)
+[✅] Configurable log levels (debug/info/warn/error)
+[✅] Graceful degradation: continues serving if telemetry backend is down
+[✅] All 401 tests pass
+[  ] Dashboard: sessions overview, latency heatmap, cost trends (apps/dashboard/)
+[  ] Unit tests for telemetry modules (package is tested indirectly via server integration)
+```
 
 ### Required Outputs
 

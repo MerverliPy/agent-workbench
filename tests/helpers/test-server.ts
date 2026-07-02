@@ -5,7 +5,8 @@ import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workben
 import { EventBus } from "@agent-workbench/events";
 import { MockModelProvider } from "./mock-model";
 import type { MockModelTurn } from "./mock-model";
-import { ProviderRegistry } from "@agent-workbench/models";
+import { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
+import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
@@ -21,6 +22,7 @@ import {
   PermissionRepository,
   SummaryRepository,
   PlanRepository,
+  WorkspaceRepository,
 } from "@agent-workbench/storage";
 import type { StorageConnection } from "@agent-workbench/storage";
 
@@ -110,6 +112,9 @@ export function createTestServer(options: TestServerOptions): TestServer {
     description: "Test server instance",
   };
 
+  const providerMarketplace = new ProviderMarketplace();
+  const workspaceRepository = new WorkspaceRepository(db);
+
   const services: ServerServices = {
     sessionRunner,
     eventBus,
@@ -124,6 +129,15 @@ export function createTestServer(options: TestServerOptions): TestServer {
     summaryRepository,
     planRepository,
     providerRegistry,
+    workspaceRepository,
+    providerMarketplace,
+    smartRouter: new SmartRouter(providerMarketplace),
+    costTracker: new CostTracker(),
+    providerHealthMonitor: new ProviderHealthMonitor(providerMarketplace),
+    tracer: new Tracer(),
+    metricsExporter: new MetricsExporter(),
+    errorReporter: new ErrorReporter(),
+    requestLogger: new RequestLogger({ level: "error" }), // quiet in tests
   };
 
   const app = createApp({ config, services });
