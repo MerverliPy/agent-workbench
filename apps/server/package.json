@@ -38,7 +38,7 @@
     "@agent-workbench/auth": "workspace:*",
     "@agent-workbench/collab": "workspace:*",
     "hono": "^4.12.27",
-    "ulid": "^2.3.0",
+    "ulid": "^3.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

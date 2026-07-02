@@ -20,7 +20,7 @@
     "@agent-workbench/protocol": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
     "@agent-workbench/events": "workspace:*",
-    "ulid": "^2.3.0"
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14"
