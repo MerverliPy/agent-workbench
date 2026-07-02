@@ -15,6 +15,8 @@
 import { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
 import type { SubmitReviewOptions } from "@agent-workbench/collab";
+import { Scope } from "@agent-workbench/auth";
+import { requireScope } from "../middleware/auth-scope";
 import { ApiError } from "../errors";
 import { handleAppError } from "../middleware/error-handler";
 
@@ -22,7 +24,7 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
   const { reviewQueue, sessionRepository } = services;
 
   // ── POST /session/:sessionId/review — Submit for review ─────────────────
-  app.post("/session/:sessionId/review", async (c) => {
+  app.post("/session/:sessionId/review", requireScope(Scope.REVIEW_SUBMIT), async (c) => {
     try {
       const sessionId = c.req.param("sessionId");
 
@@ -141,7 +143,7 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
   });
 
   // ── POST /review/:reviewId/approve — Approve ────────────────────────────
-  app.post("/review/:reviewId/approve", async (c) => {
+  app.post("/review/:reviewId/approve", requireScope(Scope.REVIEW_DECIDE), async (c) => {
     try {
       const reviewId = c.req.param("reviewId");
       const authContext = c.get("auth" as never) as { subject?: string } | undefined;
@@ -169,7 +171,7 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
   });
 
   // ── POST /review/:reviewId/reject — Reject ──────────────────────────────
-  app.post("/review/:reviewId/reject", async (c) => {
+  app.post("/review/:reviewId/reject", requireScope(Scope.REVIEW_DECIDE), async (c) => {
     try {
       const reviewId = c.req.param("reviewId");
       const authContext = c.get("auth" as never) as { subject?: string } | undefined;
@@ -197,7 +199,7 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
   });
 
   // ── POST /review/:reviewId/changes — Request changes ────────────────────
-  app.post("/review/:reviewId/changes", async (c) => {
+  app.post("/review/:reviewId/changes", requireScope(Scope.REVIEW_DECIDE), async (c) => {
     try {
       const reviewId = c.req.param("reviewId");
       const authContext = c.get("auth" as never) as { subject?: string } | undefined;

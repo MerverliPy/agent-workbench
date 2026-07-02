@@ -13,7 +13,9 @@
 
 import { Hono } from "hono";
 import type { AuthManager } from "@agent-workbench/auth";
+import { Scope } from "@agent-workbench/auth";
 import type { ServerAppBindings } from "../context";
+import { requireScope } from "../middleware/auth-scope";
 import { ApiError } from "../errors";
 import { handleAppError } from "../middleware/error-handler";
 
@@ -27,9 +29,10 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
   // ── POST /auth/token — Exchange shared secret for a bearer token ────────
   app.post("/auth/token", async (c) => {
     try {
-      const body = await c.req.json<{ secret?: string; label?: string }>();
+      const body = await c.req.json<{ secret?: string; label?: string; scopes?: string[] }>();
       const providedSecret = body.secret;
       const label = body.label ?? "unnamed-client";
+      const requestedScopes = body.scopes;
 
       if (!providedSecret) {
         return c.json(
@@ -68,7 +71,7 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
         );
       }
 
-      const result = auth.generateToken(label);
+      const result = auth.generateToken(label, requestedScopes);
       if (!result) {
         return c.json(
           new ApiError({
@@ -119,21 +122,8 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
     });
   });
 
-  // ── GET /auth/tokens — List active tokens (requires auth) ───────────────
-  app.get("/auth/tokens", (c) => {
-    const authCtx = c.get("auth");
-    if (!authCtx?.authenticated) {
-      return c.json(
-        new ApiError({
-          status: 401,
-          code: "UNAUTHORIZED",
-          message: "Authentication required.",
-          recoverable: true,
-        }),
-        401,
-      );
-    }
-
+  // ── GET /auth/tokens — List active tokens (requires admin scope) ────────
+  app.get("/auth/tokens", requireScope(Scope.ADMIN), (c) => {
     const tokens = auth.listTokens().map((t) => ({
       label: t.label,
       expiresAt: t.expiresAt,
@@ -145,21 +135,8 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
     return c.json({ tokens });
   });
 
-  // ── DELETE /auth/token — Revoke a token (requires auth) ─────────────────
-  app.delete("/auth/token/:token", (c) => {
-    const authCtx = c.get("auth");
-    if (!authCtx?.authenticated) {
-      return c.json(
-        new ApiError({
-          status: 401,
-          code: "UNAUTHORIZED",
-          message: "Authentication required.",
-          recoverable: true,
-        }),
-        401,
-      );
-    }
-
+  // ── DELETE /auth/token/:token — Revoke a token (requires admin scope) ──
+  app.delete("/auth/token/:token", requireScope(Scope.ADMIN), (c) => {
     const token = c.req.param("token");
     const revoked = auth.revokeToken(token);
 

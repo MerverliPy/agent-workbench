@@ -13,6 +13,8 @@ import { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
 import { exportSession } from "@agent-workbench/collab";
 import type { PresenceManager } from "@agent-workbench/collab";
+import { Scope } from "@agent-workbench/auth";
+import { requireScope } from "../middleware/auth-scope";
 import { ApiError } from "../errors";
 import { handleAppError } from "../middleware/error-handler";
 
@@ -30,7 +32,7 @@ export function registerShareRoutes(app: Hono<ServerAppBindings>, services: Serv
   };
 
   // ── POST /session/:sessionId/share — Generate share link ────────────────
-  app.post("/session/:sessionId/share", async (c) => {
+  app.post("/session/:sessionId/share", requireScope(Scope.SHARE_CREATE), async (c) => {
     try {
       const sessionId = c.req.param("sessionId");
 
@@ -132,7 +134,7 @@ export function registerShareRoutes(app: Hono<ServerAppBindings>, services: Serv
   });
 
   // ── GET /session/:sessionId/shares — List active shares ─────────────────
-  app.get("/session/:sessionId/shares", async (c) => {
+  app.get("/session/:sessionId/shares", requireScope(Scope.SHARE_READ), async (c) => {
     try {
       const sessionId = c.req.param("sessionId");
 
@@ -157,7 +159,7 @@ export function registerShareRoutes(app: Hono<ServerAppBindings>, services: Serv
   });
 
   // ── DELETE /share/:token — Revoke a share ───────────────────────────────
-  app.delete("/share/:token", async (c) => {
+  app.delete("/share/:token", requireScope(Scope.SHARE_CREATE), async (c) => {
     try {
       const token = c.req.param("token");
       const record = shareManager.get(token);
@@ -182,7 +184,7 @@ export function registerShareRoutes(app: Hono<ServerAppBindings>, services: Serv
   });
 
   // ── GET /session/:sessionId/presence — Active users ──────────────────────
-  app.get("/session/:sessionId/presence", async (c) => {
+  app.get("/session/:sessionId/presence", requireScope(Scope.PRESENCE_READ), async (c) => {
     try {
       const sessionId = c.req.param("sessionId");
 

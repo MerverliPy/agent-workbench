@@ -29,3 +29,5 @@ export { authMiddleware, type AuthMiddlewareOptions, type AuthContext } from "./
 export { TlsConfig, type TlsConfigOptions } from "./tls-config";
 export { SessionToken, type SessionTokenConfig } from "./session-tokens";
 export { InMemoryTokenStore, type TokenRecord } from "./token-store";
+export { Scope, hasScope, scopeMatches, defaultScopes } from "./scopes";
+export type { ScopeValue } from "./scopes";
