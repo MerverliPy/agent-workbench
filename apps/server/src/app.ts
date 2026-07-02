@@ -25,6 +25,7 @@ import { registerObservabilityRoutes } from "./routes/observability-routes";
 import { registerPluginRoutes } from "./routes/plugin-routes";
 import { registerAuthRoutes } from "./routes/auth-routes";
 import { registerCollabRoutes } from "./routes/collab-routes";
+import { registerShareRoutes } from "./routes/share-routes";
 import { authMiddleware } from "@agent-workbench/auth";
 
 export interface CreateAppOptions {
@@ -78,6 +79,7 @@ export function createApp(options: CreateAppOptions) {
 
   registerAuthRoutes(app, { auth: options.services.auth });
   registerCollabRoutes(app, options.services);
+  registerShareRoutes(app, options.services);
   registerGlobalRoutes(app, {
     config: options.config,
     startedAt,

@@ -5,6 +5,7 @@ import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@age
 import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import type { AuthManager } from "@agent-workbench/auth";
 import type { SharedSessionManager } from "@agent-workbench/collab";
+import type { ShareManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
   MessageRepository,
@@ -63,6 +64,8 @@ export interface ServerServices {
   readonly auth: AuthManager;
   // Phase 27: shared session state (multi-user presence)
   readonly sharedSessionManager: SharedSessionManager;
+  // Phase 27: session sharing (view-only links)
+  readonly shareManager: ShareManager;
 }
 
 export type ServerAppBindings = {

@@ -11,6 +11,7 @@ import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-wo
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
 import { SharedSessionManager } from "@agent-workbench/collab";
+import { ShareManager } from "@agent-workbench/collab";
 import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
@@ -157,6 +158,9 @@ if (authManager.isEnabled) {
 const sharedSessionManager = new SharedSessionManager({ eventBus });
 logger.info("Collaboration — shared session presence ready");
 
+const shareManager = new ShareManager({ eventBus, baseUrl: `http://${config.host}:${config.port}` });
+logger.info("Collaboration — session sharing ready");
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -207,6 +211,7 @@ const app = createApp({
     pluginRegistry,
     auth: authManager,
     sharedSessionManager,
+    shareManager,
   },
 });
 

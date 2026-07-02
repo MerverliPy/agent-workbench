@@ -15,6 +15,7 @@ import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
 import type { AuthManager } from "@agent-workbench/auth";
 import type { SharedSessionManager } from "@agent-workbench/collab";
+import type { ShareManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
   MessageRepository,
@@ -170,6 +171,21 @@ export function createTestServer(options: TestServerOptions): TestServer {
       startCleanup: () => undefined,
       stopCleanup: () => undefined,
     } as unknown as SharedSessionManager,
+    // Phase 27: session sharing disabled in tests
+    shareManager: {
+      create: () => ({ token: "shr_test", sessionId: "test", url: "http://localhost/share/shr_test", expiresAt: new Date(Date.now() + 86400000).toISOString(), label: "test" }),
+      validate: () => null,
+      revoke: () => false,
+      revokeAllForSession: () => 0,
+      listBySession: () => [],
+      get: () => undefined,
+      listAll: () => [],
+      get totalActiveShares() { return 0; },
+      getBaseUrl: () => "http://localhost",
+      setBaseUrl: () => undefined,
+      startCleanup: () => undefined,
+      stopCleanup: () => undefined,
+    } as unknown as ShareManager,
   };
 
   const app = createApp({ config, services });

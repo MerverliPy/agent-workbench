@@ -18,6 +18,8 @@
  * ```
  */
 export { exportSession, importSession } from "./session-export";
+export { ShareManager } from "./share-manager";
+export type { ShareRecord, CreateShareOptions, ShareResult } from "./share-manager";
 export { SharedSessionManager } from "./shared-session";
 export type { SharedSessionUser, SharedSessionRole, JoinSessionOptions } from "./shared-session";
 export type {
