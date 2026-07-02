@@ -60,8 +60,11 @@ Phase 12 Token Health is accepted.
 Phase 13 Pre-Run Planner is accepted.
 Phase 14A Automated Tests is accepted.
 Phase 14B Hardening is accepted.
+Phase 15 Provider Integration is complete.
+Phase 16 Streaming Provider Responses is complete.
+Phase 17 CI/CD + E2E Validation is complete.
 
-Phase 16 (streaming provider responses) is the current implementation boundary. Phase 16 is complete — all exit gates verified, 346 tests passing. Phase 17 (CI/CD pipeline + end-to-end validation) is the next implementation phase. See docs/25_PHASE_17_CI_AND_E2E_VALIDATION.md when available.
+Phase 18 (mobile web companion UI) is the current implementation boundary. Phase 18 is active — scaffold complete, 7-panel navigation drawer, SSE reconnection, error boundary, offline detection all in place. Remaining: PWA manifest, service worker, real panel data, chat streaming. See docs/26_PHASE_18_MOBILE_WEB_UI.md for the full plan and docs/27_PROJECT_ROADMAP.md for Phases 19–30.
 
 Phase 10 scope:
 

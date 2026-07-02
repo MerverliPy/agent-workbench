@@ -1,8 +1,8 @@
 # 04 — Implementation Phase Checklist
 
-Status: Phase 17 complete; Phase 18 active (mobile web companion UI)
+Status: Phase 18 active (mobile web companion UI); roadmap in docs/27_PROJECT_ROADMAP.md
 Document type: agent-ready implementation checklist
-Scope: phases 0 through 17, dependencies, gates, and forbidden shortcuts
+Scope: phases 0 through 18, dependencies, gates, and forbidden shortcuts. Phases 19–30 defined in docs/27_PROJECT_ROADMAP.md
 
 ## 1. Purpose
 

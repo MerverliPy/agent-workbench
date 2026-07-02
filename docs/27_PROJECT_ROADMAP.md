@@ -11,7 +11,8 @@ Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 ```
 Phase 18 ◀ active  ████████████░░░░░░░░  mobile web companion UI
 Phase 19 ▌         ░░░░░░░░░░░░░░░░░░░░  live provider integration
-Phase 20 ▌         ░░░░░░░░░░░░░░░░░░░░  mobile web feature completion
+Phase 20A▌         ░░░░░░░░░░░░░░░░░░░░  mobile web: non-chat panels
+Phase 20B▌         ░░░░░░░░░░░░░░░░░░░░  mobile web: chat + streaming
 Phase 21 ▌         ░░░░░░░░░░░░░░░░░░░░  TUI polish & UX completion
 Phase 22 ▌         ░░░░░░░░░░░░░░░░░░░░  multi-session & workspace mgmt
 Phase 23 ▌         ░░░░░░░░░░░░░░░░░░░░  PTY terminal execution
@@ -35,7 +36,66 @@ Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░�
 
 ---
 
-## 2. Phase 19: Live Provider Integration
+## 2. Phase 18: Mobile Web Companion UI ◀ ACTIVE
+
+### Priority: 🔴 CRITICAL (in progress)
+### Dependencies: Phase 17 (CI/CD pipeline)
+### Estimated: 1 week remaining (scaffold complete)
+
+### Purpose
+
+Build a lightweight, touch-optimized mobile web app at `apps/mobile-web/` that connects to the same server via the existing SDK — no server or core changes required. See `docs/26_PHASE_18_MOBILE_WEB_UI.md` for the full plan.
+
+### Current State (2026-07-02)
+
+```text
+[✅] SolidJS + Vite project scaffolded
+[✅] 7-panel navigation drawer (Sessions, Chat, FileBrowser, GitTree, ActivityLog, Help, Settings)
+[✅] SDK client connected (WorkbenchClient)
+[✅] SSE event stream with reconnection logic
+[✅] Permission prompt modal
+[✅] StatusBar with connection indicator
+[✅] ErrorBoundary component
+[✅] Offline detection (online/offline events)
+[✅] LoadingSkeleton components
+[✅] PWA icons (192x192 + 512x512)
+[  ] Chat panel streams real model responses with typing indicator
+[  ] File browser shows real directory contents from server
+[  ] Git tree shows branch, dirty files, unpushed commits
+[  ] Settings panel supports provider selection and theme toggle
+[  ] Service worker caches app shell for offline load
+[  ] PWA is installable (manifest + service worker)
+[  ] Push notification for permission prompts (browser backgrounded)
+[  ] Touch-optimized: all buttons ≥ 44×44px, swipe gestures on drawers
+[  ] Landscape orientation support
+[  ] Dark/light/system theme toggle persists to localStorage
+[  ] Offline banner when connection drops (using existing offline.ts)
+```
+
+### Exit Gates
+
+```text
+[ ] All 7 panels render real data from the server (no hardcoded placeholders)
+[ ] Chat panel: user can type a prompt, see streaming response via SDK
+[ ] FileBrowser: browses real project directory, previews files
+[ ] GitTree: shows branch name, dirty count, recent commits
+[ ] PWA manifest + service worker registered → app is installable
+[ ] Works on iOS Safari + Android Chrome (minimum: last 2 versions each)
+[ ] Permission prompts appear as modal and can be approved/denied
+[ ] Loading skeletons on all panels (using existing components)
+[ ] Offline detection shows banner (using existing offline.ts)
+[ ] All 357+ tests continue to pass
+[ ] apps/mobile-web typecheck: tsc --noEmit passes clean
+```
+
+### Risks
+
+- **iOS Safari PWA limitations**: No push notifications on iOS (addressed via browser Notification API for desktop + fallback in-app banner on iOS)
+- **SSE on mobile browsers**: Some mobile browsers close idle SSE connections aggressively — reconnection logic already implemented with exponential backoff
+
+---
+
+## 3. Phase 19: Live Provider Integration
 
 ### Priority: 🔴 CRITICAL
 ### Dependencies: Phase 17 (CI/CD), Phase 16 (streaming)
@@ -95,55 +155,101 @@ tests/integration/
 
 ---
 
-## 3. Phase 20: Mobile Web Feature Completion
+## 4. Phase 20A: Mobile Web — Non-Chat Panels (FileBrowser, GitTree, Settings, etc.)
 
-### Priority: 🟡 HIGH
-### Dependencies: Phase 19 (live providers needed for chat panel)
-### Estimated: 1–2 weeks
+### Priority: 🟡 HIGH — can run in PARALLEL with Phase 19
+### Dependencies: Phase 18 (mobile-web scaffold), NONE for live providers
+### Estimated: 4–5 days
 
 ### Purpose
 
-Complete the solid-js mobile companion app (`apps/mobile-web`). Currently the scaffold has 8 panels but several are inactive or stubbed. This phase makes every panel functional with real data.
+Complete all mobile-web panels that do NOT require a live LLM provider. These six panels can be built and tested against stub/static data, then wired to real APIs once Phase 19 delivers providers. Running this in parallel with Phase 19 eliminates the 1-week blocking dependency.
 
 ### Required Outputs
 
 ```text
 apps/mobile-web/src/components/panels/
-  ├── ChatPanel.tsx           # ✅ Complete — real streaming messages with live provider
-  ├── SessionsPanel.tsx       # ✅ Functional — needs messageCount from API
-  ├── FileBrowserPanel.tsx    # ✅ Functional — needs real tool data
-  ├── GitTreePanel.tsx        # 🔧 Complete — wire to git status tool
-  ├── ActivityLogPanel.tsx    # ✅ Functional
-  ├── HelpPanel.tsx            # 🔧 Enhance — add keyboard shortcuts reference
-  ├── SettingsPanel.tsx        # 🔧 Complete — provider selection, theme toggle
+  ├── FileBrowserPanel.tsx    # ✅ Functional — verify against real server
+  ├── GitTreePanel.tsx        # 🔧 Complete — wire to git status API
+  ├── SessionsPanel.tsx       # ✅ Functional — add messageCount from API
+  ├── ActivityLogPanel.tsx    # ✅ Functional — verify against real SSE events
+  ├── HelpPanel.tsx            # 🔧 Enhance — keyboard shortcuts reference
+  ├── SettingsPanel.tsx        # 🔧 Complete — server URL config, provider display
 
 apps/mobile-web/src/
   ├── lib/pwa.ts               # New — service worker registration
-  ├── lib/notifications.ts     # New — browser notifications for permission prompts
   ├── lib/sync.ts              # New — background sync for offline message queue
   └── sw.ts                    # New — service worker for offline caching
 
 Other:
   manifest.json                 # Complete — icons, display mode, screenshots
-  PWA install prompt            # BeforeInstallPromptEvent handler
 ```
 
 ### Exit Gates
 
 ```text
-[ ] Chat panel streams real model responses with typing indicator
-[ ] File browser shows real directory contents from server
-[ ] Git tree shows branch, dirty files, unpushed commits
-[ ] Settings panel supports provider selection and theme toggle
-[ ] Push notification for permission prompts (when browser is backgrounded)
+[ ] FileBrowser shows real directory contents from server API
+[ ] GitTree shows branch name, dirty file count, recent commits
+[ ] Settings panel: saveable server URL, displays connected provider
 [ ] Service worker caches app shell for offline load
-[ ] PWA is installable (manifest + service worker + HTTPS-ready)
-[ ] Touch-optimized: all buttons ≥ 44×44px, swipe gestures on drawers
-[ ] Landscape orientation support
+[ ] PWA manifest complete → app is installable (lightbox prompt)
+[ ] Touch-optimized: all interactive elements ≥ 44×44px
+[ ] Swipe gesture on nav drawer (open/close)
 [ ] Dark/light/system theme toggle persists to localStorage
-[ ] Loading skeletons on every panel (Using existing LoadingSkeleton components)
+[ ] Loading skeletons on all panels (using existing LoadingSkeleton)
 [ ] Offline banner when connection drops (using existing offline.ts)
+[ ] All 357+ tests continue to pass
+[ ] apps/mobile-web typecheck: tsc --noEmit passes clean
 ```
+
+### Risks
+
+- **GitTree panel**: Requires a `/tool/git` or git-status endpoint that may not exist yet. Fallback: wrap existing `bash` tool to run `git status --porcelain` and parse output.
+- **PWA install prompt**: `BeforeInstallPromptEvent` is Chrome-only. iOS requires user to use "Add to Home Screen" manually. Accept both paths.
+
+---
+
+## 5. Phase 20B: Mobile Web — Chat Panel & Streaming
+
+### Priority: 🟡 HIGH — starts AFTER Phase 19 completes
+### Dependencies: Phase 19 (live providers), Phase 20A (PWA infrastructure)
+### Estimated: 3–4 days
+
+### Purpose
+
+Complete the chat panel with real model streaming. This is the only mobile-web panel that genuinely depends on a live LLM provider. All other panels were completed in Phase 20A.
+
+### Required Outputs
+
+```text
+apps/mobile-web/src/components/
+  ├── ChatView.tsx             # 🔧 Already exists — verify streaming works
+  ├── MessageBubble.tsx        # 🔧 Already exists — add code block rendering
+  ├── PromptInput.tsx          # 🔧 Already exists — add send-on-Enter
+  └── StreamingIndicator.tsx   # 🔧 Already exists — verify with real stream
+
+apps/mobile-web/src/lib/
+  └── notifications.ts         # New — browser Notification API for perm prompts
+```
+
+### Exit Gates
+
+```text
+[ ] Chat panel streams real model responses with typing cursor
+[ ] Messages render markdown (bold, italic, code blocks, lists)
+[ ] Send-on-Enter with Shift+Enter for newline
+[ ] Stream indicator animates during model response
+[ ] Permission prompt appears as browser notification when tab is backgrounded
+[ ] Error state rendering: network failure, timeout, provider error
+[ ] Empty state: "No messages yet" with suggested prompts
+[ ] All 357+ tests continue to pass
+[ ] apps/mobile-web typecheck: tsc --noEmit passes clean
+```
+
+### Risks
+
+- **SSE on mobile**: Mobile browsers may throttle background SSE — addressed by the already-implemented exponential backoff reconnection logic.
+- **Markdown rendering**: Need a lightweight markdown library that doesn't bloat the bundle. Recommendation: `marked` (19KB gzipped) or hand-roll a simple renderer.
 
 ---
 
@@ -189,6 +295,12 @@ Keyboard shortcuts:
 [ ] Copy-to-clipboard for code blocks
 ```
 
+### Risks
+
+- **OpenTUI rendering performance**: SolidJS signals inside a terminal rendering loop can cause flicker if not batched. Use `batch()` for multi-signal updates.
+- **ANSI color support**: Terminal emulators vary in color support. Test against kitty, iTerm2, Windows Terminal, and tmux. Fall back to 16-color palette for broad compatibility.
+- **Keyboard shortcut conflicts**: Ctrl+K and Ctrl+D are used by many terminal emulators natively. Provide remapping via `~/.agent-workbench/keybindings.json`.
+
 ---
 
 ## 5. Phase 22: Multi-Session & Workspace Management
@@ -233,6 +345,11 @@ apps/tui/src/components/session/
 [ ] TUI supports switching between sessions without losing state
 ```
 
+### Risks
+
+- **SQLite concurrent access**: Multiple sessions writing to the same database can hit `SQLITE_BUSY`. Use WAL mode (already enabled) and retry with exponential backoff for write contention.
+- **Session state migration**: Swapping sessions in the TUI means swapping the entire `Session` object in-memory. If the TUI has local state (cursor position, scroll offset), it must be preserved per-session — use a `Map<sessionId, SessionState>` pattern.
+
 ---
 
 ## 6. Phase 23: PTY Terminal Execution
@@ -273,6 +390,13 @@ packages/core/src/
 [ ] PTY output is NOT stored in ledger (enormous output — summary only)
 [ ] Permission checks apply to PTY (same as bash tool)
 ```
+
+### Risks
+
+- **Bun PTY support**: Bun's native `Bun.spawn()` does not create pseudo-terminals. Use `node-pty` (native addon) or `Deno.Command` with PTY flag if migrating to Deno. For Bun: wrap `script` command: `/usr/bin/script -qc "command" /dev/null`.
+- **Output buffering**: PTY output can be megabytes per second (e.g., `cat` of a large file). Ring buffer with configurable max size (default 1MB) and `circular_buffer` pattern.
+- **ANSI state tracking**: The TUI must track terminal state (cursor position, colors, clear screen sequences) to render PTY output correctly. Use a virtual terminal emulator like `xterm-headless` or parse ANSI sequences manually.
+- **Permission risk — PTY bypass**: Interactive programs can spawn subprocesses that bypass the permission engine. The PTY tool must inherit the same permission constraints as bash (no bypass). Sandbox with `unshare` or `bubblewrap` on Linux.
 
 ---
 
