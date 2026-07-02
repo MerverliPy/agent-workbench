@@ -22,6 +22,7 @@ import { registerGitRoutes } from "./routes/git-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
 import { registerObservabilityRoutes } from "./routes/observability-routes";
+import { registerPluginRoutes } from "./routes/plugin-routes";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
@@ -82,6 +83,7 @@ export function createApp(options: CreateAppOptions) {
   registerWorkspaceRoutes(app, options.services);
   registerMarketplaceRoutes(app, options.services);
   registerObservabilityRoutes(app, options.services);
+  registerPluginRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

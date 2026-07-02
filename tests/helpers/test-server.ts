@@ -7,6 +7,7 @@ import { MockModelProvider } from "./mock-model";
 import type { MockModelTurn } from "./mock-model";
 import { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
 import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
+import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
@@ -138,6 +139,7 @@ export function createTestServer(options: TestServerOptions): TestServer {
     metricsExporter: new MetricsExporter(),
     errorReporter: new ErrorReporter(),
     requestLogger: new RequestLogger({ level: "error" }), // quiet in tests
+    pluginRegistry: new PluginRegistry(),
   };
 
   const app = createApp({ config, services });

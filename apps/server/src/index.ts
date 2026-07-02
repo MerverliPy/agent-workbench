@@ -8,6 +8,7 @@ import {
   ProviderHealthMonitor,
 } from "@agent-workbench/models";
 import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
+import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
@@ -125,6 +126,10 @@ const metricsExporter = new MetricsExporter();
 const errorReporter = new ErrorReporter({ maxErrors: 1000 });
 const requestLogger = new RequestLogger({ level: "info" });
 
+// ── Phase 26: Plugin system ─────────────────────────────────────────────────
+const pluginRegistry = new PluginRegistry();
+logger.info(`Plugin directory: ${pluginRegistry.getPluginsDir()}`);
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -171,6 +176,7 @@ const app = createApp({
     metricsExporter,
     errorReporter,
     requestLogger,
+    pluginRegistry,
   },
 });
 

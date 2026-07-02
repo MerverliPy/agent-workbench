@@ -2,6 +2,7 @@ import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-wo
 import type { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
 import type { EventBus } from "@agent-workbench/events";
 import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
+import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import type {
   SessionRepository,
   MessageRepository,
@@ -50,6 +51,8 @@ export interface ServerServices {
   readonly metricsExporter: MetricsExporter;
   readonly errorReporter: ErrorReporter;
   readonly requestLogger: RequestLogger;
+  // Phase 26: plugin system
+  readonly pluginRegistry: PluginRegistry;
 }
 
 export type ServerAppBindings = {
