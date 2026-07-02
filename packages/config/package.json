@@ -3,5 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Layered config loading, resolution, validation, and secret references."
+  "description": "Layered config loading, resolution, validation, and secret references.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
 }

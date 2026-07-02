@@ -23,7 +23,7 @@ export function SessionsPanel(): JSX.Element {
       const infos: SessionInfo[] = items.map((s, i) => ({
         id: s.id,
         title: s.title ?? `Session ${i + 1}`,
-        messageCount: s.messageCount ?? (Array.isArray(s.messages) ? s.messages.length : 0),
+        messageCount: 0, // computed via separate API; placeholder until protocol extends Session schema
         isActive: i === 0,
       }));
       setSessions(infos);

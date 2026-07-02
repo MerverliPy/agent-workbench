@@ -28,6 +28,8 @@ jobs:
         run: bash scripts/test-health.sh
       - name: Check whitespace
         run: git diff --check
+      - name: Biome lint
+        run: npx @biomejs/biome check . 2>&1 || echo "::warning::Biome lint found issues"
 
   test:
     name: Test suite
@@ -44,13 +46,13 @@ jobs:
         run: bash scripts/build-all.sh
       - name: Typecheck packages
         run: |
-          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner; do
+          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui; do
             echo "  [typecheck] packages/$pkg"
             (cd packages/$pkg && bun run typecheck) || exit 1
           done
       - name: Typecheck apps
         run: |
-          for app in server tui; do
+          for app in server tui cli mobile-web; do
             echo "  [typecheck] apps/$app"
             (cd apps/$app && bun run typecheck) || exit 1
           done
