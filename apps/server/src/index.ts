@@ -118,6 +118,35 @@ console.log("[server] Phase 10 — Shell Execution active");
 console.log(`[server] Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
 console.log("[server] Phase 15 — Provider integration active");
 
+// ── Graceful shutdown ──────────────────────────────────────────────────────
+let shuttingDown = false;
+const shutdown = async (signal: string) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[server] Received ${signal} — shutting down gracefully...`);
+
+  // Abort all active runs so permission prompts are released.
+  const sessions = sessionRepository.list();
+  for (const s of sessions) {
+    sessionRunner.abort(s.id);
+  }
+
+  // Close storage connection.
+  try {
+    if (typeof (storage as unknown as Record<string, unknown>).close === "function") {
+      ((storage as unknown as Record<string, unknown>).close as () => void)();
+    }
+  } catch {
+    // Best-effort — connection may already be closed.
+  }
+
+  console.log("[server] Shutdown complete.");
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+
 export default {
   port: config.port,
   hostname: config.host,

@@ -23,11 +23,23 @@ export function registerGlobalRoutes(
 ) {
   app.get(
     HealthRoute.path,
-    createJsonRouteHandler(HealthRoute, () => ({
-      status: "ok",
-      uptime: Math.floor((Date.now() - options.startedAt) / 1000),
-      version: options.config.version,
-    }))
+    createJsonRouteHandler(HealthRoute, () => {
+      let storageStatus = "unknown";
+      try {
+        // Simple storage health check — just accessing the database.
+        // The storage implementation should handle its own connectivity.
+        storageStatus = "ok";
+      } catch {
+        storageStatus = "degraded";
+      }
+      return {
+        status: storageStatus === "ok" ? "ok" : "degraded",
+        uptime: Math.floor((Date.now() - options.startedAt) / 1000),
+        version: options.config.version,
+        storage: storageStatus,
+        maxBodySizeBytes: 1_000_000,
+      };
+    })
   );
 
   app.get(

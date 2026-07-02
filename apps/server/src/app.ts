@@ -5,6 +5,7 @@ import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
 import { handleAppError } from "./middleware/error-handler";
 import { requestIdMiddleware } from "./middleware/request-id";
+import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { registerGlobalRoutes } from "./routes/global";
 import { registerSessionRoutes } from "./routes/session-routes";
 import { registerMessageRoutes } from "./routes/message-routes";
@@ -26,7 +27,31 @@ export function createApp(options: CreateAppOptions) {
   const startedAt = options.startedAt ?? Date.now();
 
   app.use("*", requestIdMiddleware);
-  app.use("*", cors({ origin: "*" }));
+  app.use("*", rateLimitMiddleware());
+  app.use(
+    "*",
+    cors({
+      // ADR-0004: localhost-only by default. Allow loopback and explicit
+      // environment overrides so mobile-web and TUI can connect.
+      origin: (origin) => {
+        const allowedOrigins = [
+          /^https?:\/\/localhost(:\d+)?$/,
+          /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+          /^https?:\/\/\[::1\](:\d+)?$/,
+        ];
+        const envOverride = process.env["AGENT_WORKBENCH_CORS_ORIGINS"];
+        if (envOverride) {
+          const patterns = envOverride.split(",").map((s) => s.trim()).filter(Boolean);
+          for (const pat of patterns) {
+            allowedOrigins.push(new RegExp(pat));
+          }
+        }
+        if (!origin) return "*"; // same-origin requests; allow
+        const ok = allowedOrigins.some((r) => r.test(origin));
+        return ok ? origin : null;
+      },
+    })
+  );
 
   registerGlobalRoutes(app, {
     config: options.config,

@@ -23,6 +23,7 @@ import {
   streamingContent,
   permissionModalOpen,
 } from "./state/app";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { StatusBar } from "./components/StatusBar";
 import { NavDrawer } from "./components/NavDrawer";
 import { PanelContainer } from "./components/panels/PanelContainer";
@@ -238,13 +239,15 @@ export function App(): JSX.Element {
   });
 
   return (
-    <div class="flex flex-col h-dvh overflow-hidden">
-      <StatusBar />
-      <Show when={permissionModalOpen()}>
-        <PermissionPrompt />
-      </Show>
-      <NavDrawer />
-      <PanelContainer />
-    </div>
+    <ErrorBoundary>
+      <div class="flex flex-col h-dvh overflow-hidden">
+        <StatusBar />
+        <Show when={permissionModalOpen()}>
+          <PermissionPrompt />
+        </Show>
+        <NavDrawer />
+        <PanelContainer />
+      </div>
+    </ErrorBoundary>
   );
 }
