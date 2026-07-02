@@ -14,6 +14,20 @@
       "name": "@agent-workbench/cli",
       "version": "0.0.0",
     },
+    "apps/dashboard": {
+      "name": "@agent-workbench/dashboard",
+      "version": "0.0.0",
+      "dependencies": {
+        "solid-js": "^1.9.12",
+      },
+      "devDependencies": {
+        "@tailwindcss/vite": "^4.1.4",
+        "tailwindcss": "^4.1.4",
+        "typescript": "^6.0.3",
+        "vite": "^7.2.4",
+        "vite-plugin-solid": "^2.11.12",
+      },
+    },
     "apps/mobile-web": {
       "name": "@agent-workbench/mobile-web",
       "version": "0.0.0",
@@ -260,6 +274,8 @@
     "@agent-workbench/config": ["@agent-workbench/config@workspace:packages/config"],
 
     "@agent-workbench/core": ["@agent-workbench/core@workspace:packages/core"],
+
+    "@agent-workbench/dashboard": ["@agent-workbench/dashboard@workspace:apps/dashboard"],
 
     "@agent-workbench/diff": ["@agent-workbench/diff@workspace:packages/diff"],
 
