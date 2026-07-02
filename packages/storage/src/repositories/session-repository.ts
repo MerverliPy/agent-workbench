@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and, lt, desc } from "drizzle-orm";
 import type { DrizzleBunSqliteDatabase } from "../types";
 import { sessions } from "../schema";
 
@@ -23,6 +23,27 @@ export class SessionRepository {
       .select()
       .from(sessions)
       .orderBy(sessions.updatedAt)
+      .all();
+  }
+
+  listPaginated(params?: {
+    status?: string;
+    projectPath?: string;
+    limit?: number;
+    cursor?: string;
+  }): SessionRow[] {
+    const conditions = [];
+    if (params?.status) conditions.push(eq(sessions.status, params.status));
+    if (params?.projectPath)
+      conditions.push(eq(sessions.projectPath, params.projectPath));
+    if (params?.cursor) conditions.push(lt(sessions.id, params.cursor));
+
+    const base = this.db.select().from(sessions);
+    const filtered =
+      conditions.length > 0 ? base.where(and(...conditions)) : base;
+    return filtered
+      .orderBy(desc(sessions.createdAt))
+      .limit(params?.limit ?? 50)
       .all();
   }
 

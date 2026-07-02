@@ -10,6 +10,9 @@ export interface BuildOptions {
   injectSummaries?: boolean | undefined;
 }
 
+/** Maximum number of persisted messages to include in the context window. */
+const MAX_CONTEXT_MESSAGES = 200;
+
 /**
  * Builds a provider-neutral message list for a model call by reading the
  * persisted message history for a session.
@@ -36,6 +39,8 @@ export class ContextBuilder {
     } = options;
 
     const rows = this.messageRepository.listBySession(sessionId);
+    const truncated = rows.length > MAX_CONTEXT_MESSAGES;
+    const recentRows = truncated ? rows.slice(-MAX_CONTEXT_MESSAGES) : rows;
     const messages: ContextMessage[] = [];
 
     const effectivePrompt =
@@ -49,6 +54,13 @@ export class ContextBuilder {
       messages.push({ role: "system", content: effectivePrompt });
     }
 
+    if (truncated) {
+      messages.push({
+        role: "system",
+        content: `[Earlier messages truncated: ${rows.length - MAX_CONTEXT_MESSAGES} messages omitted]`,
+      });
+    }
+
     if (injectSummaries) {
       const summaries = this.summaryRepository.listBySession(sessionId);
       for (const summary of summaries) {
@@ -59,7 +71,7 @@ export class ContextBuilder {
       }
     }
 
-    for (const row of rows) {
+    for (const row of recentRows) {
       if (excludeRunId !== undefined && row.runId === excludeRunId) {
         continue;
       }

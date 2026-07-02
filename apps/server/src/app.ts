@@ -6,6 +6,7 @@ import { ApiError } from "./errors";
 import { handleAppError } from "./middleware/error-handler";
 import { requestIdMiddleware } from "./middleware/request-id";
 import { rateLimitMiddleware } from "./middleware/rate-limit";
+import { metricsMiddleware } from "./middleware/metrics-middleware";
 import { registerGlobalRoutes } from "./routes/global";
 import { registerSessionRoutes } from "./routes/session-routes";
 import { registerMessageRoutes } from "./routes/message-routes";
@@ -28,6 +29,7 @@ export function createApp(options: CreateAppOptions) {
 
   app.use("*", requestIdMiddleware);
   app.use("*", rateLimitMiddleware());
+  app.use("*", metricsMiddleware);
   app.use(
     "*",
     cors({
@@ -57,6 +59,7 @@ export function createApp(options: CreateAppOptions) {
     config: options.config,
     startedAt,
     eventBus: options.services.eventBus,
+    sessionRepository: options.services.sessionRepository,
   });
 
   registerSessionRoutes(app, options.services);

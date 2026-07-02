@@ -57,15 +57,20 @@ export function registerSessionRoutes(
       const query = validated.query as {
         status?: string;
         projectPath?: string;
+        cursor?: string;
+        limit?: number;
       };
-      let rows = sessionRepository.list();
-      if (query.status !== undefined) {
-        rows = rows.filter((r) => r.status === query.status);
-      }
-      if (query.projectPath !== undefined) {
-        rows = rows.filter((r) => r.projectPath === query.projectPath);
-      }
-      return { items: rows.map(rowToProtocol) };
+      const rows = sessionRepository.listPaginated({
+        ...(query.status !== undefined ? { status: query.status } : {}),
+        ...(query.projectPath !== undefined
+          ? { projectPath: query.projectPath }
+          : {}),
+        ...(query.cursor !== undefined ? { cursor: query.cursor } : {}),
+        ...(query.limit !== undefined ? { limit: query.limit } : {}),
+      });
+      const nextCursor =
+        rows.length === query.limit ? rows[rows.length - 1]?.id : undefined;
+      return { items: rows.map(rowToProtocol), nextCursor };
     })
   );
 

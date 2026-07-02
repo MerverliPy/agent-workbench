@@ -132,6 +132,17 @@ export class SessionRunner {
     const maxIterations = options.maxIterations ?? DEFAULT_MAX_ITERATIONS;
     const abortController = new AbortController();
 
+    // Session max-duration timeout: auto-abort if the run exceeds the limit.
+    const SESSION_TIMEOUT_MS = options.maxDurationMs ?? Number(
+      process.env["AGENT_WORKBENCH_SESSION_TIMEOUT_MS"] || 600_000
+    );
+
+    const timeoutId = setTimeout(() => {
+      if (!signal.aborted) {
+        abortController.abort();
+      }
+    }, SESSION_TIMEOUT_MS);
+
     // Chain the caller's signal so external abort triggers ours as well.
     if (options.signal !== undefined) {
       if (options.signal.aborted) {
@@ -181,6 +192,7 @@ export class SessionRunner {
         agentProfile
       );
     } finally {
+      clearTimeout(timeoutId);
       this.runRegistry.remove(sessionId);
     }
   }

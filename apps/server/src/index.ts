@@ -18,10 +18,13 @@ import {
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
+import { ulid } from "ulid";
 import { createApp } from "./app";
 import { getServerConfig } from "./config";
+import { createLogger } from "./utils/logger";
 
 const config = getServerConfig();
+const logger = createLogger("server");
 
 // ── Storage ─────────────────────────────────────────────────────────────────
 const storage = createStorageConnection();
@@ -36,6 +39,26 @@ const fileChangeRepository = new FileChangeRepository(storage.db);
 const permissionRepository = new PermissionRepository(storage.db);
 const summaryRepository = new SummaryRepository(storage.db);
 const planRepository = new PlanRepository(storage.db);
+
+// ── Reconcile stale permission requests from previous server instance ──────
+const staleRequests = permissionRepository.listRequests("pending");
+if (staleRequests.length > 0) {
+  logger.info(`Resolving ${staleRequests.length} stale permission requests (server restart)`);
+  for (const req of staleRequests) {
+    const decisionId = ulid();
+    permissionRepository.createDecision({
+      id: decisionId,
+      requestId: req.id,
+      decision: "deny",
+      decidedBy: "system",
+      scope: null,
+      reason: "Server restarted — pending request auto-denied.",
+      createdAt: new Date().toISOString(),
+      metadataJson: null,
+    });
+    permissionRepository.updateRequest(req.id, { status: "denied" });
+  }
+}
 
 // ── Events ───────────────────────────────────────────────────────────────────
 const eventBus = new EventBus();
@@ -113,17 +136,17 @@ const app = createApp({
   },
 });
 
-console.log(`[server] Binding to http://${config.host}:${config.port}`);
-console.log("[server] Phase 10 — Shell Execution active");
-console.log(`[server] Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
-console.log("[server] Phase 15 — Provider integration active");
+logger.info(`Binding to http://${config.host}:${config.port}`);
+logger.info("Phase 10 — Shell Execution active");
+logger.info(`Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
+logger.info("Phase 15 — Provider integration active");
 
 // ── Graceful shutdown ──────────────────────────────────────────────────────
 let shuttingDown = false;
 const shutdown = async (signal: string) => {
   if (shuttingDown) return;
   shuttingDown = true;
-  console.log(`[server] Received ${signal} — shutting down gracefully...`);
+  logger.info(`Received ${signal} — shutting down gracefully...`);
 
   // Abort all active runs so permission prompts are released.
   const sessions = sessionRepository.list();
@@ -140,7 +163,7 @@ const shutdown = async (signal: string) => {
     // Best-effort — connection may already be closed.
   }
 
-  console.log("[server] Shutdown complete.");
+  logger.info("Shutdown complete.");
   process.exit(0);
 };
 

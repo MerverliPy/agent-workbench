@@ -66,6 +66,8 @@ export interface RunOptions {
    * When undefined, falls back to session.activeAgent then "build".
    */
   agentId?: string;
+  /** Maximum run duration in milliseconds before auto-abort. Default 600000 (10 min). */
+  maxDurationMs?: number;
 }
 
 /** Return value of a completed (or aborted) run. */

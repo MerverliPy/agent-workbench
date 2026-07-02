@@ -2,8 +2,10 @@ import type { Hono } from "hono";
 import { EventRoute, GlobalInfoRoute, HealthRoute } from "@agent-workbench/protocol";
 import { streamSSE } from "hono/streaming";
 import type { EventBus } from "@agent-workbench/events";
+import type { SessionRepository } from "@agent-workbench/storage";
 import type { ServerConfig } from "../config";
 import type { ServerAppBindings } from "../context";
+import { metrics } from "../utils/metrics";
 import { validateRequest } from "../utils/validation";
 import { createJsonRouteHandler } from "./helpers";
 
@@ -19,6 +21,7 @@ export function registerGlobalRoutes(
     readonly startedAt: number;
     readonly config: ServerConfig;
     readonly eventBus: EventBus;
+    readonly sessionRepository?: SessionRepository;
   }
 ) {
   app.get(
@@ -41,6 +44,12 @@ export function registerGlobalRoutes(
       };
     })
   );
+
+  app.get("/metrics", (ctx) => {
+    metrics.set("active_sessions", options.sessionRepository?.list()?.length ?? 0);
+    ctx.header("Content-Type", "text/plain; version=0.0.4");
+    return ctx.text(metrics.toPrometheus());
+  });
 
   app.get(
     GlobalInfoRoute.path,
