@@ -10,6 +10,7 @@ import type {
   PlanRepository,
 } from "@agent-workbench/storage";
 import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
+import type { WorkspaceRepository } from "@agent-workbench/storage";
 
 /** Per-request variables set by middleware. */
 export interface RequestContextVariables {
@@ -36,6 +37,8 @@ export interface ServerServices {
   readonly planRepository: PlanRepository;
   // Phase 15: provider registry
   readonly providerRegistry: ProviderRegistry;
+  // Phase 22: workspace repository
+  readonly workspaceRepository: WorkspaceRepository;
 }
 
 export type ServerAppBindings = {

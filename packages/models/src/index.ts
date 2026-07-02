@@ -30,14 +30,13 @@ export {
 
 export {
   parseProviderConfig,
+  detectAvailableProviders,
 } from "./provider-config";
 export type { ProviderConfig } from "./provider-config";
 
-export {
-  OpenAICompatibleProvider,
-} from "./providers/openai-compatible";
+export { OpenAICompatibleProvider } from "./providers/openai-compatible";
+export { AnthropicProvider } from "./providers/anthropic";
+export { createOpenRouterProvider, createOllamaProvider } from "./providers/openrouter";
 
-export {
-  ProviderRegistry,
-} from "./provider-registry";
+export { ProviderRegistry } from "./provider-registry";
 export type { ProviderEntry, ProviderModelEntry } from "./provider-registry";

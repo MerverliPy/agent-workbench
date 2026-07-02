@@ -13,6 +13,7 @@
   "dependencies": {
     "@agent-workbench/protocol": "workspace:*",
     "@agent-workbench/sdk": "workspace:*",
+    "marked": "^18.0.5",
     "solid-js": "^1.9.12"
   },
   "devDependencies": {

@@ -12,5 +12,6 @@ export * from "./config";
 export * from "./token-health";
 export * from "./agent";
 export * from "./plan";
+export * from "./workspace";
 export * from "./stream-events";
 export * from "../types";

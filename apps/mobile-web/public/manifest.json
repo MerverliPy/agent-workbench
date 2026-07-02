@@ -1,14 +1,16 @@
 {
   "name": "agent-workbench",
   "short_name": "Agent WB",
-  "description": "Mobile companion for agent-workbench",
+  "description": "Mobile companion for agent-workbench — touch-optimized chat + panels",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#0f172a",
   "background_color": "#0f172a",
+  "categories": ["productivity", "developer tools"],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

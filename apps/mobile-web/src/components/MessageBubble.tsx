@@ -1,4 +1,11 @@
 import type { JSX } from "solid-js";
+import { marked } from "marked";
+
+// Configure marked for safe rendering (no HTML in input)
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
 interface MessageBubbleProps {
   message: {
@@ -7,6 +14,21 @@ interface MessageBubbleProps {
     content: string;
     createdAt: string;
   };
+}
+
+function renderMarkdown(text: string): string {
+  try {
+    return marked.parse(text) as string;
+  } catch {
+    return escapeHtml(text);
+  }
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 export function MessageBubble(props: MessageBubbleProps): JSX.Element {
@@ -31,7 +53,15 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
             : "bg-slate-800 text-slate-200 rounded-bl-md"
         }`}
       >
-        <span class="text-sm whitespace-pre-wrap break-words">{content}</span>
+        {isUser ? (
+          <span class="text-sm whitespace-pre-wrap break-words">{content}</span>
+        ) : (
+          <div
+            class="text-sm markdown-body"
+            // eslint-disable-next-line solid/no-innerhtml
+            innerHTML={renderMarkdown(content)}
+          />
+        )}
       </div>
     </div>
   );

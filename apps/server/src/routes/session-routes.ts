@@ -32,7 +32,12 @@ export function registerSessionRoutes(
   app.post(
     CreateSessionRoute.path,
     createJsonRouteHandler(CreateSessionRoute, async (_ctx, { validated }) => {
-      const body = validated.body as { projectPath: string; title?: string };
+      const body = validated.body as {
+        projectPath: string;
+        title?: string;
+        workspaceId?: string;
+        tags?: string[];
+      };
       const now = new Date().toISOString();
       const id = ulid();
       const row = sessionRepository.create({
@@ -41,6 +46,8 @@ export function registerSessionRoutes(
         title: body.title ?? null,
         activeAgent: null,
         status: "active",
+        workspaceId: body.workspaceId ?? null,
+        tagsJson: body.tags ? JSON.stringify(body.tags) : null,
         createdAt: now,
         updatedAt: now,
         lastRunAt: null,
@@ -101,6 +108,8 @@ export function registerSessionRoutes(
         title?: string;
         activeAgent?: "build" | "plan";
         status?: string;
+        workspaceId?: string;
+        tags?: string[];
       };
       const existing = sessionRepository.findById(sessionId);
       if (existing === undefined) {
@@ -124,6 +133,8 @@ export function registerSessionRoutes(
           ? { activeAgent: body.activeAgent }
           : {}),
         ...(body.status !== undefined ? { status: body.status } : {}),
+        ...(body.workspaceId !== undefined ? { workspaceId: body.workspaceId } : {}),
+        ...(body.tags !== undefined ? { tagsJson: JSON.stringify(body.tags) } : {}),
         updatedAt: new Date().toISOString(),
       });
       if (updated === undefined) {

@@ -1,16 +1,74 @@
 import type { JSX } from "solid-js";
-import { Show } from "solid-js";
-import { pendingPermissionRequest, permissionModalOpen, setPermissionModalOpen, setPendingPermissionRequest } from "../state/app";
+import { Show, createEffect, onCleanup } from "solid-js";
+import {
+  pendingPermissionRequest,
+  permissionModalOpen,
+  setPermissionModalOpen,
+  setPendingPermissionRequest,
+} from "../state/app";
 import { getClient } from "../lib/sdk";
+
+/**
+ * Request notification permission once on mount (if supported and not
+ * already granted). Returns true if notifications can be shown.
+ */
+function requestNotificationPermission(): boolean {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  // "default" — ask the user
+  Notification.requestPermission();
+  return false; // won't be ready until next prompt
+}
 
 export function PermissionPrompt(): JSX.Element {
   const req = () => pendingPermissionRequest();
+  let notifiedForRequestId: string | undefined;
+
+  // Request notification permission on mount
+  requestNotificationPermission();
+
+  // Show browser notification when a new permission request arrives
+  // and the tab is not visible
+  createEffect(() => {
+    const r = req();
+    if (!r || !permissionModalOpen()) return;
+    if (r.id === notifiedForRequestId) return; // already notified
+
+    notifiedForRequestId = r.id;
+
+    if (
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      document.visibilityState !== "visible"
+    ) {
+      try {
+        const notification = new Notification("Permission Required", {
+          body: `Tool: ${r.toolName} | Risk: ${r.riskLevel ?? "unknown"}`,
+          icon: "/icons/icon-192.png",
+          tag: "agent-workbench-permission",
+          requireInteraction: true,
+        });
+        // Auto-close after 30s
+        setTimeout(() => notification.close(), 30000);
+      } catch {
+        // Notification API can fail silently on some browsers
+      }
+    }
+  });
+
+  // Clean up notification on unmount
+  onCleanup(() => {
+    notifiedForRequestId = undefined;
+  });
 
   async function respond(allowed: boolean): Promise<void> {
     const r = req();
     if (!r) return;
     try {
-      await getClient().permissions.decide(r.id, { decision: allowed ? "allow" : "deny" });
+      await getClient().permissions.decide(r.id, {
+        decision: allowed ? "allow" : "deny",
+      });
     } catch (err) {
       console.error("Permission response failed:", err);
     }
@@ -32,26 +90,42 @@ export function PermissionPrompt(): JSX.Element {
         >
           <div class="flex items-center gap-2 mb-3">
             <span class="text-lg">🛡️</span>
-            <h2 id="permission-title" class="text-base font-semibold text-white">Permission Required</h2>
+            <h2
+              id="permission-title"
+              class="text-base font-semibold text-white"
+            >
+              Permission Required
+            </h2>
           </div>
 
           <div class="mb-4 space-y-2">
             <div class="bg-slate-700/50 rounded-lg px-3 py-2">
               <span class="text-xs text-slate-400 block mb-0.5">Tool</span>
-              <span class="text-sm font-medium text-white">{req()!.toolName}</span>
+              <span class="text-sm font-medium text-white">
+                {req()!.toolName}
+              </span>
             </div>
             <Show when={req()!.targetPaths?.length}>
               <div class="bg-slate-700/50 rounded-lg px-3 py-2">
                 <span class="text-xs text-slate-400 block mb-0.5">Target</span>
-                <span class="text-sm font-mono text-slate-200 break-all">{req()!.targetPaths?.join(", ")}</span>
+                <span class="text-sm font-mono text-slate-200 break-all">
+                  {req()!.targetPaths?.join(", ")}
+                </span>
               </div>
             </Show>
             <div class="bg-slate-700/50 rounded-lg px-3 py-2">
               <span class="text-xs text-slate-400 block mb-0.5">Risk</span>
-              <span class={`text-sm font-medium ${
-                req()!.riskLevel === "high" ? "text-red-400" :
-                req()!.riskLevel === "medium" ? "text-yellow-400" : "text-green-400"
-              }`}>{req()!.riskLevel ?? "unknown"}</span>
+              <span
+                class={`text-sm font-medium ${
+                  req()!.riskLevel === "high"
+                    ? "text-red-400"
+                    : req()!.riskLevel === "medium"
+                      ? "text-yellow-400"
+                      : "text-green-400"
+                }`}
+              >
+                {req()!.riskLevel ?? "unknown"}
+              </span>
             </div>
           </div>
 

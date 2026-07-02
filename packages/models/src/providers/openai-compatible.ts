@@ -62,12 +62,31 @@ export class OpenAICompatibleProvider implements ModelProvider {
   private readonly model: string;
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
+  private readonly skipAuth: boolean;
+  private readonly extraHeaders: Record<string, string>;
 
-  constructor(config: ProviderConfig, fetchImpl?: typeof fetch) {
+  constructor(
+    config: ProviderConfig,
+    fetchImpl?: typeof fetch,
+    options?: { skipAuth?: boolean; extraHeaders?: Record<string, string> },
+  ) {
     this.apiKey = config.apiKey;
     this.model = config.model;
     this.baseUrl = config.baseUrl ?? "https://api.openai.com/v1";
     this.fetchImpl = fetchImpl ?? globalThis.fetch.bind(globalThis);
+    this.skipAuth = options?.skipAuth ?? false;
+    this.extraHeaders = options?.extraHeaders ?? {};
+  }
+
+  private buildHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...this.extraHeaders,
+    };
+    if (!this.skipAuth && this.apiKey.length > 0) {
+      headers["Authorization"] = `Bearer ${this.apiKey}`;
+    }
+    return headers;
   }
 
   async call(request: ModelRequest): Promise<ModelResponse> {
@@ -80,10 +99,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
 
     const fetchOptions: RequestInit = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: this.buildHeaders(),
       body: JSON.stringify(body),
     };
     if (request.signal !== undefined) {
@@ -137,10 +153,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
 
     const fetchOptions: RequestInit = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: this.buildHeaders(),
       body: JSON.stringify(streamBody),
     };
     if (request.signal !== undefined) {

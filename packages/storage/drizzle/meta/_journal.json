@@ -15,6 +15,13 @@
       "when": 1782501310450,
       "tag": "0001_gray_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782971887544,
+      "tag": "0002_condemned_prism",
+      "breakpoints": true
     }
   ]
 }

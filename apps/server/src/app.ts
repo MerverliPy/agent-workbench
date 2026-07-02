@@ -15,6 +15,9 @@ import { registerAgentRoutes } from "./routes/agent-routes";
 import { registerTokenHealthRoutes } from "./routes/token-health-routes";
 import { registerPlanRoutes } from "./routes/plan-routes";
 import { registerProviderRoutes } from "./routes/provider-routes";
+import { registerWorkspaceRoutes } from "./routes/workspace-routes";
+import { registerFileRoutes } from "./routes/file-routes";
+import { registerGitRoutes } from "./routes/git-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
 
 export interface CreateAppOptions {
@@ -69,6 +72,9 @@ export function createApp(options: CreateAppOptions) {
   registerTokenHealthRoutes(app, options.services);
   registerPlanRoutes(app, options.services);
   registerProviderRoutes(app, options.services);
+  registerFileRoutes(app);
+  registerGitRoutes(app);
+  registerWorkspaceRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {

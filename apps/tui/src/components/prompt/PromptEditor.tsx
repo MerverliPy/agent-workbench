@@ -4,6 +4,7 @@ import type { TextareaRenderable } from "@opentui/core";
 import { sdk } from "../../lib/sdk";
 import {
   PLACEHOLDER_SESSION_ID,
+  activeSessionId,
   appendMessage,
   appendSystemNotice,
   runStatus,
@@ -52,7 +53,10 @@ export function PromptEditor(): JSX.Element {
     setRunStatus("submitting");
 
     try {
-      await sdk.messages.submit(PLACEHOLDER_SESSION_ID, { content, role: "user" });
+      await sdk.messages.submit(
+        activeSessionId() ?? PLACEHOLDER_SESSION_ID,
+        { content, role: "user" },
+      );
       // If we reach here (Phase 6+), the server acknowledged the message.
       // Events will carry the assistant response via SSE.
     } catch (err) {

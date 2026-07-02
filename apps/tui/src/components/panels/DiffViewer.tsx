@@ -2,16 +2,19 @@ import type { JSX } from "@opentui/solid";
 import { For, Show } from "solid-js";
 import { currentDiffPreview, setCurrentDiffPreview, setDiffViewerOpen } from "../../state/app";
 
+// ANSI color codes for diff rendering
+const GREEN = "\x1b[32m";
+const RED = "\x1b[31m";
+const CYAN = "\x1b[36m";
+const RESET = "\x1b[0m";
+const DIM = "\x1b[2m";
+
 /**
- * Diff viewer — Phase 9.
+ * Diff viewer — Phase 21 enhanced with +/- color.
  *
  * Renders a backend-provided DiffPreview received via the diff.preview_created
- * SSE event. Display-only: no file writes, no policy decisions.
- *
- * Architecture boundary (docs/03 §11, docs/14 §11):
- *  - TUI renders backend-provided diff data.
- *  - TUI does not apply patches, compute policy, or modify files.
- *  - Approval/denial is handled by PermissionModal, not this component.
+ * SSE event. Added lines are green, removed lines red, context lines dimmed.
+ * Display-only: no file writes, no policy decisions.
  */
 export function DiffViewer(): JSX.Element {
   const preview = currentDiffPreview();
@@ -26,10 +29,10 @@ export function DiffViewer(): JSX.Element {
       position="absolute"
       top={2}
       left={4}
-      width={72}
+      width={76}
       height={24}
       border={true}
-      title=" Diff Preview "
+      title=" Diff Preview  [Esc to close] "
       titleAlignment="center"
       zIndex={20}
       flexDirection="column"
@@ -39,13 +42,13 @@ export function DiffViewer(): JSX.Element {
         <DiffContent preview={preview!} />
       </Show>
       <box height={1} flexDirection="row" onMouseDown={handleClose}>
-        <text content="  [close]" />
+        <text content="  [close]  — use Arrow keys to scroll" />
       </box>
     </box>
   );
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────
 
 function NoDiffPlaceholder(): JSX.Element {
   return (
@@ -64,26 +67,24 @@ interface DiffContentProps {
 
 function DiffContent({ preview }: DiffContentProps): JSX.Element {
   const lines = preview.patch.split("\n");
-  // Limit lines rendered to keep the panel height-safe.
-  const MAX_VISIBLE_LINES = 14;
-  const visibleLines = lines.slice(0, MAX_VISIBLE_LINES);
-  const truncated = lines.length > MAX_VISIBLE_LINES;
+  const MAX_LINES = 14;
+  const visible = lines.slice(0, MAX_LINES);
+  const truncated = lines.length > MAX_LINES;
 
   return (
     <box flexDirection="column" flexGrow={1}>
-      {/* Header: file path */}
-      <text content={`  File: ${preview.path}`} />
-      {/* Stats line */}
+      {/* Header */}
+      <text content={`${CYAN}File: ${preview.path}${RESET}`} />
       <text
-        content={`  +${preview.linesAdded ?? 0} / -${preview.linesRemoved ?? 0} lines`}
+        content={`${GREEN}+${preview.linesAdded ?? 0}${RESET} ${RED}-${preview.linesRemoved ?? 0}${RESET} lines`}
       />
       <text content="" />
-      {/* Diff lines */}
-      <For each={visibleLines}>
-        {(line) => <DiffLine line={line} />}
-      </For>
+      {/* Diff lines with color */}
+      <For each={visible}>{(line) => <DiffLine line={line} />}</For>
       <Show when={truncated}>
-        <text content={`  … (${lines.length - MAX_VISIBLE_LINES} more lines)`} />
+        <text
+          content={`${DIM}… (${lines.length - MAX_LINES} more lines)${RESET}`}
+        />
       </Show>
     </box>
   );
@@ -94,13 +95,14 @@ interface DiffLineProps {
 }
 
 function DiffLine({ line }: DiffLineProps): JSX.Element {
-  // Context or header lines are rendered as-is.
-  // Added/removed lines get a prefix marker for clarity.
   if (line.startsWith("+") && !line.startsWith("+++")) {
-    return <text content={line} />;
+    return <text content={`${GREEN}${line}${RESET}`} />;
   }
   if (line.startsWith("-") && !line.startsWith("---")) {
-    return <text content={line} />;
+    return <text content={`${RED}${line}${RESET}`} />;
   }
-  return <text content={line} />;
+  if (line.startsWith("@@")) {
+    return <text content={`${CYAN}${line}${RESET}`} />;
+  }
+  return <text content={`${DIM}${line}${RESET}`} />;
 }

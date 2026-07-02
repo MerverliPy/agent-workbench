@@ -246,3 +246,36 @@ export function cancelStreaming(): void {
   setStreamingContent("");
   setStreamingMessageId(null);
 }
+
+// ── Phase 22: Multi-session state ─────────────────────────────────────────
+
+export interface SessionListItem {
+  id: string;
+  title: string;
+  status: string;
+  workspaceId?: string | undefined;
+  tags?: string[] | undefined;
+  updatedAt?: string | undefined;
+}
+
+export const [sessions, setSessions] = createSignal<SessionListItem[]>([]);
+export const [activeSessionId, setActiveSessionId] = createSignal<string | null>(null);
+
+const perSessionMessages = new Map<string, DisplayMessage[]>();
+
+/** Switch to a different session, preserving the current session's messages. */
+export function switchSession(sessionId: string): void {
+  const currentId = activeSessionId();
+  if (currentId) {
+    perSessionMessages.set(currentId, [...messages()]);
+  }
+  const stored = perSessionMessages.get(sessionId) ?? [];
+  setMessages(stored);
+  setActiveSessionId(sessionId);
+}
+
+/** Get message count for a session (from cache or current). */
+export function getSessionMessageCount(sessionId: string): number {
+  if (sessionId === activeSessionId()) return messages().length;
+  return perSessionMessages.get(sessionId)?.length ?? 0;
+}

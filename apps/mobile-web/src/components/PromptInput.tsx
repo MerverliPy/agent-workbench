@@ -84,7 +84,7 @@ export function PromptInput(): JSX.Element {
         disabled={submitting()}
       />
       <button
-        class={`flex items-center justify-center w-10 h-10 rounded-xl transition-colors shrink-0 ${
+        class={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors shrink-0 ${
           text().trim() && !submitting()
             ? "bg-blue-600 active:bg-blue-700 text-white"
             : "bg-slate-700 text-slate-500"

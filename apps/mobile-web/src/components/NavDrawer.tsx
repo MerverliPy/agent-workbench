@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { Show, For } from "solid-js";
+import { Show, For, createSignal, onCleanup } from "solid-js";
 import { drawerOpen, setDrawerOpen, activePanel, selectPanel } from "../state/app";
 import type { PanelId } from "../state/app";
 
@@ -19,9 +19,76 @@ const PANELS: PanelItem[] = [
   { id: "help", icon: "❓", label: "Help" },
 ];
 
+const SWIPE_THRESHOLD = 80;
+
 export function NavDrawer(): JSX.Element {
+  let drawerRef: HTMLDivElement | undefined;
+  const [touchStartX, setTouchStartX] = createSignal<number | null>(null);
+
+  // ── Swipe-to-close on the drawer panel ────────────────────────────
+  function handleDrawerTouchStart(e: TouchEvent): void {
+    if (e.touches.length === 1) {
+      setTouchStartX(e.touches[0]!.clientX);
+    }
+  }
+
+  function handleDrawerTouchMove(e: TouchEvent): void {
+    const startX = touchStartX();
+    if (startX === null || e.touches.length !== 1) return;
+
+    const currentX = e.touches[0]!.clientX;
+    const deltaX = currentX - startX;
+
+    // Swipe left on the drawer → close
+    if (deltaX < -SWIPE_THRESHOLD) {
+      setDrawerOpen(false);
+      setTouchStartX(null);
+    }
+  }
+
+  function handleDrawerTouchEnd(): void {
+    setTouchStartX(null);
+  }
+
+  // ── Swipe-to-open from left edge ──────────────────────────────────
+
+  function handleEdgeTouchStart(e: TouchEvent): void {
+    if (e.touches.length === 1 && e.touches[0]!.clientX < 30) {
+      setTouchStartX(e.touches[0]!.clientX);
+    }
+  }
+
+  function handleEdgeTouchMove(e: TouchEvent): void {
+    const startX = touchStartX();
+    if (startX === null || e.touches.length !== 1) return;
+
+    const currentX = e.touches[0]!.clientX;
+    const deltaX = currentX - startX;
+
+    // Swipe right from left edge → open
+    if (deltaX > SWIPE_THRESHOLD) {
+      setDrawerOpen(true);
+      setTouchStartX(null);
+    }
+  }
+
+  function handleEdgeTouchEnd(): void {
+    setTouchStartX(null);
+  }
+
   return (
     <>
+      {/* Swipe-from-left-edge zone (only visible as touch target) */}
+      <Show when={!drawerOpen()}>
+        <div
+          class="fixed left-0 top-0 w-6 h-dvh z-30"
+          onTouchStart={handleEdgeTouchStart}
+          onTouchMove={handleEdgeTouchMove}
+          onTouchEnd={handleEdgeTouchEnd}
+          aria-hidden="true"
+        />
+      </Show>
+
       {/* Backdrop */}
       <Show when={drawerOpen()}>
         <div
@@ -32,12 +99,16 @@ export function NavDrawer(): JSX.Element {
 
       {/* Drawer */}
       <div
+        ref={drawerRef}
         class={`fixed top-0 left-0 h-dvh w-72 bg-slate-800 border-r border-slate-700 z-50 transform transition-transform duration-250 shadow-xl ${
           drawerOpen() ? "translate-x-0" : "-translate-x-full"
         }`}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
+        onTouchStart={handleDrawerTouchStart}
+        onTouchMove={handleDrawerTouchMove}
+        onTouchEnd={handleDrawerTouchEnd}
       >
         <div class="flex items-center justify-between px-4 h-11 border-b border-slate-700 safe-top">
           <span class="text-sm font-semibold text-slate-300">agent-workbench</span>

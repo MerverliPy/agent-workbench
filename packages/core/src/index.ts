@@ -10,6 +10,7 @@ export { PlanGate, isMutationOrRisky, isMutationTool, isShellTool } from "./plan
 export { TokenHealthService } from "./token-health";
 export { RunRegistry, type ActiveRun } from "./run-state";
 export { AgentRegistry, BUILD_AGENT, PLAN_AGENT, ALL_AGENTS } from "./agent";
+export { PtyOrchestrator } from "./pty-orchestrator";
 
 export type {
   ContextMessage,

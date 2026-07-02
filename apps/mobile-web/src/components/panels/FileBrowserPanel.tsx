@@ -2,6 +2,7 @@ import type { JSX } from "solid-js";
 import { createSignal, onMount, For, Show } from "solid-js";
 import { getClient } from "../../lib/sdk";
 import { ApiError } from "@agent-workbench/sdk";
+import { LoadingSkeleton } from "../LoadingSkeleton";
 
 interface FileEntry {
   name: string;
@@ -10,6 +11,7 @@ interface FileEntry {
 }
 
 function formatSize(bytes: number): string {
+  if (bytes === 0) return "";
   if (bytes < 1024) return `${bytes}B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
@@ -119,7 +121,7 @@ export function FileBrowserPanel(): JSX.Element {
       </div>
 
       <Show when={loading()}>
-        <div class="flex items-center justify-center py-8 text-slate-500 text-sm">Loading...</div>
+        <LoadingSkeleton />
       </Show>
 
       <Show when={error()}>
@@ -131,16 +133,16 @@ export function FileBrowserPanel(): JSX.Element {
           <For each={entries()}>
             {(entry) => (
               <button
-                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800/50 active:bg-slate-700/50 border-b border-slate-800 transition-colors"
+                class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 active:bg-slate-700/50 border-b border-slate-800 transition-colors min-h-[44px]"
                 onClick={() => entry.isDir ? navigateTo(entry.name) : openFile(joinPath(currentPath(), entry.name))}
               >
                 <span class="text-base">{entry.isDir ? "📁" : "📄"}</span>
                 <span class="flex-1 text-sm text-left text-slate-200 truncate">{entry.name}</span>
-                {!entry.isDir && <span class="text-xs text-slate-500">{formatSize(entry.size)}</span>}
+                {!entry.isDir && entry.size > 0 && <span class="text-xs text-slate-500">{formatSize(entry.size)}</span>}
               </button>
             )}
           </For>
-          {entries().length === 0 && !loading() && (
+          {entries().length === 0 && (
             <div class="px-4 py-8 text-center text-sm text-slate-500">Empty directory</div>
           )}
         </div>

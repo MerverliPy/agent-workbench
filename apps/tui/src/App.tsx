@@ -21,6 +21,7 @@ import {
   setPermissionModalOpen,
   setCurrentDiffPreview,
   setDiffViewerOpen,
+  diffViewerOpen,
   setMutationStatus,
   setShellStatus,
   appendShellOutputChunk,
@@ -29,6 +30,9 @@ import {
   setAvailableAgents,
   setTokenHealth,
   setTokenHealthOpen,
+  tokenHealthOpen,
+  setLedgerPanelOpen,
+  ledgerPanelOpen,
   setCompactionSuggestion,
   setCurrentPlan,
   PLACEHOLDER_SESSION_ID,
@@ -70,18 +74,47 @@ export function App(): JSX.Element {
   // ── Global keyboard handling ─────────────────────────────────────────────
 
   useKeyboard((key) => {
-    // Ctrl+P: toggle command palette
-    if (key.ctrl && key.name === "p") {
+    // Ctrl+K  or  Ctrl+P: toggle command palette
+    if ((key.ctrl && key.name === "k") || (key.ctrl && key.name === "p")) {
       setCommandPaletteOpen((open) => !open);
       return;
     }
 
-    // Escape: close command palette if open
-    if (key.name === "escape" && commandPaletteOpen()) {
-      setCommandPaletteOpen(false);
+    // Escape: close overlays
+    if (key.name === "escape") {
+      if (commandPaletteOpen()) setCommandPaletteOpen(false);
+      if (diffViewerOpen()) setDiffViewerOpen(false);
+      if (tokenHealthOpen()) setTokenHealthOpen(false);
+      if (ledgerPanelOpen()) setLedgerPanelOpen(false);
+      return;
     }
 
-    // Ctrl+T: toggle token health panel
+    // Ctrl+D: toggle diff viewer
+    if (key.ctrl && key.name === "d") {
+      setDiffViewerOpen((open) => !open);
+      return;
+    }
+
+    // Ctrl+L: clear session (local timeline)
+    if (key.ctrl && key.name === "l") {
+      import("./state/app").then(({ setMessages }) => {
+        setMessages([]);
+      });
+      appendSystemNotice("Timeline cleared.");
+      return;
+    }
+
+    // Ctrl+/: show keyboard shortcut reference
+    if (key.ctrl && key.name === "/") {
+      appendSystemNotice(
+        "Shortcuts: Ctrl+K/P=Palette  Ctrl+Enter=Submit  Ctrl+L=Clear  " +
+        "Ctrl+D=Diff  Ctrl+T=Tokens  Ctrl+1/2=Agent  Ctrl+/=Shortcuts  " +
+        "Esc=Close  ↑↓=Navigate  Shift+Enter=Newline"
+      );
+      return;
+    }
+
+    // Ctrl+T: toggle token health
     if (key.ctrl && key.name === "t") {
       setTokenHealthOpen((open) => !open);
       return;

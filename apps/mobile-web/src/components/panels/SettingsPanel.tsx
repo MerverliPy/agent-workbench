@@ -4,12 +4,41 @@ import { getClient, reconnectClient } from "../../lib/sdk";
 import { getSettings, saveSettings, resetSettings } from "../../lib/settings";
 import { setConnectionStatus, setConnectionError, setCurrentAgentId } from "../../state/app";
 
+type Theme = "dark" | "light" | "system";
+
+const THEME_KEY = "agent-workbench-theme";
+
+function getStoredTheme(): Theme {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "dark" || stored === "light" || stored === "system") return stored;
+  } catch {}
+  return "dark";
+}
+
+function applyTheme(theme: Theme): void {
+  const root = document.documentElement;
+  root.classList.remove("dark", "light");
+
+  if (theme === "system") {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.classList.add(prefersDark ? "dark" : "light");
+  } else {
+    root.classList.add(theme);
+  }
+
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
+}
+
 export function SettingsPanel(): JSX.Element {
   const [serverUrl, setServerUrl] = createSignal(getSettings().serverUrl);
   const [autoConnect, setAutoConnect] = createSignal(getSettings().autoConnect);
   const [testing, setTesting] = createSignal(false);
   const [testResult, setTestResult] = createSignal<string | null>(null);
   const [agent, setAgent] = createSignal(getSettings().preferredAgent);
+  const [theme, setTheme] = createSignal<Theme>(getStoredTheme());
 
   function handleSave(): void {
     saveSettings({
@@ -27,6 +56,8 @@ export function SettingsPanel(): JSX.Element {
     setServerUrl(defaults.serverUrl);
     setAutoConnect(defaults.autoConnect);
     setAgent(defaults.preferredAgent);
+    applyTheme("dark");
+    setTheme("dark");
     setTestResult("Settings reset to defaults");
   }
 
@@ -52,11 +83,17 @@ export function SettingsPanel(): JSX.Element {
     }
   }
 
+  function handleThemeChange(newTheme: Theme): void {
+    applyTheme(newTheme);
+    setTheme(newTheme);
+  }
+
   onMount(() => {
     const s = getSettings();
     setServerUrl(s.serverUrl);
     setAutoConnect(s.autoConnect);
     setAgent(s.preferredAgent);
+    setTheme(getStoredTheme());
   });
 
   return (
@@ -90,6 +127,25 @@ export function SettingsPanel(): JSX.Element {
               {testResult()}
             </p>
           )}
+        </div>
+
+        {/* Theme */}
+        <div>
+          <label class="text-xs text-slate-400 block mb-1.5">Theme</label>
+          <div class="flex gap-2">
+            {(["dark", "light", "system"] as Theme[]).map((t) => (
+              <button
+                class={`flex-1 py-2 rounded-lg text-sm transition-colors ${
+                  theme() === t
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => handleThemeChange(t)}
+              >
+                {t === "dark" ? "🌙 Dark" : t === "light" ? "☀️ Light" : "💻 System"}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Auto-connect */}
@@ -132,11 +188,11 @@ export function SettingsPanel(): JSX.Element {
         {/* Actions */}
         <div class="space-y-2 pt-2">
           <button
-            class="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl active:bg-blue-700 transition-colors"
+            class="w-full py-3 bg-blue-600 text-white text-sm font-medium rounded-xl active:bg-blue-700 transition-colors min-h-[44px]"
             onClick={handleSave}
           >Save Settings</button>
           <button
-            class="w-full py-2.5 bg-slate-700 text-slate-400 text-sm rounded-xl active:bg-slate-600 transition-colors"
+            class="w-full py-3 bg-slate-700 text-slate-400 text-sm rounded-xl active:bg-slate-600 transition-colors min-h-[44px]"
             onClick={handleReset}
           >Reset to Defaults</button>
         </div>

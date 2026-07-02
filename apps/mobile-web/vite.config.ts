@@ -22,6 +22,21 @@ export default defineConfig({
           { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
         ],
       },
+      workbox: {
+        // Precache all build assets (app shell)
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Network-first for API calls, cache-first for everything else (default)
+        runtimeCaching: [
+          {
+            urlPattern: /^\/(session|file|git|tool|health|info|event|permission|provider|agent|config|message|plan)/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 },
+            },
+          },
+        ],
+      },
     }),
   ],
   server: {

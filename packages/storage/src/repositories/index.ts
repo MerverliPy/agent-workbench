@@ -59,3 +59,9 @@ export {
   type PlanRow,
   type PlanInsert,
 } from "./plan-repository";
+
+export {
+  WorkspaceRepository,
+  type WorkspaceRow,
+  type WorkspaceInsert,
+} from "./workspace-repository";

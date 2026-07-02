@@ -23,6 +23,9 @@ import type { MutationToolOptions } from "./mutation-context";
 // Phase 10 bash tool
 import { createBashTool, type BashToolOptions } from "./tools/bash";
 
+// Phase 23 PTY shell tool
+import { createPtyShellTool, type PtyShellToolOptions } from "./tools/pty-shell";
+
 export interface RegisterReadOnlyToolsOptions {
   /** Optional session-scoped cache for read/grep/glob results. */
   cache?: ToolCache;
@@ -78,4 +81,14 @@ export function registerShellTool(
   options: BashToolOptions
 ): void {
   registry.register(createBashTool(options));
+}
+
+/**
+ * Register the Phase 23 PTY shell tool into `registry`.
+ */
+export function registerPtyShellTool(
+  registry: ToolRegistry,
+  options: PtyShellToolOptions
+): void {
+  registry.register(createPtyShellTool(options));
 }

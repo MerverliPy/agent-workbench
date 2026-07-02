@@ -62,10 +62,18 @@ export { createRevertLastChangeTool } from "./tools/revert-last-change";
 export type { MutationToolOptions } from "./mutation-context";
 
 // Registration helpers
-export { registerReadOnlyTools, registerMutationTools, registerShellTool } from "./register";
+export { registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "./register";
 export type { RegisterReadOnlyToolsOptions } from "./register";
 
 // Bash shell tool (Phase 10)
 export { BashInput, BashResult, createBashTool } from "./tools/bash";
 export type { BashInput as BashInputType, BashResult as BashResultType } from "./tools/bash";
 export type { BashToolOptions } from "./tools/bash";
+
+// PTY shell tool (Phase 23)
+export { PtyShellInput, PtyShellResult, createPtyShellTool } from "./tools/pty-shell";
+export type {
+  PtyShellInput as PtyShellInputType,
+  PtyShellResult as PtyShellResultType,
+} from "./tools/pty-shell";
+export type { PtyShellToolOptions } from "./tools/pty-shell";

@@ -24,6 +24,7 @@ import {
   permissionModalOpen,
 } from "./state/app";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { OfflineBanner } from "./components/OfflineBanner";
 import { StatusBar } from "./components/StatusBar";
 import { NavDrawer } from "./components/NavDrawer";
 import { PanelContainer } from "./components/panels/PanelContainer";
@@ -240,6 +241,7 @@ export function App(): JSX.Element {
 
   return (
     <ErrorBoundary>
+      <OfflineBanner />
       <div class="flex flex-col h-dvh overflow-hidden">
         <StatusBar />
         <Show when={permissionModalOpen()}>

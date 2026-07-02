@@ -2,7 +2,7 @@ import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workben
 import { EventBus } from "@agent-workbench/events";
 import { ProviderRegistry } from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
+import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
   createStorageConnection,
   runMigrations,
@@ -15,9 +15,10 @@ import {
   PermissionRepository,
   SummaryRepository,
   PlanRepository,
+  WorkspaceRepository,
 } from "@agent-workbench/storage";
 import { ToolCache } from "@agent-workbench/cache";
-import { SimpleCommandRunner } from "@agent-workbench/shell";
+import { SimpleCommandRunner, PtyCommandRunner } from "@agent-workbench/shell";
 import { ulid } from "ulid";
 import { createApp } from "./app";
 import { getServerConfig } from "./config";
@@ -39,6 +40,7 @@ const fileChangeRepository = new FileChangeRepository(storage.db);
 const permissionRepository = new PermissionRepository(storage.db);
 const summaryRepository = new SummaryRepository(storage.db);
 const planRepository = new PlanRepository(storage.db);
+const workspaceRepository = new WorkspaceRepository(storage.db);
 
 // ── Reconcile stale permission requests from previous server instance ──────
 const staleRequests = permissionRepository.listRequests("pending");
@@ -77,14 +79,19 @@ const toolCache = new ToolCache(cacheRepository);
 // ── Phase 10: Shell command runner ────────────────────────────────────────────
 const shellRunner = new SimpleCommandRunner();
 
+// ── Phase 23: PTY command runner ─────────────────────────────────────────────
+const ptyRunner = new PtyCommandRunner();
+
 // ── Tools ────────────────────────────────────────────────────────────────────
 // Phase 7: register read, grep, and glob read-only tools.
 // Phase 9: register write, edit, apply_patch, diff_preview, revert_last_change.
 // Phase 10: register bash shell tool.
+// Phase 23: register PTY shell tool.
 const toolRegistry = new ToolRegistry();
 registerReadOnlyTools(toolRegistry, { cache: toolCache });
 registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
 registerShellTool(toolRegistry, { shellRunner });
+registerPtyShellTool(toolRegistry, { ptyRunner });
 
 // ── Phase 15: Provider registry ──────────────────────────────────────────────
 const providerRegistry = new ProviderRegistry();
@@ -133,6 +140,7 @@ const app = createApp({
     summaryRepository,
     planRepository,
     providerRegistry,
+    workspaceRepository,
   },
 });
 
