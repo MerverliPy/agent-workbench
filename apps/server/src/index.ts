@@ -15,6 +15,7 @@ import { PresenceManager } from "@agent-workbench/collab";
 import { ReviewQueue } from "@agent-workbench/collab";
 import { ShareManager } from "@agent-workbench/collab";
 import { loadAllPlugins } from "./plugin-loader";
+import { detectTailscaleIp } from "./utils/tailscale";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
@@ -226,6 +227,15 @@ const app = createApp({
 });
 
 logger.info(`Binding to http://${config.host}:${config.port}`);
+
+// ── Tailscale auto-detect ────────────────────────────────────────────────────
+const tailscaleIp = detectTailscaleIp();
+if (tailscaleIp) {
+  const tailscaleUrl = `http://${tailscaleIp}:${config.port}`;
+  logger.info(`🌐 Tailscale detected — remote access at ${tailscaleUrl}`);
+  shareManager.setBaseUrl(tailscaleUrl);
+}
+
 if (authManager.isTlsEnabled) {
   logger.info("Phase 27 — TLS enabled, serving HTTPS");
 }
