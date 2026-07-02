@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–26 complete · **524 tests, 0 failures** · Phase 27 (remote access) next
+> **Status:** Phases 0–27 complete · **524 tests, 0 failures** · Phase 29 (model eval) next
 
 ---
 
@@ -125,7 +125,7 @@ timeline
                                        ✅ Phase 24 Provider marketplace & routing
                                        ✅ Phase 25 Observability & production
                                        ✅ Phase 26 Plugin system & extensibility
-                                       ⬜ Phase 27 Remote access & collaboration
+                                       ✅ Phase 27 Remote access & collaboration
 ```
 
 ---

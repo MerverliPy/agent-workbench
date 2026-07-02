@@ -1,6 +1,6 @@
 # 27 — Project Roadmap
 
-Status: Phase 26 complete — Phase 27 (remote access) next
+Status: Phase 27 complete — Phase 29 (model experimentation & eval) next
 Document type: Roadmap for Phases 19–30
 Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 
@@ -19,7 +19,7 @@ Phase 23 ✅ complete ███████████████████�
 Phase 24 ✅ complete ██████████████████████  provider marketplace & smart routing
 Phase 25 ✅ complete ██████████████████████  observability & production readiness
 Phase 26 ✅ complete ██████████████████████  plugin system & extensibility
-Phase 27 ▌         ░░░░░░░░░░░░░░░░░░░░  remote access & collaboration
+Phase 27 ✅ complete ██████████████████████  remote access & collaboration
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
 Phase 29 ▌         ░░░░░░░░░░░░░░░░░░░░  model experimentation & eval
 Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
@@ -31,8 +31,7 @@ Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░�
 |------|--------|-----------|-------|
 | **Complete** | 0–17 | Done | Foundation, core runtime, safety |
 | **Complete** | 18–21 | Done | Interfaces (mobile web, TUI polish) |
-| **Complete** | 22–26 | Done | Ecosystem (PTY, marketplace, observability, plugins) |
-| **Active** | 27 | 2–3 weeks | Remote access, session sharing, export/import |
+| **Complete** | 22–27 | Done | Ecosystem (PTY, marketplace, observability, plugins, remote access) |
 | **Long-term** | 29–30 | 3–4 months | Evaluation, playgrounds, enterprise, tooling bridges |
 
 ---
@@ -96,19 +95,19 @@ apps/cli/src/
 ### Exit Gates
 
 ```text
-[ ] TLS with auto-generated self-signed certificates
-[ ] Bearer token authentication with time-limited tokens
-[ ] Authorization: read-only vs read-write access
-[ ] Remote access: connect from any device on the network via HTTPS
-[ ] Tailscale integration: auto-detect tailnet IP for remote access
-[ ] Share sessions: generate a link that grants view-only access
-[ ] Collaborative review: submit agent-generated code for human review
-[ ] Presence: see who's viewing a session
-[ ] Rate limiting per authenticated user (not just IP)
-[ ] Session export: JSON conversation dump with tool results and permission decisions
-[ ] Session import: replay a session from an export file
-[ ] `agent-workbench init` scaffolds a workspace from a template (empty TS, Bun, Python)
-[ ] Auto-rebuild watch script (`scripts/build-watch.sh`) documented in README
+[x] TLS with auto-generated self-signed certificates
+[x] Bearer token authentication with time-limited tokens
+[x] Authorization: read-only vs read-write access
+[x] Remote access: connect from any device on the network via HTTPS
+[x] Tailscale integration: auto-detect tailnet IP for remote access
+[x] Share sessions: generate a link that grants view-only access
+[x] Collaborative review: submit agent-generated code for human review
+[x] Presence: see who's viewing a session
+[x] Rate limiting per authenticated user (not just IP)
+[x] Session export: JSON conversation dump with tool results and permission decisions
+[x] Session import: replay a session from an export file
+[x] `agent-workbench init` scaffolds a workspace from a template (empty TS, Bun, Python)
+[x] Auto-rebuild watch script (`scripts/build-watch.sh`) documented in README
 ```
 
 ---
