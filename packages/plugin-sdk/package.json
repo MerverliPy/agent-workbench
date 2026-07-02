@@ -1,0 +1,25 @@
+{
+  "name": "@agent-workbench/plugin-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Plugin SDK for agent-workbench — extension interfaces and manifest schema",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
+}

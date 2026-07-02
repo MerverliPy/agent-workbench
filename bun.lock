@@ -171,6 +171,16 @@
         "@types/bun": "^1.3.14",
       },
     },
+    "packages/plugin-sdk": {
+      "name": "@agent-workbench/plugin-sdk",
+      "version": "0.0.0",
+      "dependencies": {
+        "zod": "^4.0.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
+    },
     "packages/protocol": {
       "name": "@agent-workbench/protocol",
       "version": "0.0.0",
@@ -288,6 +298,8 @@
     "@agent-workbench/permissions": ["@agent-workbench/permissions@workspace:packages/permissions"],
 
     "@agent-workbench/planner": ["@agent-workbench/planner@workspace:packages/planner"],
+
+    "@agent-workbench/plugin-sdk": ["@agent-workbench/plugin-sdk@workspace:packages/plugin-sdk"],
 
     "@agent-workbench/protocol": ["@agent-workbench/protocol@workspace:packages/protocol"],
 
