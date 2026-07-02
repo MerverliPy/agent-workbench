@@ -24,6 +24,8 @@ export { SharedSessionManager } from "./shared-session";
 export type { SharedSessionUser, SharedSessionRole, JoinSessionOptions } from "./shared-session";
 export { PresenceManager } from "./presence";
 export type { SessionPresence, EnterSessionOptions } from "./presence";
+export { ReviewQueue } from "./review-queue";
+export type { ReviewItem, ReviewStatus, SubmitReviewOptions } from "./review-queue";
 export type {
   SessionExport,
   ExportedMessage,

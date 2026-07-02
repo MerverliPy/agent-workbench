@@ -16,6 +16,7 @@ import { SimpleCommandRunner } from "@agent-workbench/shell";
 import type { AuthManager } from "@agent-workbench/auth";
 import type { SharedSessionManager } from "@agent-workbench/collab";
 import type { PresenceManager } from "@agent-workbench/collab";
+import type { ReviewQueue } from "@agent-workbench/collab";
 import type { ShareManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
@@ -188,6 +189,21 @@ export function createTestServer(options: TestServerOptions): TestServer {
       get totalActiveUsers() { return 0; },
       get totalUniqueUsers() { return 0; },
     } as unknown as PresenceManager,
+    // Phase 27: review queue disabled in tests
+    reviewQueue: {
+      submit: () => ({ id: "rev_test", sessionId: "test", title: "test", description: "", diffContent: "", filePath: "", status: "pending" as const, submittedBy: "test", submittedAt: new Date().toISOString() }),
+      approve: () => null,
+      reject: () => null,
+      requestChanges: () => { throw new Error("test"); },
+      get: () => undefined,
+      listBySession: () => [],
+      listPending: () => [],
+      listAll: () => [],
+      get pendingCount() { return 0; },
+      get totalSubmitted() { return 0; },
+      startCleanup: () => undefined,
+      stopCleanup: () => undefined,
+    } as unknown as ReviewQueue,
     // Phase 27: session sharing disabled in tests
     shareManager: {
       create: () => ({ token: "shr_test", sessionId: "test", url: "http://localhost/share/shr_test", expiresAt: new Date(Date.now() + 86400000).toISOString(), label: "test" }),

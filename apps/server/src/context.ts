@@ -6,6 +6,7 @@ import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import type { AuthManager } from "@agent-workbench/auth";
 import type { SharedSessionManager } from "@agent-workbench/collab";
 import type { PresenceManager } from "@agent-workbench/collab";
+import type { ReviewQueue } from "@agent-workbench/collab";
 import type { ShareManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
@@ -69,6 +70,8 @@ export interface ServerServices {
   readonly shareManager: ShareManager;
   // Phase 27: real-time user presence
   readonly presenceManager: PresenceManager;
+  // Phase 27: collaborative code review
+  readonly reviewQueue: ReviewQueue;
 }
 
 export type ServerAppBindings = {

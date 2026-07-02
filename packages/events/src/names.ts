@@ -140,6 +140,12 @@ export const EventName = {
   COLLAB_USER_LEFT: "collab.user_left",
   COLLAB_USER_ACTIVITY: "collab.user_activity",
   COLLAB_SESSION_SHARED: "collab.session_shared",
+
+  // ── Review (Phase 27) ───────────────────────────────────────────────────
+  REVIEW_SUBMITTED: "review.submitted",
+  REVIEW_APPROVED: "review.approved",
+  REVIEW_REJECTED: "review.rejected",
+  REVIEW_CHANGES_REQUESTED: "review.changes_requested",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

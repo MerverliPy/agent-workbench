@@ -12,6 +12,7 @@ import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
 import { SharedSessionManager } from "@agent-workbench/collab";
 import { PresenceManager } from "@agent-workbench/collab";
+import { ReviewQueue } from "@agent-workbench/collab";
 import { ShareManager } from "@agent-workbench/collab";
 import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
@@ -165,6 +166,9 @@ logger.info("Collaboration — session sharing ready");
 const presenceManager = new PresenceManager(sharedSessionManager);
 logger.info("Collaboration — real-time presence ready");
 
+const reviewQueue = new ReviewQueue({ eventBus });
+logger.info("Collaboration — code review queue ready");
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -217,6 +221,7 @@ const app = createApp({
     sharedSessionManager,
     shareManager,
     presenceManager,
+    reviewQueue,
   },
 });
 
