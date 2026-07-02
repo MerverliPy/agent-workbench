@@ -1,0 +1,28 @@
+{
+  "name": "@agent-workbench/collab",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Session sharing, export/import, and collaboration features for agent-workbench.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/storage": "workspace:*",
+    "@agent-workbench/events": "workspace:*",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
+}
