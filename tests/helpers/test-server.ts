@@ -14,6 +14,7 @@ import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShe
 import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
 import type { AuthManager } from "@agent-workbench/auth";
+import type { SharedSessionManager } from "@agent-workbench/collab";
 import {
   SessionRepository,
   MessageRepository,
@@ -153,6 +154,22 @@ export function createTestServer(options: TestServerOptions): TestServer {
       listTokens: () => [],
       health: () => ({ enabled: false, activeTokens: 0, tlsEnabled: false, hint: "Auth disabled in tests" }),
     } as unknown as AuthManager,
+    // Phase 27: shared session presence disabled in tests
+    sharedSessionManager: {
+      join: () => undefined,
+      leave: () => false,
+      updateActivity: () => false,
+      getUsers: () => [],
+      getUserCount: () => 0,
+      isUserInSession: () => false,
+      removeSession: () => undefined,
+      getActiveSessionIds: () => [],
+      getSnapshot: () => ({}),
+      get totalActiveSessions() { return 0; },
+      get totalActiveUsers() { return 0; },
+      startCleanup: () => undefined,
+      stopCleanup: () => undefined,
+    } as unknown as SharedSessionManager,
   };
 
   const app = createApp({ config, services });

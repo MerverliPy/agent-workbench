@@ -10,6 +10,7 @@ import {
 import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
+import { SharedSessionManager } from "@agent-workbench/collab";
 import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
@@ -152,6 +153,10 @@ if (authManager.isEnabled) {
   logger.info(`  Set AGENT_WORKBENCH_AUTH_SECRET and AGENT_WORKBENCH_AUTH_ENABLED=true to enable`);
 }
 
+// ── Phase 27: Collaboration ───────────────────────────────────────────────
+const sharedSessionManager = new SharedSessionManager({ eventBus });
+logger.info("Collaboration — shared session presence ready");
+
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({
   sessionRepository,
@@ -201,6 +206,7 @@ const app = createApp({
     toolCallRepository,
     pluginRegistry,
     auth: authManager,
+    sharedSessionManager,
   },
 });
 

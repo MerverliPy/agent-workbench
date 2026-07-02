@@ -134,6 +134,12 @@ export const EventName = {
   PROVIDER_RATE_LIMITED: "provider.rate_limited",
   ROUTING_DECISION: "routing.decision",
   COST_RECORDED: "cost.recorded",
+
+  // ── Collaboration (Phase 27) ────────────────────────────────────────────
+  COLLAB_USER_JOINED: "collab.user_joined",
+  COLLAB_USER_LEFT: "collab.user_left",
+  COLLAB_USER_ACTIVITY: "collab.user_activity",
+  COLLAB_SESSION_SHARED: "collab.session_shared",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

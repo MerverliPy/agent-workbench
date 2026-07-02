@@ -4,7 +4,8 @@ import type { EventBus } from "@agent-workbench/events";
 import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import type { AuthManager } from "@agent-workbench/auth";
-import type {
+import type { SharedSessionManager } from "@agent-workbench/collab";
+import {
   SessionRepository,
   MessageRepository,
   ToolCallRepository,
@@ -60,6 +61,8 @@ export interface ServerServices {
   readonly pluginRegistry: PluginRegistry;
   // Phase 27: authentication
   readonly auth: AuthManager;
+  // Phase 27: shared session state (multi-user presence)
+  readonly sharedSessionManager: SharedSessionManager;
 }
 
 export type ServerAppBindings = {
