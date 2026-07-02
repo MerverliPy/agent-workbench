@@ -31,8 +31,10 @@ coverage/
 # Test coverage
 coverage/
 
-# Benchmarks
-benchmarks/
+# Benchmarks (generated data only — keep the runner)
+benchmarks/*.jsonl
+benchmarks/*.csv
+benchmarks/data/
 
 # Local/generated router artifacts
 model-router-v3.3-repo-ready.zip

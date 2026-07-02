@@ -1,0 +1,27 @@
+{
+  "name": "agent-workbench-hermes",
+  "displayName": "Hermes Agent Bridge",
+  "version": "1.0.0",
+  "description": "Bridges Hermes Agent provider configuration into agent-workbench. Reads ~/.hermes/config.yaml and auth.json to auto-discover providers, map routing tiers, and sync credentials — no manual marketplace setup needed.",
+  "author": "agent-workbench",
+  "license": "MIT",
+  "minWorkbenchVersion": "0.0.0",
+  "main": "src/index.ts",
+  "enabled": true,
+  "provides": {
+    "tools": [],
+    "providers": [
+      "hermes:deepseek",
+      "hermes:copilot",
+      "hermes:opencode-go"
+    ],
+    "panels": [],
+    "hooks": []
+  },
+  "permissions": {
+    "filesystemRead": true,
+    "filesystemWrite": false,
+    "network": true,
+    "subprocess": false
+  }
+}

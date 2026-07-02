@@ -17,7 +17,7 @@ jobs:
   static-check:
     name: Static checks
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -31,10 +31,10 @@ jobs:
       - name: Biome lint
         run: bunx @biomejs/biome check . --no-errors-on-unmatched 2>&1 || echo "::warning::Biome lint found issues or not available"
 
-  test:
-    name: Test suite
+  typecheck:
+    name: Typecheck all packages + apps
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs: [static-check]
     steps:
       - uses: actions/checkout@v4
@@ -52,13 +52,55 @@ jobs:
           done
       - name: Typecheck apps
         run: |
-          for app in server tui cli mobile-web; do
+          for app in server tui cli mobile-web dashboard; do
             echo "  [typecheck] apps/$app"
             (cd apps/$app && bun run typecheck) || exit 1
           done
+
+  test:
+    name: Unit + integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - name: Build workspace packages
+        run: bash scripts/build-all.sh
       - name: Run tests
         run: bun test
+
+  coverage:
+    name: Coverage report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - name: Build workspace packages
+        run: bash scripts/build-all.sh
       - name: Generate coverage report
         run: bun test --coverage
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - name: Build workspace packages
+        run: bash scripts/build-all.sh
       - name: Run e2e tests
         run: bun run test:e2e

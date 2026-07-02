@@ -1,0 +1,29 @@
+{
+  "name": "agent-workbench-github",
+  "displayName": "GitHub Integration",
+  "version": "1.0.0",
+  "description": "GitHub API tools — browse issues, PRs, search code, and manage repositories through the agent-workbench tool system.",
+  "author": "agent-workbench",
+  "license": "MIT",
+  "minWorkbenchVersion": "0.0.0",
+  "main": "src/tools.ts",
+  "enabled": true,
+  "provides": {
+    "tools": [
+      "github.list_issues",
+      "github.search_code",
+      "github.get_pr",
+      "github.create_issue",
+      "github.list_repos"
+    ],
+    "providers": [],
+    "panels": [],
+    "hooks": []
+  },
+  "permissions": {
+    "filesystemRead": false,
+    "filesystemWrite": false,
+    "network": true,
+    "subprocess": false
+  }
+}
