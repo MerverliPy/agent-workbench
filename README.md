@@ -324,6 +324,12 @@ bun test                           # 523 tests, 0 failures, 1495 expect() calls
 # Build everything
 bash scripts/build-all.sh
 
+# Auto-rebuild on source changes (development workflow)
+bash scripts/build-watch.sh
+
+# Run benchmarks
+bun run benchmarks/benchmark-runner.ts
+
 # Per-category
 bun test unit                      # Unit tests
 bun test integration               # Integration tests
