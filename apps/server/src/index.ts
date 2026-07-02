@@ -1,6 +1,12 @@
 import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
-import { ProviderRegistry } from "@agent-workbench/models";
+import {
+  ProviderRegistry,
+  ProviderMarketplace,
+  SmartRouter,
+  CostTracker,
+  ProviderHealthMonitor,
+} from "@agent-workbench/models";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
@@ -97,6 +103,15 @@ registerPtyShellTool(toolRegistry, { ptyRunner });
 const providerRegistry = new ProviderRegistry();
 const modelProvider = providerRegistry.getDefaultProvider();
 
+// ── Phase 24: Provider marketplace & smart routing ───────────────────────────
+const providerMarketplace = new ProviderMarketplace();
+const smartRouter = new SmartRouter(providerMarketplace);
+const costTracker = new CostTracker();
+const providerHealthMonitor = new ProviderHealthMonitor(providerMarketplace, {
+  checkIntervalMs: 60_000, // Check every minute
+});
+providerHealthMonitor.start();
+
 // ── Phase 11: Agent registry ──────────────────────────────────────────────────
 const agentRegistry = new AgentRegistry();
 
@@ -141,6 +156,10 @@ const app = createApp({
     planRepository,
     providerRegistry,
     workspaceRepository,
+    providerMarketplace,
+    smartRouter,
+    costTracker,
+    providerHealthMonitor,
   },
 });
 

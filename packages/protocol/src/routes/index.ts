@@ -14,3 +14,4 @@ export * from "./token-health";
 export * from "./auth";
 export * from "./plan";
 export * from "./workspace";
+export * from "./marketplace";

@@ -9,14 +9,14 @@ Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 ## 1. Roadmap Overview
 
 ```
-Phase 18 ◀ active  ████████████░░░░░░░░  mobile web companion UI
-Phase 19 ▌         ░░░░░░░░░░░░░░░░░░░░  live provider integration
-Phase 20A▌         ░░░░░░░░░░░░░░░░░░░░  mobile web: non-chat panels
-Phase 20B▌         ░░░░░░░░░░░░░░░░░░░░  mobile web: chat + streaming
-Phase 21 ▌         ░░░░░░░░░░░░░░░░░░░░  TUI polish & UX completion
-Phase 22 ▌         ░░░░░░░░░░░░░░░░░░░░  multi-session & workspace mgmt
-Phase 23 ▌         ░░░░░░░░░░░░░░░░░░░░  PTY terminal execution
-Phase 24 ▌         ░░░░░░░░░░░░░░░░░░░░  provider marketplace & smart routing
+Phase 18 ◀ active  ████████████████████░░  mobile web companion UI
+Phase 19 ▌         ██████████████████████  live provider integration
+Phase 20A▌         ██████████████████████  mobile web: non-chat panels
+Phase 20B▌         ██████████████████████  mobile web: chat + streaming
+Phase 21 ▌         ██████████████████████  TUI polish & UX completion
+Phase 22 ▌         ██████████████████████  multi-session & workspace mgmt
+Phase 23 ▌         ██████████████████████  PTY terminal execution
+Phase 24 ██ active ████████████████████░░  provider marketplace & smart routing
 Phase 25 ▌         ░░░░░░░░░░░░░░░░░░░░  observability & production readiness
 Phase 26 ▌         ░░░░░░░░░░░░░░░░░░░░  plugin system & extensibility
 Phase 27 ▌         ░░░░░░░░░░░░░░░░░░░░  remote access & collaboration
@@ -400,15 +400,38 @@ packages/core/src/
 
 ---
 
-## 7. Phase 24: Provider Marketplace & Smart Routing
+## 7. Phase 24: Provider Marketplace & Smart Routing ◀ ACTIVE
 
-### Priority: 🟡 HIGH
+### Priority: 🔴 CRITICAL (implementation in progress)
 ### Dependencies: Phase 19
-### Estimated: 2 weeks
+### Estimated: ~95% complete (exit gates need testing & schema integration)
 
 ### Purpose
 
 Build a provider marketplace where users can add, configure, and share model configurations. Smart routing selects the best provider based on task complexity, cost, and latency.
+
+### Current State (2026-07-02)
+
+```text
+[✅] Provider marketplace: browse, add, remove, configure providers
+[✅] Custom provider profiles stored in ~/.agent-workbench/providers/
+[✅] API keys stored in separate .key files (0o600, never in profile JSON)
+[✅] Smart router selects provider based on task classification
+[✅] Task classifier with keyword scoring (read, code_gen, arch_review, summarize)
+[✅] Provider scoring with tier priority + category match + cost efficiency
+[✅] Cost tracking: per-message, per-session, per-day cost estimates
+[✅] Provider health monitoring: latency percentiles, error rates
+[✅] Automatic failover fallback chain (preferred → fallback → emergency)
+[✅] Provider priority tiers: preferred → fallback → emergency
+[✅] Rate limit detection (via health probe error tracking)
+[✅] ProviderProfile + CostRecord + CostSummary Zod schemas
+[✅] Marketplace CRUD route contracts (list, get, create, update, delete, test)
+[✅] Server routes wired: GET/POST/PATCH/DELETE /marketplace/providers/:id
+[✅] Provider health monitor periodic checks (every 60s)
+[  ] Protocol schema fully integrated into OpenAPI generation
+[  ] Integration tests for marketplace CRUD routes
+[  ] Integration tests for smart router classification
+```
 
 ### Required Outputs
 

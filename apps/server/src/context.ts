@@ -1,5 +1,5 @@
 import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
-import type { ProviderRegistry } from "@agent-workbench/models";
+import type { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
 import type { EventBus } from "@agent-workbench/events";
 import type {
   SessionRepository,
@@ -39,6 +39,11 @@ export interface ServerServices {
   readonly providerRegistry: ProviderRegistry;
   // Phase 22: workspace repository
   readonly workspaceRepository: WorkspaceRepository;
+  // Phase 24: provider marketplace & smart routing
+  readonly providerMarketplace: ProviderMarketplace;
+  readonly smartRouter: SmartRouter;
+  readonly costTracker: CostTracker;
+  readonly providerHealthMonitor: ProviderHealthMonitor;
 }
 
 export type ServerAppBindings = {

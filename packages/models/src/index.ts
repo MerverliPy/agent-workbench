@@ -40,3 +40,10 @@ export { createOpenRouterProvider, createOllamaProvider } from "./providers/open
 
 export { ProviderRegistry } from "./provider-registry";
 export type { ProviderEntry, ProviderModelEntry } from "./provider-registry";
+
+export { ProviderMarketplace } from "./marketplace";
+export { SmartRouter } from "./smart-router";
+export { CostTracker } from "./cost-tracker";
+export { ProviderHealthMonitor } from "./provider-health";
+export type { TaskClassification, RoutingDecision } from "./smart-router";
+export type { ProviderHealthStatus } from "./provider-health";

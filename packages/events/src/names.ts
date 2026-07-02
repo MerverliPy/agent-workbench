@@ -124,6 +124,16 @@ export const EventName = {
   MODEL_STREAM_DELTA: "model.stream_delta",
   MODEL_STREAM_COMPLETE: "model.stream_complete",
   MODEL_STREAM_ERROR: "model.stream_error",
+
+  // ── Provider marketplace (Phase 24) ──────────────────────────────────────
+  PROVIDER_PROFILE_CREATED: "provider.profile_created",
+  PROVIDER_PROFILE_UPDATED: "provider.profile_updated",
+  PROVIDER_PROFILE_DELETED: "provider.profile_deleted",
+  PROVIDER_HEALTH_CHECKED: "provider.health_checked",
+  PROVIDER_FAILOVER: "provider.failover",
+  PROVIDER_RATE_LIMITED: "provider.rate_limited",
+  ROUTING_DECISION: "routing.decision",
+  COST_RECORDED: "cost.recorded",
 } as const;
 
 export type EventNameValue = (typeof EventName)[keyof typeof EventName];

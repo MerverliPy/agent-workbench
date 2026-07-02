@@ -44,6 +44,14 @@ import { ListAgentsRoute, GetAgentRoute } from "../routes/agent";
 import { GetTokenHealthRoute } from "../routes/token-health";
 import { PrefillPromptRoute, FocusRoute, GetTuiStateRoute } from "../routes/tui";
 import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
+import {
+  ListProviderProfilesRoute,
+  GetProviderProfileRoute,
+  CreateProviderProfileRoute,
+  UpdateProviderProfileRoute,
+  DeleteProviderProfileRoute,
+  TestProviderConnectionRoute,
+} from "../routes/marketplace";
 import { ErrorEnvelope } from "../schemas/error-envelope";
 import type { RouteContract } from "../types";
 
@@ -166,6 +174,12 @@ export function createOpenApiDocument(title: string, version: string) {
     GetTokenHealthRoute,
     CreateTokenRoute,
     GetAuthStatusRoute,
+    ListProviderProfilesRoute,
+    GetProviderProfileRoute,
+    CreateProviderProfileRoute,
+    UpdateProviderProfileRoute,
+    DeleteProviderProfileRoute,
+    TestProviderConnectionRoute,
   ];
 
   for (const route of routes) {

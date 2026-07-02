@@ -14,4 +14,5 @@ export * from "./agent";
 export * from "./plan";
 export * from "./workspace";
 export * from "./stream-events";
+export * from "./provider-profile";
 export * from "../types";

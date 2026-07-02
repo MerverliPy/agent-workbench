@@ -19,6 +19,7 @@ import { registerWorkspaceRoutes } from "./routes/workspace-routes";
 import { registerFileRoutes } from "./routes/file-routes";
 import { registerGitRoutes } from "./routes/git-routes";
 import { registerPlaceholderRoutes } from "./routes/placeholders";
+import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
@@ -75,6 +76,7 @@ export function createApp(options: CreateAppOptions) {
   registerFileRoutes(app);
   registerGitRoutes(app);
   registerWorkspaceRoutes(app, options.services);
+  registerMarketplaceRoutes(app, options.services);
   registerPlaceholderRoutes(app);
 
   app.notFound((context) => {
