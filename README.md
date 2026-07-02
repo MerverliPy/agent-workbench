@@ -7,7 +7,7 @@
     <a href="package.json"><img src="https://img.shields.io/badge/Bun-%3E%3D1.0-cc00ff?logo=bun" alt="Bun" /></a>
     <a href="tsconfig.base.json"><img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript" alt="TypeScript" /></a>
     <a href="biome.json"><img src="https://img.shields.io/badge/code_style-Biome-60a5fa?logo=biome" alt="Code Style" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/tests-523%20passing-brightgreen" alt="Tests" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/tests-524%20passing-brightgreen" alt="Tests" /></a>
     <a href="#"><img src="https://img.shields.io/badge/coverage-14%20packages-blue" alt="Packages" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" /></a>
@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–26 complete · **523 tests, 0 failures** · Phase 27 (remote access) next
+> **Status:** Phases 0–26 complete · **524 tests, 0 failures** · Phase 27 (remote access) next
 
 ---
 
