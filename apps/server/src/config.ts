@@ -1,7 +1,7 @@
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 3000;
 
-const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost", "0.0.0.0"]);
 
 function parsePort(value: string | undefined): number {
   if (!value) {

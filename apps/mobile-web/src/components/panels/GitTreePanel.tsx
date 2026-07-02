@@ -1,43 +1,25 @@
 import type { JSX } from "solid-js";
 import { createSignal, onMount, Show } from "solid-js";
 import { getClient } from "../../lib/sdk";
-import { appendMessage } from "../../state/app";
 
 export function GitTreePanel(): JSX.Element {
   const [branch, setBranch] = createSignal<string>("");
   const [status, setStatus] = createSignal<string>("");
-  const [commits, setCommits] = createSignal<string>("");
   const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
 
   async function loadGitInfo(): Promise<void> {
     setLoading(true);
+    setError(null);
     try {
-      // Git info is fetched by submitting a message to the agent with bash tool
-      // For direct git info, we check if the session can run git commands
+      // Git info comes from the server's health/git endpoint if available.
+      // Currently the server doesn't expose a dedicated git endpoint,
+      // so we show guidance instead of submitting agent messages.
       const client = getClient();
-
-      // Try getting session and sending git status as a prompt
-      const sessions = await client.sessions.list();
-      const sessionId = sessions.items[0]?.id;
-
-      if (sessionId) {
-        // Ask the agent for git status — this goes through the permission-gated path
-        await client.messages.submit(sessionId, {
-          content: "Run: git status --short --branch, then git log --oneline -10. Just show the raw output, no commentary.",
-          role: "user",
-        });
-        appendMessage({
-          id: `system-git-${Date.now()}`,
-          role: "system",
-          content: "Git info requested — check the Chat panel for results",
-          createdAt: new Date().toISOString(),
-        });
-        setBranch("Requested in chat...");
-      } else {
-        setBranch("(no active session)");
-      }
-    } catch {
-      setBranch("(connection error)");
+      await client.health.check();
+      setBranch("git info not available via API");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection error");
     } finally {
       setLoading(false);
     }
@@ -60,6 +42,10 @@ export function GitTreePanel(): JSX.Element {
       </div>
 
       <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        <Show when={error()}>
+          <div class="text-sm text-red-400 bg-slate-800/50 rounded-lg px-3 py-2">{error()}</div>
+        </Show>
+
         <Show when={branch() || loading()}>
           <div>
             <span class="text-xs text-slate-500 block mb-1">Status</span>

@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import { createSignal } from "solid-js";
 import { getClient } from "../lib/sdk";
-import { appendMessage } from "../state/app";
+import { appendMessage, selectedSessionId, setSelectedSessionId } from "../state/app";
 
 export function PromptInput(): JSX.Element {
   const [text, setText] = createSignal("");
@@ -25,18 +25,33 @@ export function PromptInput(): JSX.Element {
 
     try {
       const client = getClient();
-      const result = await client.sessions.list();
-      const sessions = result.items;
-      const sessionId = sessions[0]?.id;
+      let sessionId = selectedSessionId();
 
-      if (sessionId) {
-        await client.messages.submit(sessionId, { content: messageText, role: "user" });
-      } else {
+      if (!sessionId) {
+        const sessions = await client.sessions.list();
+        sessionId = sessions.items[0]?.id ?? null;
+      }
+
+      if (!sessionId) {
+        // No sessions exist — create a new one
         const newSession = await client.sessions.create({
           projectPath: "/",
           title: "Mobile Session",
         });
-        await client.messages.submit(newSession.id, { content: messageText, role: "user" });
+        sessionId = newSession.id;
+        setSelectedSessionId(sessionId);
+      }
+
+      const response = await client.messages.submit(sessionId, { content: messageText, role: "user" });
+
+      // Append assistant response immediately (SSE handles streaming updates).
+      if (response && response.role === "assistant" && response.content) {
+        appendMessage({
+          id: response.id ?? `assistant-${Date.now()}`,
+          role: "assistant",
+          content: response.content,
+          createdAt: response.createdAt ?? new Date().toISOString(),
+        });
       }
     } catch (err) {
       appendMessage({

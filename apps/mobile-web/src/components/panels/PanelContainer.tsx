@@ -1,13 +1,14 @@
 import type { JSX } from "solid-js";
-import { Switch, Match } from "solid-js";
+import { Switch, Match, lazy } from "solid-js";
 import { activePanel } from "../../state/app";
-import { ChatPanel } from "./ChatPanel";
-import { FileBrowserPanel } from "./FileBrowserPanel";
-import { GitTreePanel } from "./GitTreePanel";
-import { SessionsPanel } from "./SessionsPanel";
-import { ActivityLogPanel } from "./ActivityLogPanel";
-import { SettingsPanel } from "./SettingsPanel";
-import { HelpPanel } from "./HelpPanel";
+
+const ChatPanel = lazy(() => import("./ChatPanel").then((m) => ({ default: m.ChatPanel })));
+const FileBrowserPanel = lazy(() => import("./FileBrowserPanel").then((m) => ({ default: m.FileBrowserPanel })));
+const GitTreePanel = lazy(() => import("./GitTreePanel").then((m) => ({ default: m.GitTreePanel })));
+const SessionsPanel = lazy(() => import("./SessionsPanel").then((m) => ({ default: m.SessionsPanel })));
+const ActivityLogPanel = lazy(() => import("./ActivityLogPanel").then((m) => ({ default: m.ActivityLogPanel })));
+const SettingsPanel = lazy(() => import("./SettingsPanel").then((m) => ({ default: m.SettingsPanel })));
+const HelpPanel = lazy(() => import("./HelpPanel").then((m) => ({ default: m.HelpPanel })));
 
 export function PanelContainer(): JSX.Element {
   return (

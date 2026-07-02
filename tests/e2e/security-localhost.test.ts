@@ -43,18 +43,19 @@ describe("Security: localhost binding", () => {
     }
   });
 
-  it("rejects non-loopback host", () => {
+  it("allows 0.0.0.0 (bind all interfaces)", () => {
     const prevHost = process.env.WORKBENCH_HOST;
     try {
       process.env.WORKBENCH_HOST = "0.0.0.0";
-      expect(() => getServerConfig()).toThrow("Non-loopback");
+      const config = getServerConfig();
+      expect(config.host).toBe("0.0.0.0");
     } finally {
       if (prevHost !== undefined) process.env.WORKBENCH_HOST = prevHost;
       else delete process.env.WORKBENCH_HOST;
     }
   });
 
-  it("rejects public IP host", () => {
+  it("rejects non-loopback host", () => {
     const prevHost = process.env.WORKBENCH_HOST;
     try {
       process.env.WORKBENCH_HOST = "192.168.1.1";

@@ -47,15 +47,31 @@ export class HttpTransport {
       fetchOptions.signal = signal;
     }
 
+    const resolvedUrl = url.toString();
+
     let response: Response;
     try {
-      response = await fetch(url.toString(), fetchOptions);
+      response = await fetch(resolvedUrl, fetchOptions);
     } catch (error) {
-      throw new SdkError(`Request failed: ${method} ${path}`, error);
+      const reason =
+        error instanceof TypeError && (
+          error.message === "Failed to fetch" ||
+          error.message === "Load failed"
+        )
+          ? " (connection refused, unreachable, or CORS blocked)"
+          : error instanceof DOMException && error.name === "AbortError"
+            ? " (request timed out or was cancelled)"
+            : error instanceof Error
+              ? ` (${error.message})`
+              : "";
+      throw new SdkError(
+        `${method} ${resolvedUrl} failed${reason}`,
+        error,
+      );
     }
 
     if (!response.ok) {
-      const parsed = await this.parseError(response);
+      const parsed = await this.parseError(response, resolvedUrl);
       throw parsed;
     }
 
@@ -83,9 +99,12 @@ export class HttpTransport {
     return parsed as T;
   }
 
-  private async parseError(response: Response): Promise<ApiError> {
+  private async parseError(
+    response: Response,
+    resolvedUrl: string,
+  ): Promise<ApiError> {
     let code = "unknown";
-    let message = `HTTP ${response.status}: ${response.statusText}`;
+    let message = `${response.status} ${response.statusText} from ${resolvedUrl}`;
     let details: unknown;
     let requestId: string | undefined;
     let recoverable: boolean | undefined;

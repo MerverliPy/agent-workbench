@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import type { ServerConfig } from "./config";
 import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
@@ -25,6 +26,7 @@ export function createApp(options: CreateAppOptions) {
   const startedAt = options.startedAt ?? Date.now();
 
   app.use("*", requestIdMiddleware);
+  app.use("*", cors({ origin: "*" }));
 
   registerGlobalRoutes(app, {
     config: options.config,

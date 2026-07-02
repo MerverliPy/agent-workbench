@@ -35,11 +35,14 @@ export function NavDrawer(): JSX.Element {
         class={`fixed top-0 left-0 h-dvh w-72 bg-slate-800 border-r border-slate-700 z-50 transform transition-transform duration-250 shadow-xl ${
           drawerOpen() ? "translate-x-0" : "-translate-x-full"
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
       >
         <div class="flex items-center justify-between px-4 h-11 border-b border-slate-700 safe-top">
           <span class="text-sm font-semibold text-slate-300">agent-workbench</span>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg active:bg-slate-700 text-slate-400"
+            class="w-11 h-11 flex items-center justify-center rounded-lg active:bg-slate-700 text-slate-400"
             onClick={() => setDrawerOpen(false)}
             aria-label="Close menu"
           >
@@ -62,6 +65,7 @@ export function NavDrawer(): JSX.Element {
                       : "text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 border-l-2 border-transparent"
                   }`}
                   onClick={() => selectPanel(item.id)}
+                  aria-current={isActive() ? "page" : undefined}
                 >
                   <span class="text-lg">{item.icon}</span>
                   <span>{item.label}</span>

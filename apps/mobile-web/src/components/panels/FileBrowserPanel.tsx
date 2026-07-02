@@ -1,6 +1,7 @@
 import type { JSX } from "solid-js";
 import { createSignal, onMount, For, Show } from "solid-js";
 import { getClient } from "../../lib/sdk";
+import { ApiError } from "@agent-workbench/sdk";
 
 interface FileEntry {
   name: string;
@@ -24,6 +25,18 @@ function parentPath(path: string): string {
 function joinPath(base: string, name: string): string {
   if (base === "/") return `/${name}`;
   return `${base}/${name}`;
+}
+
+/** Provide user-friendly error messages, especially for placeholder (501) routes. */
+function formatFileError(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 501) {
+      return "File browsing is not yet available (server route not implemented).";
+    }
+    return err.message;
+  }
+  if (err instanceof Error) return err.message;
+  return "Failed to access filesystem";
 }
 
 export function FileBrowserPanel(): JSX.Element {
@@ -55,7 +68,7 @@ export function FileBrowserPanel(): JSX.Element {
 
       setEntries(fileEntries);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load directory");
+      setError(formatFileError(err));
     } finally {
       setLoading(false);
     }
@@ -68,7 +81,7 @@ export function FileBrowserPanel(): JSX.Element {
       setPreviewFile(filePath);
       setPreviewContent(typeof result === "string" ? result : JSON.stringify(result));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to read file");
+      setError(formatFileError(err));
     }
   }
 
@@ -92,7 +105,7 @@ export function FileBrowserPanel(): JSX.Element {
     <div class="flex flex-col h-full panel-enter">
       <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-700 bg-slate-800/50">
         <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg active:bg-slate-700 text-slate-400"
+          class="w-11 h-11 flex items-center justify-center rounded-lg active:bg-slate-700 text-slate-400"
           onClick={navigateUp}
           aria-label="Go up"
         >

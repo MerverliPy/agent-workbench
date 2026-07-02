@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import { createSignal, onMount, For, Show } from "solid-js";
 import { getClient } from "../../lib/sdk";
-import { selectPanel } from "../../state/app";
+import { selectPanel, setSelectedSessionId } from "../../state/app";
 
 interface SessionInfo {
   id: string;
@@ -23,12 +23,12 @@ export function SessionsPanel(): JSX.Element {
       const infos: SessionInfo[] = items.map((s, i) => ({
         id: s.id,
         title: s.title ?? `Session ${i + 1}`,
-        messageCount: 0,
+        messageCount: s.messageCount ?? (Array.isArray(s.messages) ? s.messages.length : 0),
         isActive: i === 0,
       }));
       setSessions(infos);
-    } catch {
-      // Server may not have sessions endpoint ready
+    } catch (err) {
+      console.error("Failed to load sessions:", err);
     } finally {
       setLoading(false);
     }
@@ -42,8 +42,8 @@ export function SessionsPanel(): JSX.Element {
         title: `Session ${Date.now()}`,
       });
       loadSessions();
-    } catch {
-      // Silently fail
+    } catch (err) {
+      console.error("Failed to create session:", err);
     }
   }
 
@@ -78,7 +78,7 @@ export function SessionsPanel(): JSX.Element {
           {(session) => (
             <button
               class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 active:bg-slate-700/50 border-b border-slate-800 transition-colors"
-              onClick={() => selectPanel("chat")}
+              onClick={() => { setSelectedSessionId(session.id); selectPanel("chat"); }}
             >
               <span class={`w-2 h-2 rounded-full ${session.isActive ? "bg-green-500" : "bg-slate-600"}`} />
               <div class="flex-1 text-left">

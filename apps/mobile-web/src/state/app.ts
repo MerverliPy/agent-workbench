@@ -132,3 +132,4 @@ export const [gitCommits, setGitCommits] = createSignal<string>("");
 // ── Session list ───────────────────────────────────────────────────────────
 
 export const [sessionList, setSessionList] = createSignal<Array<{ id: string; name: string; messageCount: number; active: boolean }>>([]);
+export const [selectedSessionId, setSelectedSessionId] = createSignal<string | null>(null);

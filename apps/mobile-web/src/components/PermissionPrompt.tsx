@@ -20,14 +20,19 @@ export function PermissionPrompt(): JSX.Element {
 
   return (
     <Show when={permissionModalOpen() && req()}>
-      <div class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center">
+      <div
+        class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="permission-title"
+      >
         <div
           class="w-full max-w-md bg-slate-800 rounded-t-2xl px-5 pt-6 pb-8 safe-bottom shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div class="flex items-center gap-2 mb-3">
             <span class="text-lg">🛡️</span>
-            <h2 class="text-base font-semibold text-white">Permission Required</h2>
+            <h2 id="permission-title" class="text-base font-semibold text-white">Permission Required</h2>
           </div>
 
           <div class="mb-4 space-y-2">

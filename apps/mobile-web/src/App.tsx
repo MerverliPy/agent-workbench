@@ -5,6 +5,7 @@ import type { EventEnvelope } from "@agent-workbench/protocol";
 import type { PermissionRequest, AgentListItem } from "@agent-workbench/protocol";
 import { getSettings } from "./lib/settings";
 import { categorizeEvent, getCategoryIcon } from "./lib/events";
+import { ApiError } from "@agent-workbench/sdk";
 import {
   setConnectionStatus,
   setConnectionError,
@@ -30,6 +31,8 @@ import { PermissionPrompt } from "./components/PermissionPrompt";
 export function App(): JSX.Element {
   let unsubscribe: (() => void) | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  let sseRetryCount = 0;
+  const MAX_SSE_RETRIES = 5;
 
   async function connect(): Promise<void> {
     setConnectionStatus("connecting");
@@ -44,23 +47,52 @@ export function App(): JSX.Element {
       setConnectionStatus("connected");
       setConnectionError(null);
 
+      // Reset SSE retry count on successful connection
+      sseRetryCount = 0;
+
       // Load agents
       try {
         const agents = await client.agents.list(signal);
         setAvailableAgents(agents);
-      } catch {
-        // Agent endpoint may not be ready — silent
+      } catch (err) {
+        console.warn("Agent list failed (non-fatal):", err);
       }
 
-      // Subscribe to SSE events
-      const unsub = client.events.on("message", handleEvent);
-      if (unsub !== undefined) {
-        unsubscribe = unsub as unknown as (() => void);
-      }
+      // Subscribe to SSE events (wildcard — the server emits "message.created",
+      // "model.stream_delta", etc., not a generic "message" type).
+      client.events.onAny(handleEvent);
+      unsubscribe = () => client.events.off("*", handleEvent);
+
+      // Start the SSE connection (long-lived stream, fire-and-forget).
+      // On stream failure, attempt reconnection with backoff.
+      const connectSse = () => {
+        client.events.connect().catch((err: unknown) => {
+          console.warn("SSE connection lost:", err);
+          // Attempt reconnect with exponential backoff if we haven't exhausted retries
+          if (sseRetryCount < MAX_SSE_RETRIES) {
+            sseRetryCount++;
+            const delay = Math.min(1000 * Math.pow(2, sseRetryCount), 30000);
+            setTimeout(connectSse, delay);
+          }
+        });
+      };
+      connectSse();
 
     } catch (err: unknown) {
       setConnectionStatus("error");
-      setConnectionError(err instanceof Error ? err.message : "Server unreachable");
+
+      let errorMsg: string;
+      if (err instanceof ApiError) {
+        // Server responded with an error (4xx/5xx) — show the exact status.
+        errorMsg = `${err.message}`;
+      } else if (err instanceof Error) {
+        // Network failure, timeout, or SDK validation error.
+        errorMsg = err.message;
+      } else {
+        errorMsg = "Server unreachable";
+      }
+      setConnectionError(errorMsg);
+
       appendSystemNotice(
         `Could not connect to ${settings.serverUrl}. Check your connection settings.`
       );

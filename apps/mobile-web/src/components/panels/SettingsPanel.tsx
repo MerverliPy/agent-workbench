@@ -33,8 +33,16 @@ export function SettingsPanel(): JSX.Element {
   async function testConnection(): Promise<void> {
     setTesting(true);
     setTestResult(null);
+
+    // Persist settings BEFORE testing so the main app sees the same URL.
+    const saved = saveSettings({
+      serverUrl: serverUrl(),
+      autoConnect: autoConnect(),
+      preferredAgent: agent(),
+    });
+
     try {
-      const client = reconnectClient(serverUrl());
+      const client = reconnectClient(saved.serverUrl);
       await client.health.check();
       setTestResult("✓ Connected successfully");
     } catch (err) {
