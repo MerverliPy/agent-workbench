@@ -4,7 +4,18 @@
   "private": true,
   "type": "module",
   "description": "CLI entrypoint package. Owns process startup and command routing only.",
+  "main": "dist/index.js",
+  "bin": {
+    "agent-workbench": "./dist/index.js"
+  },
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-workbench/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
   }
 }

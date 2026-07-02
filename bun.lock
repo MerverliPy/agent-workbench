@@ -13,6 +13,15 @@
     "apps/cli": {
       "name": "@agent-workbench/cli",
       "version": "0.0.0",
+      "bin": {
+        "agent-workbench": "./dist/index.js",
+      },
+      "dependencies": {
+        "@agent-workbench/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
     },
     "apps/dashboard": {
       "name": "@agent-workbench/dashboard",

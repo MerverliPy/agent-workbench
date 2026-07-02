@@ -372,6 +372,18 @@ export class ProviderRegistry {
   getFallbackChain(): string[] {
     return this.fallbackChain;
   }
+
+  /**
+   * Register a provider from a plugin.
+   * Exposes addProvider as a public API for the plugin system.
+   */
+  registerPluginProvider(
+    id: string,
+    provider: ModelProvider,
+    meta: Omit<ProviderEntry, "id" | "status" | "capabilities">,
+  ): void {
+    this.addProvider(id, provider, meta);
+  }
 }
 
 /**

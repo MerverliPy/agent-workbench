@@ -34,6 +34,17 @@ export const PluginManifest = z.object({
     /** List of hook IDs this plugin registers. */
     hooks: z.array(z.string()),
   }),
+  /** Permissions the plugin requires (Phase 26 sandboxing). */
+  permissions: z.object({
+    /** Whether the plugin needs filesystem read access. */
+    filesystemRead: z.boolean().optional(),
+    /** Whether the plugin needs filesystem write access. */
+    filesystemWrite: z.boolean().optional(),
+    /** Whether the plugin needs network access. */
+    network: z.boolean().optional(),
+    /** Whether the plugin needs to spawn subprocesses. */
+    subprocess: z.boolean().optional(),
+  }).optional(),
 });
 
 export type PluginManifest = z.infer<typeof PluginManifest>;

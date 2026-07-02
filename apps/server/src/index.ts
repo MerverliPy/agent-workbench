@@ -9,6 +9,7 @@ import {
 } from "@agent-workbench/models";
 import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
 import { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import { loadAllPlugins } from "./plugin-loader";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
 import {
@@ -129,6 +130,11 @@ const requestLogger = new RequestLogger({ level: "info" });
 // ── Phase 26: Plugin system ─────────────────────────────────────────────────
 const pluginRegistry = new PluginRegistry();
 logger.info(`Plugin directory: ${pluginRegistry.getPluginsDir()}`);
+
+const pluginLoadResult = await loadAllPlugins({ pluginRegistry, toolRegistry, providerRegistry });
+if (pluginLoadResult.loaded > 0 || pluginLoadResult.failed > 0) {
+  logger.info(`Plugins: ${pluginLoadResult.loaded} loaded, ${pluginLoadResult.failed} failed`);
+}
 
 // ── Core runtime ──────────────────────────────────────────────────────────────
 const sessionRunner = new SessionRunner({

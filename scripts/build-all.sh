@@ -30,6 +30,9 @@ echo "  [build] packages/core"
 echo "  [build] apps/server"
 (cd "$ROOT/apps/server" && bun run build 2>&1) || exit 1
 
+echo "  [build] apps/cli"
+(cd "$ROOT/apps/cli" && bun run build 2>&1) || exit 1
+
 # tui is a Vite/SolidJS app, no tsc build needed for test resolution
 # (it only imports protocol types and SDK which are already built)
 
