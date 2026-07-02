@@ -32,7 +32,7 @@ function escapeHtml(text: string): string {
 }
 
 export function MessageBubble(props: MessageBubbleProps): JSX.Element {
-  const { role, content } = props.message;
+  const { role, content, createdAt } = props.message;
 
   if (role === "system") {
     return (
@@ -50,7 +50,7 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
         class={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
           isUser
             ? "bg-blue-600 text-white rounded-br-md"
-            : "bg-slate-800 text-slate-200 rounded-bl-md"
+            : "bg-slate-800 text-slate-200 rounded-bl-md border border-slate-700/40"
         }`}
       >
         {isUser ? (
@@ -62,7 +62,18 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
             innerHTML={renderMarkdown(content)}
           />
         )}
+        <p class="text-[10px] mt-1 opacity-50 text-right">{formatTime(createdAt)}</p>
       </div>
     </div>
   );
+}
+
+/** Format ISO timestamp to short time string (e.g. "10:42 AM"). */
+function formatTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
 }

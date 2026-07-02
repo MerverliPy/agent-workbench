@@ -1,22 +1,62 @@
 import type { JSX } from "solid-js";
-import { Show, For, createSignal, onCleanup } from "solid-js";
+import { Show, For, createSignal } from "solid-js";
 import { drawerOpen, setDrawerOpen, activePanel, selectPanel } from "../state/app";
 import type { PanelId } from "../state/app";
 
 interface PanelItem {
   id: PanelId;
-  icon: string;
   label: string;
 }
 
+/* Lucide-style SVG icons — no emoji, consistent sizing */
+const SVG_ICONS: Record<PanelId, JSX.Element> = {
+  chat: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
+  files: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
+  git: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" />
+      <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9" /><path d="M12 12v3" />
+    </svg>
+  ),
+  sessions: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
+    </svg>
+  ),
+  activity: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  ),
+  settings: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
+  help: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+};
+
 const PANELS: PanelItem[] = [
-  { id: "chat", icon: "💬", label: "Chat" },
-  { id: "files", icon: "📁", label: "File Browser" },
-  { id: "git", icon: "🌿", label: "Git Tree" },
-  { id: "sessions", icon: "📋", label: "Sessions" },
-  { id: "activity", icon: "📊", label: "Activity Log" },
-  { id: "settings", icon: "⚙️", label: "Settings" },
-  { id: "help", icon: "❓", label: "Help" },
+  { id: "chat", label: "Chat" },
+  { id: "files", label: "File Browser" },
+  { id: "git", label: "Git Tree" },
+  { id: "sessions", label: "Sessions" },
+  { id: "activity", label: "Activity Log" },
+  { id: "settings", label: "Settings" },
+  { id: "help", label: "Help" },
 ];
 
 const SWIPE_THRESHOLD = 80;
@@ -130,7 +170,7 @@ export function NavDrawer(): JSX.Element {
               const isActive = () => activePanel() === item.id;
               return (
                 <button
-                  class={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                  class={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors relative ${
                     isActive()
                       ? "bg-slate-700/50 text-white border-l-2 border-blue-500"
                       : "text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 border-l-2 border-transparent"
@@ -138,8 +178,11 @@ export function NavDrawer(): JSX.Element {
                   onClick={() => selectPanel(item.id)}
                   aria-current={isActive() ? "page" : undefined}
                 >
-                  <span class="text-lg">{item.icon}</span>
+                  <span class="text-slate-400">{SVG_ICONS[item.id]}</span>
                   <span>{item.label}</span>
+                  {isActive() && (
+                    <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-blue-500 rounded-full animate-pulse" />
+                  )}
                 </button>
               );
             }}

@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { For, createEffect, Show } from "solid-js";
+import { For, Show, createEffect, createSignal } from "solid-js";
 import { messages, isStreaming, streamingContent } from "../state/app";
 import { MessageBubble } from "./MessageBubble";
 import { StreamingIndicator } from "./StreamingIndicator";
@@ -13,7 +13,7 @@ const SUGGESTED_PROMPTS = [
 
 export function ChatView(): JSX.Element {
   let scrollRef: HTMLDivElement | undefined;
-  let isNearBottom = true;
+  const [isNearBottom, setIsNearBottom] = createSignal(true);
 
   function scrollToBottom(smooth = false): void {
     if (scrollRef) {
@@ -24,13 +24,13 @@ export function ChatView(): JSX.Element {
     }
   }
 
-  // Track whether user is scrolled near the bottom
   function checkNearBottom(): void {
     if (scrollRef) {
       const threshold = 80;
-      isNearBottom =
+      setIsNearBottom(
         scrollRef.scrollHeight - scrollRef.scrollTop - scrollRef.clientHeight <
-        threshold;
+          threshold,
+      );
     }
   }
 
@@ -40,45 +40,55 @@ export function ChatView(): JSX.Element {
     void isStreaming();
     void streamingContent();
     queueMicrotask(() => {
-      if (isNearBottom) {
+      if (isNearBottom()) {
         scrollToBottom(isStreaming());
       }
     });
   });
 
-  // Detect manual scroll-away
-  function handleScroll(): void {
-    checkNearBottom();
-  }
-
   return (
-    <div
-      ref={scrollRef}
-      class="flex-1 overflow-y-auto px-3 py-2"
-      onScroll={handleScroll}
-      role="log"
-      aria-live="polite"
-      aria-label="Chat messages"
-    >
-      <Show
-        when={messages().length > 0 || isStreaming()}
-        fallback={<EmptyState />}
+    <div class="relative flex-1 overflow-hidden">
+      <div
+        ref={scrollRef}
+        class="absolute inset-0 overflow-y-auto px-3 py-2"
+        onScroll={() => checkNearBottom()}
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
       >
-        <div class="space-y-2">
-          <For each={messages()}>
-            {(msg) => <MessageBubble message={msg} />}
-          </For>
-        </div>
-        {isStreaming() && streamingContent() && (
-          <div class="flex items-start gap-2 mt-2">
-            <div class="flex-1 bg-slate-800 rounded-xl rounded-bl-md px-3.5 py-2.5 min-w-0">
-              <span class="text-sm text-slate-200 whitespace-pre-wrap break-words">
-                {streamingContent()}
-              </span>
-              <StreamingIndicator />
-            </div>
+        <Show
+          when={messages().length > 0 || isStreaming()}
+          fallback={<EmptyState />}
+        >
+          <div class="space-y-2">
+            <For each={messages()}>
+              {(msg) => <MessageBubble message={msg} />}
+            </For>
           </div>
-        )}
+          {isStreaming() && streamingContent() && (
+            <div class="flex items-start gap-2 mt-2">
+              <div class="flex-1 bg-slate-800 rounded-xl rounded-bl-md px-3.5 py-2.5 min-w-0">
+                <span class="text-sm text-slate-200 whitespace-pre-wrap break-words">
+                  {streamingContent()}
+                </span>
+                <StreamingIndicator />
+              </div>
+            </div>
+          )}
+        </Show>
+      </div>
+
+      {/* Floating scroll-to-bottom button */}
+      <Show when={!isNearBottom() && messages().length > 0}>
+        <button
+          class="absolute bottom-4 right-4 w-10 h-10 bg-blue-500 rounded-full shadow-lg shadow-blue-500/20 flex items-center justify-center z-10 animate-fade-in active:bg-blue-600 transition-colors"
+          onClick={() => scrollToBottom(true)}
+          aria-label="Scroll to bottom"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
       </Show>
     </div>
   );
@@ -87,7 +97,6 @@ export function ChatView(): JSX.Element {
 /** Empty state shown when there are no messages. */
 function EmptyState(): JSX.Element {
   function fillPrompt(text: string): void {
-    // Find the textarea and set its value
     const textarea = document.querySelector(
       'textarea[placeholder="Type a message..."]',
     ) as HTMLTextAreaElement | null;

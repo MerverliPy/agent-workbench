@@ -71,6 +71,22 @@ input, textarea {
   animation: pulse-dot 1s ease-in-out infinite;
 }
 
+/* Bounce animation (typing indicator) */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* Fade in (scroll-to-bottom button) */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
 /* ── Markdown content styling ─────────────────────────────────────── */
 
 .markdown-body h1,
