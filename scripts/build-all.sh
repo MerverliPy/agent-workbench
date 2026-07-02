@@ -7,13 +7,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "=== Building packages (dependency-ordered) ==="
 
 # Level 0: no @agent-workbench dependencies
-for pkg in protocol models storage tokens diff telemetry plugin-sdk; do
+for pkg in protocol models storage tokens diff telemetry plugin-sdk auth; do
   echo "  [build] packages/$pkg"
   (cd "$ROOT/packages/$pkg" && bun run build 2>&1) || exit 1
 done
 
 # Level 1: depend on level 0 packages
-for pkg in events sdk shell permissions cache planner; do
+for pkg in events sdk shell permissions cache planner collab; do
   echo "  [build] packages/$pkg"
   (cd "$ROOT/packages/$pkg" && bun run build 2>&1) || exit 1
 done

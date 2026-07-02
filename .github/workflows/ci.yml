@@ -46,7 +46,7 @@ jobs:
         run: bash scripts/build-all.sh
       - name: Typecheck packages
         run: |
-          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui; do
+          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui auth collab; do
             echo "  [typecheck] packages/$pkg"
             (cd packages/$pkg && bun run typecheck) || exit 1
           done
