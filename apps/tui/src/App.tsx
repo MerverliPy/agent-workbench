@@ -4,6 +4,7 @@ import { useKeyboard } from "@opentui/solid";
 import type { EventEnvelope, PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
 import type { Plan } from "@agent-workbench/protocol";
 import { sdk } from "./lib/sdk";
+import { formatKeybindings } from "./lib/keybindings";
 import {
   setServerStatus,
   setServerError,
@@ -106,11 +107,7 @@ export function App(): JSX.Element {
 
     // Ctrl+/: show keyboard shortcut reference
     if (key.ctrl && key.name === "/") {
-      appendSystemNotice(
-        "Shortcuts: Ctrl+K/P=Palette  Ctrl+Enter=Submit  Ctrl+L=Clear  " +
-        "Ctrl+D=Diff  Ctrl+T=Tokens  Ctrl+1/2=Agent  Ctrl+/=Shortcuts  " +
-        "Esc=Close  ↑↓=Navigate  Shift+Enter=Newline"
-      );
+      appendSystemNotice(formatKeybindings());
       return;
     }
 

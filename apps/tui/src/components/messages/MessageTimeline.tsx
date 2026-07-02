@@ -39,10 +39,20 @@ export function MessageTimeline(): JSX.Element {
         when={messages().length > 0}
         fallback={
           <box flexGrow={1} flexDirection="column" padding={1}>
-            <text content="No messages yet." />
+            <text content="╔══════════════════════════════════════════╗" />
+            <text content="║       ✨  Welcome to agent-workbench   ║" />
+            <text content="╚══════════════════════════════════════════╝" />
             <text content="" />
-            <text content="Type a prompt below and press Ctrl+Enter to submit." />
-            <text content="The server will respond once the core runtime is connected (Phase 6)." />
+            <text content="Getting started:" />
+            <text content="  Type a prompt below and press Ctrl+Enter to submit." />
+            <text content="  Ctrl+P or Ctrl+K — Open command palette" />
+            <text content="  Ctrl+/           — Show all keyboard shortcuts" />
+            <text content="  Ctrl+1 / Ctrl+2  — Switch between Build / Plan agents" />
+            <text content="  Ctrl+T           — Toggle token health panel" />
+            <text content="  Ctrl+L           — Clear the timeline" />
+            <text content="  Escape           — Close any open overlay" />
+            <text content="" />
+            <text content="Need help? Type /help in the prompt for more info." />
           </box>
         }
       >

@@ -59,7 +59,9 @@
       "name": "@agent-workbench/server",
       "version": "0.0.0",
       "dependencies": {
+        "@agent-workbench/auth": "workspace:*",
         "@agent-workbench/cache": "workspace:*",
+        "@agent-workbench/collab": "workspace:*",
         "@agent-workbench/core": "workspace:*",
         "@agent-workbench/events": "workspace:*",
         "@agent-workbench/models": "workspace:*",
@@ -93,10 +95,35 @@
         "@types/bun": "^1.3.14",
       },
     },
+    "packages/auth": {
+      "name": "@agent-workbench/auth",
+      "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/protocol": "workspace:*",
+        "ulid": "^2.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+        "hono": "^4.12.27",
+      },
+    },
     "packages/cache": {
       "name": "@agent-workbench/cache",
       "version": "0.0.0",
       "dependencies": {
+        "@agent-workbench/storage": "workspace:*",
+        "ulid": "^2.3.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+      },
+    },
+    "packages/collab": {
+      "name": "@agent-workbench/collab",
+      "version": "0.0.0",
+      "dependencies": {
+        "@agent-workbench/events": "workspace:*",
+        "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/storage": "workspace:*",
         "ulid": "^2.3.0",
       },
@@ -287,9 +314,13 @@
     },
   },
   "packages": {
+    "@agent-workbench/auth": ["@agent-workbench/auth@workspace:packages/auth"],
+
     "@agent-workbench/cache": ["@agent-workbench/cache@workspace:packages/cache"],
 
     "@agent-workbench/cli": ["@agent-workbench/cli@workspace:apps/cli"],
+
+    "@agent-workbench/collab": ["@agent-workbench/collab@workspace:packages/collab"],
 
     "@agent-workbench/config": ["@agent-workbench/config@workspace:packages/config"],
 
