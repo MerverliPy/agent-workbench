@@ -13,6 +13,7 @@ import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
 import { ToolCache } from "@agent-workbench/cache";
 import { SimpleCommandRunner } from "@agent-workbench/shell";
+import type { AuthManager } from "@agent-workbench/auth";
 import {
   SessionRepository,
   MessageRepository,
@@ -140,6 +141,18 @@ export function createTestServer(options: TestServerOptions): TestServer {
     errorReporter: new ErrorReporter(),
     requestLogger: new RequestLogger({ level: "error" }), // quiet in tests
     pluginRegistry: new PluginRegistry(),
+    // Phase 27: auth disabled in tests by default
+    auth: {
+      isEnabled: false,
+      isTlsEnabled: false,
+      secret: null,
+      getSharedSecret: () => null,
+      generateToken: () => null,
+      validateToken: () => null,
+      revokeToken: () => false,
+      listTokens: () => [],
+      health: () => ({ enabled: false, activeTokens: 0, tlsEnabled: false, hint: "Auth disabled in tests" }),
+    } as unknown as AuthManager,
   };
 
   const app = createApp({ config, services });
