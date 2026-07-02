@@ -5,6 +5,7 @@
   [![CI](https://github.com/MerverliPy/agent-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/MerverliPy/agent-workbench/actions)
   [![Bun](https://img.shields.io/badge/Bun-%3E%3D1.0-cc00ff?logo=bun)](package.json)
   [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)](tsconfig.base.json)
+  [![Code Style](https://img.shields.io/badge/code_style-Biome-60a5fa?logo=biome)](biome.json)
   [![Tests](https://img.shields.io/badge/tests-357%20passing-brightgreen)](#)
   [![E2E](https://img.shields.io/badge/e2e-54%20passing-blue)](#)
   [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)

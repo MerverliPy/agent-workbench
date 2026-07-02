@@ -29,7 +29,7 @@ jobs:
       - name: Check whitespace
         run: git diff --check
       - name: Biome lint
-        run: npx @biomejs/biome check . 2>&1 || echo "::warning::Biome lint found issues"
+        run: bunx @biomejs/biome check . 2>&1 || echo "::warning::Biome lint found issues"
 
   test:
     name: Test suite
@@ -58,5 +58,7 @@ jobs:
           done
       - name: Run tests
         run: bun test
+      - name: Generate coverage report
+        run: bun test --coverage
       - name: Run e2e tests
         run: bun run test:e2e

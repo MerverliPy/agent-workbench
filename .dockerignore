@@ -4,15 +4,18 @@ node_modules/
 # Bun / package manager outputs
 bun.lockb
 
-# Local environment
-.env
-.env.*
-!.env.example
-
 # Build outputs
 dist/
 build/
 coverage/
+
+# Docker
+.dockerignore
+
+# Local environment
+.env
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -21,17 +24,12 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
+.husky/_
 
 # Local databases
 *.sqlite
 *.sqlite3
 *.db
-
-# Test coverage
-coverage/
-
-# Benchmarks
-benchmarks/
 
 # Local/generated router artifacts
 model-router-v3.3-repo-ready.zip

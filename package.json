@@ -2,6 +2,7 @@
   "name": "agent-workbench",
   "version": "0.0.0",
   "private": true,
+  "description": "Local-first OpenCode-style agent TUI workbench for disciplined software development",
   "type": "module",
   "workspaces": [
     "apps/*",
@@ -17,12 +18,35 @@
     "test:integration": "cd tests && bun test integration",
     "test:e2e": "cd tests && bun test e2e",
     "test:repeat": "bash scripts/test-repeat.sh",
-    "test:health": "bash scripts/test-health.sh"
+    "test:health": "bash scripts/test-health.sh",
+    "coverage": "bun test --coverage",
+    "prepare": "husky"
   },
+  "keywords": [
+    "agent-workbench",
+    "tui",
+    "opentui",
+    "ai-agent",
+    "developer-tools",
+    "typescript",
+    "terminal-ui"
+  ],
+  "author": "MerverliPy",
+  "license": "MIT",
   "engines": {
     "bun": ">=1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MerverliPy/agent-workbench.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MerverliPy/agent-workbench/issues"
+  },
+  "homepage": "https://github.com/MerverliPy/agent-workbench#readme",
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "typescript": "^6.0.3"
   }
 }
