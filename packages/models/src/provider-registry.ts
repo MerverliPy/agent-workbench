@@ -55,9 +55,19 @@ export class ProviderRegistry {
       this.registerCustomProvider(options.defaultProvider);
     }
 
-    // 5. Determine default: explicit > auto-detected first > stub
+    // 5. Determine default: explicit > explicit-error > auto-detected first > stub
     if (explicitResult === "registered") {
       this.defaultProviderId = this.fallbackChain[0] ?? STUB_PROVIDER_ID;
+    } else if (explicitResult === "error") {
+      // The explicitly requested provider was misconfigured; keep it as
+      // default so callers get a ProviderConfigError instead of silently
+      // falling through to stub.
+      let requestedProvider =
+        process.env.AGENT_WORKBENCH_PROVIDER?.trim()?.toLowerCase() ?? "";
+      if (requestedProvider === "openai-compatible") {
+        requestedProvider = "openai";
+      }
+      this.defaultProviderId = requestedProvider;
     } else if (this.fallbackChain.length > 0) {
       this.defaultProviderId = this.fallbackChain[0]!;
     } else {
@@ -104,6 +114,24 @@ export class ProviderRegistry {
     try {
       config = parseProviderConfig();
     } catch {
+      // If AGENT_WORKBENCH_PROVIDER is explicitly set but config failed
+      // (e.g., missing API key), register an error provider so the
+      // registry reflects the misconfiguration and throws the right error.
+      const requestedProvider = process.env.AGENT_WORKBENCH_PROVIDER?.trim();
+      if (requestedProvider && requestedProvider.length > 0) {
+        // Normalize "openai-compatible" → "openai" for storage key
+        let providerId = requestedProvider.toLowerCase();
+        providerId = providerId === "openai-compatible" ? "openai" : providerId;
+        this.registerErrorMeta(providerId, "API key not set");
+        this.providerMap.set(
+          providerId,
+          createConfigErrorProvider(
+            `Provider "${requestedProvider}" is misconfigured: the API key is not set. ` +
+              "Unset AGENT_WORKBENCH_PROVIDER to use the stub provider.",
+          ),
+        );
+        return "error";
+      }
       return "none";
     }
 
@@ -344,4 +372,21 @@ export class ProviderRegistry {
   getFallbackChain(): string[] {
     return this.fallbackChain;
   }
+}
+
+/**
+ * Creates a ModelProvider that always throws ProviderConfigError.
+ * Used when a provider was explicitly requested but misconfigured,
+ * so the caller gets a clear config error instead of a cryptic
+ * network or runtime failure.
+ */
+function createConfigErrorProvider(message: string): ModelProvider {
+  return {
+    call: async () => {
+      throw new ProviderConfigError(message);
+    },
+    stream: async function* () {
+      throw new ProviderConfigError(message);
+    },
+  };
 }

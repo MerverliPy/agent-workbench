@@ -118,8 +118,13 @@ export function detectAvailableProviders(env?: typeof process.env): string[] {
   if ((e.OPENROUTER_API_KEY?.trim() ?? "").length > 0) {
     available.push("openrouter");
   }
-  // Ollama is always "available" — we just need the base URL
-  available.push("ollama");
+
+  // Only auto-register ollama when at least one API-key-based provider
+  // is configured, so that a bare environment (no keys) falls back to
+  // the stub provider instead of an unreachable ollama endpoint.
+  if (available.length > 0) {
+    available.push("ollama");
+  }
 
   return available;
 }

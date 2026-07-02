@@ -32,7 +32,7 @@ describe("parseProviderConfig", () => {
     expect(config.provider).toBe("openai");
     expect(config.model).toBe("gpt-4o");
     expect(config.apiKey).toBe("sk-test-key");
-    expect(config.baseUrl).toBeUndefined();
+    expect(config.baseUrl).toBe("https://api.openai.com/v1");
   });
 
   it("uses AGENT_WORKBENCH_MODEL when set", () => {
