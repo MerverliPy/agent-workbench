@@ -1,27 +1,42 @@
 # 🖥️ @agent-workbench/cli
 
-[![Status](https://img.shields.io/badge/status-scaffold-yellow)]()
-[![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
+Command-line interface for agent-workbench. Provides plugin management and project scaffolding.
 
-CLI entrypoint package. Owns process startup and command routing only.
+## Commands
 
-## Status
+| Command | Description |
+|---------|-------------|
+| `agent-workbench plugin list` | List installed plugins |
+| `agent-workbench plugin install <source>` | Install a plugin (local:/path) |
+| `agent-workbench plugin enable <name>` | Enable a plugin |
+| `agent-workbench plugin disable <name>` | Disable a plugin |
+| `agent-workbench plugin uninstall <name>` | Uninstall a plugin |
+| `agent-workbench init typescript [path]` | Scaffold a TypeScript project |
+| `agent-workbench init bun [path]` | Scaffold a Bun project |
 
-**Scaffold** — Phase 1. Package structure only. No runtime implementation yet.
+## Usage
 
-## Purpose
+```bash
+# List installed plugins
+npx agent-workbench plugin list
 
-Will provide the terminal CLI entry point for headless/non-TUI usage of the agent-workbench runtime.
+# Scaffold a new TypeScript project
+npx agent-workbench init typescript ./my-project
+```
 
-## Current Rules
+## Examples
 
-- This package is scaffold-only.
-- `src/.gitkeep` exists only to preserve the folder.
-- No runtime implementation logic has been added.
-- Do not add implementation code until the phase checklist allows it.
+```bash
+agent-workbench plugin install local:~/my-plugin
+agent-workbench init bun ./new-app
+```
+
+## Scope
+
+- Plugin lifecycle management (install, enable, disable, uninstall)
+- Project scaffolding via `init` command
+- Template-based project generation
 
 ## Boundary
 
-Does **not** own: TUI rendering, server startup, core runtime, storage, tools, permissions.
-
-👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md), [`docs/19_TARGET_REPO_TREE.md`](../docs/19_TARGET_REPO_TREE.md)
+Does **not** own: TUI rendering, server startup, core runtime.

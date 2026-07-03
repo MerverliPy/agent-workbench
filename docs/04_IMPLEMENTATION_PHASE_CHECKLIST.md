@@ -2,7 +2,7 @@
 
 > **⚠️ DEPRECATED — July 2026.** This document tracks phases 0–18 only and is 9+ phases behind reality (current: Phase 29). The authoritative source is [`docs/27_PROJECT_ROADMAP.md`](./27_PROJECT_ROADMAP.md). This file is kept for historical reference only. Do not use for current development decisions.
 
-Status: Phase 18 active (mobile web companion UI); roadmap in docs/27_PROJECT_ROADMAP.md
+Status: Complete through Phase 26; Phase 29 active. See docs/27_PROJECT_ROADMAP.md for current roadmap.
 Document type: agent-ready implementation checklist
 Scope: phases 0 through 18, dependencies, gates, and forbidden shortcuts. Phases 19–30 defined in docs/27_PROJECT_ROADMAP.md
 

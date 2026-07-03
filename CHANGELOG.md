@@ -2,7 +2,50 @@
 
 All notable changes to agent-workbench are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/) conventions. Phases correspond to the phase-based development workflow defined in `docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md`.
+The format follows [Keep a Changelog](https://keepachangelog.com/) conventions.
+
+---
+
+## [Phase 29] — 2026-07-02
+
+### Added
+- **ModelPlayground** (`packages/eval`): one-shot chat across 5 providers (OpenAI, Anthropic, OpenRouter, DeepSeek, Gemini)
+- **Eval adapters**: integration adapters for lm-evaluation-harness with Drizzle version conflict resolution
+- **Metrics & export**: wire real metrics collection, CSV/JSON export, comparison runner
+- **Phase 29 scaffold**: model experimentation and evaluation framework
+
+### Changed
+- Metrics system now supports per-provider tracking and comparison
+- Package dependencies: resolved Drizzle ORM version conflict
+
+---
+
+## [Phase 28]
+
+No active development — deferred to future phase.
+
+---
+
+## [Phase 27] — 2026-07-02
+
+### Added
+- **Auth package** (`packages/auth`): AuthManager, TLS certificate generation, session tokens, token store
+- **Collab package** (`packages/collab`): SharedSessionManager, PresenceManager, ShareLinkManager, ReviewQueue
+- **Authorization scopes**: Scope constants, `requireScope` middleware, route-level enforcement
+- **Tailscale auto-detect**: automatic discovery of Tailscale IP for remote access
+- **User-aware rate limiting**: per-user rate limits with token bucket algorithm
+- **Server routes**: auth + collab HTTP and SSE routes with full protocol contracts
+- **CLI `init` command**: project scaffolding with TypeScript and Bun templates
+- **CLI `plugin` commands**: list, install, enable, disable, uninstall
+- **Session export/import**: serialize and restore session state
+- **Mobile-web notifications**: browser notification support
+- **TUI improvements**: welcome screen, keybinding reference overlay, mobile-web landscape CSS
+- **CI pipeline rewrite**: parallel typecheck, test, e2e with caching and coverage upload
+
+### Changed
+- AGENTS.md pruned: removed obsolete per-phase scope blocks (reduced from 15K to 4K)
+- Roadmap doc archived: completed phases 18–26 condensed into compact table
+- `.gitignore`: blanket directory patterns replaced with specific file-extension patterns
 
 ---
 

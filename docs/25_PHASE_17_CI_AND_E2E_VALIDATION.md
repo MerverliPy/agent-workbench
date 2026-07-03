@@ -1,6 +1,6 @@
 # 25 — Phase 17 CI/CD Pipeline & End-to-End Validation
 
-Status: Draft — not yet accepted
+Status: ✅ Complete — CI/CD pipeline is fully implemented and running
 Document type: implementation plan
 Scope: GitHub Actions CI pipeline + end-to-end validation tests for the full stack
 

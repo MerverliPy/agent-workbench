@@ -33,7 +33,7 @@ jobs:
       - name: Check whitespace
         run: git diff --check
       - name: Biome lint
-        run: bunx @biomejs/biome check . --no-errors-on-unmatched 2>&1 || echo "::warning::Biome lint found issues or not available"
+        run: bunx @biomejs/biome check . --no-errors-on-unmatched 2>&1
 
   typecheck:
     name: Typecheck all packages + apps
@@ -51,7 +51,7 @@ jobs:
         run: bash scripts/build-all.sh
       - name: Typecheck packages
         run: |
-          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui auth collab; do
+          for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui auth collab eval plugin-sdk telemetry; do
             echo "  [typecheck] packages/$pkg"
             (cd packages/$pkg && bun run typecheck) || exit 1
           done
@@ -64,9 +64,12 @@ jobs:
 
   test:
     name: Unit + integration tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     needs: [typecheck]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
@@ -83,6 +86,12 @@ jobs:
         with:
           name: coverage-reports
           path: coverage/
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          fail_ci_if_error: false
 
   e2e:
     name: End-to-end tests
