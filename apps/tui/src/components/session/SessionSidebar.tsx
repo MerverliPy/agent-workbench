@@ -42,7 +42,7 @@ export function SessionSidebar(): JSX.Element {
 
       // Auto-select first session if none active
       if (!activeSessionId() && items.length > 0) {
-        switchSession(items[0]?.id);
+        switchSession(items[0]!.id);
       }
     } catch {
       // Server session APIs may be unavailable — fall back to placeholder
