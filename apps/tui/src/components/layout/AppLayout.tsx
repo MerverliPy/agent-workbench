@@ -2,16 +2,20 @@ import type { JSX } from "@opentui/solid";
 import { Show } from "solid-js";
 import {
   commandPaletteOpen,
+  comparisonOpen,
   diffViewerOpen,
   ledgerPanelOpen,
   permissionModalOpen,
+  playgroundOpen,
   tokenHealthOpen,
 } from "../../state/app";
 import { MessageTimeline } from "../messages/MessageTimeline";
 import { CommandPalette } from "../palette/CommandPalette";
+import { ComparisonPanel } from "../panels/ComparisonPanel";
 import { DiffViewer } from "../panels/DiffViewer";
 import { LedgerPanel } from "../panels/LedgerPanel";
 import { PermissionModal } from "../panels/PermissionModal";
+import { PlaygroundPanel } from "../panels/PlaygroundPanel";
 import { TokenHealthPanel } from "../panels/TokenHealthPanel";
 import { PromptEditor } from "../prompt/PromptEditor";
 import { SessionSidebar } from "../session/SessionSidebar";
@@ -62,6 +66,12 @@ export function AppLayout(): JSX.Element {
       </Show>
       <Show when={tokenHealthOpen()}>
         <TokenHealthPanel />
+      </Show>
+      <Show when={playgroundOpen()}>
+        <PlaygroundPanel />
+      </Show>
+      <Show when={comparisonOpen()}>
+        <ComparisonPanel />
       </Show>
     </box>
   );

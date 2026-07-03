@@ -85,6 +85,7 @@
       "name": "@agent-workbench/tui",
       "version": "0.0.0",
       "dependencies": {
+        "@agent-workbench/eval": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/sdk": "workspace:*",
         "@opentui/core": "0.4.2",

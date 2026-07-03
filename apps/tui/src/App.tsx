@@ -20,14 +20,17 @@ import {
   cancelStreaming,
   clearShellOutput,
   commandPaletteOpen,
+  comparisonOpen,
   diffViewerOpen,
   finalizeStreamingMessage,
   ledgerPanelOpen,
   PLACEHOLDER_SESSION_ID,
+  playgroundOpen,
   removePendingPermissionRequest,
   setAvailableAgents,
   setCommandPaletteOpen,
   setCompactionSuggestion,
+  setComparisonOpen,
   setCurrentAgentId,
   setCurrentDiffPreview,
   setCurrentPlan,
@@ -35,6 +38,7 @@ import {
   setLedgerPanelOpen,
   setMutationStatus,
   setPermissionModalOpen,
+  setPlaygroundOpen,
   setServerError,
   setServerStatus,
   setShellStatus,
@@ -82,8 +86,8 @@ export function App(): JSX.Element {
   // ── Global keyboard handling ─────────────────────────────────────────────
 
   useKeyboard((key) => {
-    // Ctrl+K  or  Ctrl+P: toggle command palette
-    if ((key.ctrl && key.name === "k") || (key.ctrl && key.name === "p")) {
+    // Ctrl+K: toggle command palette
+    if (key.ctrl && key.name === "k") {
       setCommandPaletteOpen((open) => !open);
       return;
     }
@@ -94,6 +98,8 @@ export function App(): JSX.Element {
       if (diffViewerOpen()) setDiffViewerOpen(false);
       if (tokenHealthOpen()) setTokenHealthOpen(false);
       if (ledgerPanelOpen()) setLedgerPanelOpen(false);
+      if (playgroundOpen()) setPlaygroundOpen(false);
+      if (comparisonOpen()) setComparisonOpen(false);
       return;
     }
 
@@ -121,6 +127,18 @@ export function App(): JSX.Element {
     // Ctrl+T: toggle token health
     if (key.ctrl && key.name === "t") {
       setTokenHealthOpen((open) => !open);
+      return;
+    }
+
+    // Ctrl+P: toggle model playground
+    if (key.ctrl && key.name === "p") {
+      setPlaygroundOpen((open) => !open);
+      return;
+    }
+
+    // Ctrl+M: toggle model comparison
+    if (key.ctrl && key.name === "m") {
+      setComparisonOpen((open) => !open);
       return;
     }
 

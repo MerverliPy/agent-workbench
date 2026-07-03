@@ -116,6 +116,10 @@ export const [diffViewerOpen, setDiffViewerOpen] = createSignal(false);
 
 export const [tokenHealthOpen, setTokenHealthOpen] = createSignal(false);
 
+export const [playgroundOpen, setPlaygroundOpen] = createSignal(false);
+
+export const [comparisonOpen, setComparisonOpen] = createSignal(false);
+
 // ── Phase 9: Diff preview / mutation status ───────────────────────────────
 
 /**

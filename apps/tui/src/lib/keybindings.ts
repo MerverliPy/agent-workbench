@@ -68,6 +68,16 @@ export const KEYBINDINGS: readonly Keybinding[] = [
     category: "panels",
   },
   {
+    combo: "Ctrl+P",
+    description: "Toggle model playground",
+    category: "panels",
+  },
+  {
+    combo: "Ctrl+M",
+    description: "Toggle model comparison",
+    category: "panels",
+  },
+  {
     combo: "Ctrl+L",
     description: "Clear message timeline",
     category: "panels",
