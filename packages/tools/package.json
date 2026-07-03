@@ -17,11 +17,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/cache": "workspace:*",
-    "@agent-workbench/diff": "workspace:*",
-    "@agent-workbench/protocol": "workspace:*",
-    "@agent-workbench/shell": "workspace:*",
-    "@agent-workbench/storage": "workspace:*",
+    "@agent-workbench/cache": "*",
+    "@agent-workbench/diff": "*",
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/shell": "*",
+    "@agent-workbench/storage": "*",
     "ulid": "^2.3.0",
     "zod": "^4.4.3"
   },
