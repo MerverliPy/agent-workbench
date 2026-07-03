@@ -60,5 +60,8 @@
     "*.{ts,tsx,js,jsx,json,md,yaml,yml}": [
       "bash -c 'which biome &>/dev/null && bunx @biomejs/biome check --write --no-errors-on-unmatched || echo \"ok\"'"
     ]
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
   }
 }
