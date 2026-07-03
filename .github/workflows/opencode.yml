@@ -1,0 +1,32 @@
+name: OpenCode Agent
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  opencode:
+    if: contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show request
+        run: |
+          echo "OpenCode trigger detected."
+          echo "${{ github.event.comment.body }}"
+
+      - name: Placeholder for OpenCode GitHub integration
+        run: |
+          echo "Install/configure OpenCode GitHub integration here."
+          echo "Do not enable autonomous write behavior until secrets and approval rules are configured."
