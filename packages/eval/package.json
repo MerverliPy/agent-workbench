@@ -17,9 +17,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*",
-    "@agent-workbench/events": "workspace:*",
-    "@agent-workbench/storage": "workspace:*",
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/events": "*",
+    "@agent-workbench/storage": "*",
     "drizzle-orm": "^0.45.2",
     "promptfoo": "^0.121.17",
     "ulid": "^2.3.0"

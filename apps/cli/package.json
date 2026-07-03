@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/plugin-sdk": "workspace:*"
+    "@agent-workbench/plugin-sdk": "*"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14"

@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*",
-    "@agent-workbench/sdk": "workspace:*",
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/sdk": "*",
     "marked": "^18.0.5",
     "solid-js": "^1.9.14"
   },

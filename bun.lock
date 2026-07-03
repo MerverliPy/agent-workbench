@@ -333,7 +333,7 @@
     },
   },
   "overrides": {
-    "drizzle-orm": "^0.45.0",
+    "drizzle-orm": "^0.45.2",
   },
   "packages": {
     "@agent-workbench/auth": ["@agent-workbench/auth@workspace:packages/auth"],

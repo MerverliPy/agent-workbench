@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*"
+    "@agent-workbench/protocol": "*"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14"
