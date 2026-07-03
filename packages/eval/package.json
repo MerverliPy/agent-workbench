@@ -20,7 +20,7 @@
     "@agent-workbench/protocol": "workspace:*",
     "@agent-workbench/events": "workspace:*",
     "@agent-workbench/storage": "workspace:*",
-    "drizzle-orm": "^0.38.0",
+    "drizzle-orm": "^0.45.2",
     "promptfoo": "^0.121.17",
     "ulid": "^2.3.0"
   },
