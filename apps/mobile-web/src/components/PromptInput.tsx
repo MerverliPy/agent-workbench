@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { Show, createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { getClient } from "../lib/sdk";
 import {
   appendMessage,

@@ -1,6 +1,11 @@
 import type { JSX } from "solid-js";
 import { createEffect, createSignal, For, Show } from "solid-js";
-import { inputText, isStreaming, messages, setInputText, streamingContent } from "../state/app";
+import {
+  isStreaming,
+  messages,
+  setInputText,
+  streamingContent,
+} from "../state/app";
 import { MessageBubble } from "./MessageBubble";
 import { StreamingIndicator } from "./StreamingIndicator";
 

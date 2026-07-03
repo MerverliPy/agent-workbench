@@ -22,7 +22,11 @@ const DEFAULTS: ConnectionSettings = {
 function getDefaultServerUrl(): string {
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
-    if (hostname !== "localhost" && hostname !== "127.0.0.1" && hostname !== "::1") {
+    if (
+      hostname !== "localhost" &&
+      hostname !== "127.0.0.1" &&
+      hostname !== "::1"
+    ) {
       return `http://${hostname}:3000`;
     }
   }
