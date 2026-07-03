@@ -1,6 +1,6 @@
 # Phase 29 Implementation Plan: Model Experimentation & Evaluation
 
-**Status:** Ready to start (Phase 27 complete, scaffolding done)  
+**Status:** Scaffolding complete — all packages compile cleanly  
 **Estimated:** 2 weeks  
 **Dependencies:** ✅ Phase 19 (live providers), ✅ Phase 24 (smart routing)  
 
@@ -33,8 +33,10 @@ Phase 29 delivers built-in model evaluation tools: A/B test prompts across provi
 
 ## Implementation Phases
 
-### Phase 29.1: Integration Research & Design (Days 1-2)
-- **Research integration approaches** (lm-evaluation-harness + promptfoo)
+### Phase 29.1: Integration Research & Design ✅ COMPLETE (Days 1-2)
+- ✅ **Research integration approaches** (lm-evaluation-harness + promptfoo)
+- ✅ **promptfoo installed** — `bun add promptfoo` → direct npm import
+- ✅ **lm-evaluation-harness installed** — `.venv-lm-eval/bin/pip install lm_eval[api]` → subprocess bridge
 - **Design eval data storage** (SQLite schema via @agent-workbench/storage)
 - **Design TUI panels** (playground, comparison, results)
 
@@ -169,61 +171,100 @@ comparison_results (
 
 ---
 
-## Integration Strategy
+## Integration Strategy (Research Results — Verified)
+
+### promptfoo (Node.js → Direct npm Import) ✅ RECOMMENDED PRIMARY
+
+**Package:** `promptfoo@0.121.17` — LLM eval & testing toolkit (MIT, now part of OpenAI, remains OSS)
+
+**Key API:**
+```typescript
+import { evaluate, type EvaluateTestSuite, type EvaluateOptions } from 'promptfoo';
+
+// Core function: runs an evaluation
+const evalResult = await evaluate(testSuite: EvaluateTestSuite, options?: EvaluateOptions);
+// Returns Eval class (id, createdAt, results[], prompts[], config, etc.)
+```
+
+**What it provides:**
+- A/B testing across multiple models/providers
+- Grading functions: matchesLlmRubric, matchesFactuality, matchesSimilarity, matchesClosedQa
+- Custom assertions (JavaScript-based grading)
+- Output-based eval (not benchmark-based — designed for prompt-level testing)
+- Built-in providers for OpenAI, Anthropic, Google, etc.
+- Red teaming plugin system
+
+**Why RECOMMENDED as primary integration:**
+- Native TypeScript, direct npm dependency
+- Clean `evaluate()` API — just import and call
+- Already handles provider routing and multi-model comparison
+- Narrow scope: prompt-level eval (complements benchmark eval below)
+
+**Approach:**
+```typescript
+import { evaluate } from 'promptfoo';
+
+export async function runPromptfooEval(suite: EvaluateTestSuite): Promise<Eval> {
+  // promptfoo handles: provider routing, parallel execution, scoring, reporting
+  return await evaluate(suite, { /* options */ });
+}
+```
+
+**package.json addition:**
+```json
+"dependencies": {
+  "promptfoo": "^0.121.17"
+}
+```
 
 ### lm-evaluation-harness (Python → Subprocess)
 
-**Why subprocess:** lm-eval-harness is Python-native. Docker or subprocess are the only viable approaches for TypeScript/Bun integration.
+**Package:** `lm-eval==0.4.12` — Standard LLM benchmark framework (MIT, EleutherAI)
+
+**What it provides:**
+- Standard ML benchmarks: MMLU, HumanEval, GSM8K, HellaSwag, ARC, etc.
+- Task-based evaluation with predefined metrics (accuracy, exact_match)
+- Industry-standard: used by model providers for their published results
+- Cannot be imported into TypeScript — subprocess only
 
 **Approach:**
 ```typescript
-// packages/eval/src/integrations/lm-eval.ts
-export class LmEvalHarness {
-  async runBenchmark(benchmark: "mmlu" | "humaneval" | "gsm8k", model: string): Promise<LmEvalResult> {
-    // 1. Check if lm-eval is installed: `python -m lm_eval --help`
-    // 2. Run: `python -m lm_eval --model <model> --tasks <benchmark> --output_path <tmp> --log_samples`
-    // 3. Parse JSON output from tmp file
-    // 4. Return structured results
-  }
+import { execSync } from 'child_process';
+import { tmpdir } from 'os';
+
+export async function runLmEvalHarness(benchmark: string, model: string, provider: string): Promise<RawResults> {
+  // 1. Write model config to a temp YAML
+  // 2. Run: python -m lm_eval --model <backend> --model_args <config> --tasks <benchmark> --output_path <tmp> --log_samples --write_out
+  // 3. Parse JSON results from output_path
+  // 4. Map back to our EvalResult format
 }
 ```
 
-**Installation requirement:**
+**Installation:**
 ```bash
-pip install lm-eval[all]  # User responsibility, documented in README
+# User responsibility — documented in README
+pip install lm-eval
+# Or in a venv:
+python3 -m venv ~/.agent-workbench/.venv
+~/.agent-workbench/.venv/bin/pip install lm-eval
 ```
 
-**Pros:** Native benchmark support, actively maintained, standard in ML evaluation  
-**Cons:** Requires Python environment, subprocess overhead
+**Comparison with promptfoo:**
 
-### promptfoo (Node.js → Direct Import)
+| Feature | promptfoo (npm) | lm-eval (pip) |
+|---------|----------------|---------------|
+| Eval Type | Prompt-level (A/B prompts) | Benchmark-level (standard ML) |
+| Integration | Direct import | Subprocess |
+| Dependency | TypeScript-native | Python (external) |
+| Best for | "Which prompt performs better?" | "Is my model competitive on MMLU?" |
+| Metrics | Custom assertions, LLM grading | Standardized (accuracy, exact_match) |
+| Parallel | Built-in | Limited |
+| Red teaming | ✅ Built-in | ❌ |
 
-**Why direct import:** promptfoo is TypeScript/Node.js native, available via npm.
-
-**Approach:**
-```typescript
-// packages/eval/src/integrations/promptfoo.ts
-import { runEval } from 'promptfoo';
-
-export class PromptfooIntegration {
-  async runEval(config: PromptfooConfig): Promise<PromptfooResult> {
-    // Direct npm API usage
-    return await runEval(config);
-  }
-}
-```
-
-**Dependencies:**
-```json
-{
-  "dependencies": {
-    "promptfoo": "^0.x.x"  // Add to packages/eval/package.json
-  }
-}
-```
-
-**Pros:** Native TypeScript, npm ecosystem, prompt-focused evaluation  
-**Cons:** Different API than lm-eval-harness
+**Decision:** Use **both**.
+- `promptfoo` for prompt-level A/B testing, comparison, and grading
+- `lm-evaluation-harness` for standard benchmark runs (optional, user must install Python deps)
+- Our `EvalRunner` class abstracts over both, dispatching to the right backend
 
 ---
 
