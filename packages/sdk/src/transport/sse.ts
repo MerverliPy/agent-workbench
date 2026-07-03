@@ -25,7 +25,7 @@ export class SseTransport {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());
     }
-    this.listeners.get(eventType)!.add(callback);
+    this.listeners.get(eventType)?.add(callback);
   }
 
   off(eventType: string, callback: EventCallback): void {
@@ -44,7 +44,8 @@ export class SseTransport {
     this.abortController = new AbortController();
     const abortSignal = this.abortController.signal;
 
-    const onExternalAbort = () => abortSignal.aborted || this.abortController?.abort();
+    const onExternalAbort = () =>
+      abortSignal.aborted || this.abortController?.abort();
     signal?.addEventListener("abort", onExternalAbort);
 
     try {
@@ -89,7 +90,11 @@ export class SseTransport {
       }
     } catch (error) {
       if (error instanceof SdkError) throw error;
-      if (error instanceof DOMException && (error as DOMException).name === "AbortError") return;
+      if (
+        error instanceof DOMException &&
+        (error as DOMException).name === "AbortError"
+      )
+        return;
       throw new SdkError("SSE connection failed", error);
     } finally {
       signal?.removeEventListener("abort", onExternalAbort);
@@ -107,7 +112,9 @@ export class SseTransport {
     try {
       parsed = JSON.parse(data);
     } catch {
-      this.errorHandler?.(new SdkError("Failed to parse SSE event data as JSON"));
+      this.errorHandler?.(
+        new SdkError("Failed to parse SSE event data as JSON"),
+      );
       return;
     }
 
@@ -118,7 +125,11 @@ export class SseTransport {
     });
 
     if (!result.success) {
-      this.errorHandler?.(new SdkError(`Malformed SSE event: ${result.error?.issues?.map((i) => i.message).join(", ")}`));
+      this.errorHandler?.(
+        new SdkError(
+          `Malformed SSE event: ${result.error?.issues?.map((i) => i.message).join(", ")}`,
+        ),
+      );
       return;
     }
 

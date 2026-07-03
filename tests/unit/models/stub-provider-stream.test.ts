@@ -1,6 +1,9 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
-import { StubModelProvider, type ModelStreamChunk } from "@agent-workbench/models";
+import { describe, expect, it } from "bun:test";
+import {
+  type ModelStreamChunk,
+  StubModelProvider,
+} from "@agent-workbench/models";
 
 describe("StubModelProvider.stream", () => {
   it("yields chunks word by word and terminates", async () => {
@@ -18,11 +21,11 @@ describe("StubModelProvider.stream", () => {
     expect(chunks.length).toBeGreaterThanOrEqual(3);
 
     // First chunk should be "hello "
-    expect(chunks[0]!.content).toBe("hello ");
-    expect(chunks[0]!.done).toBe(false);
+    expect(chunks[0]?.content).toBe("hello ");
+    expect(chunks[0]?.done).toBe(false);
 
     // Middle chunk should be "world "
-    expect(chunks[1]!.content).toBe("world ");
+    expect(chunks[1]?.content).toBe("world ");
 
     // Last chunk should be "test" with done=true, stopReason, and usage
     const last = chunks[chunks.length - 1]!;
@@ -30,8 +33,8 @@ describe("StubModelProvider.stream", () => {
     expect(last.done).toBe(true);
     expect(last.stopReason).toBe("stop");
     expect(last.usage).toBeDefined();
-    expect(last.usage!.inputTokens).toBeGreaterThan(0);
-    expect(last.usage!.outputTokens).toBeGreaterThan(0);
+    expect(last.usage?.inputTokens).toBeGreaterThan(0);
+    expect(last.usage?.outputTokens).toBeGreaterThan(0);
   });
 
   it("handles single-word text response", async () => {
@@ -47,8 +50,8 @@ describe("StubModelProvider.stream", () => {
     }
 
     expect(chunks.length).toBe(1);
-    expect(chunks[0]!.content).toBe("hello");
-    expect(chunks[0]!.done).toBe(true);
+    expect(chunks[0]?.content).toBe("hello");
+    expect(chunks[0]?.done).toBe(true);
   });
 
   it("throws AbortError when signal is already aborted", async () => {
@@ -77,10 +80,12 @@ describe("StubModelProvider.stream", () => {
 
     const controller = new AbortController();
 
-    const iterator = provider.stream({
-      messages: [{ role: "user", content: "hi" }],
-      signal: controller.signal,
-    })[Symbol.asyncIterator]();
+    const iterator = provider
+      .stream({
+        messages: [{ role: "user", content: "hi" }],
+        signal: controller.signal,
+      })
+      [Symbol.asyncIterator]();
 
     // Read a few chunks — discard values, just verify no error yet
     await iterator.next();

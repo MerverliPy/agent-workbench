@@ -1,5 +1,9 @@
+import type {
+  ModelProvider,
+  ModelResponse,
+  ModelStreamChunk,
+} from "@agent-workbench/models";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { ModelProvider, ModelResponse, ModelStreamChunk } from "@agent-workbench/models";
 import type { ContextMessage } from "./types";
 
 /**
@@ -23,7 +27,7 @@ export class ModelRouter {
     messages: ContextMessage[],
     tools?: ToolDefinition[],
     signal?: AbortSignal,
-    maxTokens?: number
+    maxTokens?: number,
   ): Promise<ModelResponse> {
     return this.provider.call({
       messages: messages.map((m) => ({
@@ -62,7 +66,7 @@ export class ModelRouter {
     messages: ContextMessage[],
     tools?: ToolDefinition[],
     signal?: AbortSignal,
-    maxTokens?: number
+    maxTokens?: number,
   ): AsyncIterable<ModelStreamChunk> {
     if (typeof this.provider.stream !== "function") {
       // Fallback: call non-streaming and yield a single terminal chunk
@@ -83,13 +87,14 @@ export class ModelRouter {
       ...(m.toolCalls !== undefined ? { toolCalls: m.toolCalls } : {}),
     }));
 
-    const mappedTools = (tools !== undefined && tools.length > 0)
-      ? tools.map((t) => ({
-          name: t.name,
-          description: t.description,
-          inputSchema: t.inputSchema,
-        }))
-      : undefined;
+    const mappedTools =
+      tools !== undefined && tools.length > 0
+        ? tools.map((t) => ({
+            name: t.name,
+            description: t.description,
+            inputSchema: t.inputSchema,
+          }))
+        : undefined;
 
     yield* this.provider.stream({
       messages: mappedMessages,

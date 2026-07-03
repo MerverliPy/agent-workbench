@@ -1,6 +1,6 @@
-import type { AgentProfile } from "./types";
-import { ALL_AGENTS } from "./definitions";
 import type { AgentId } from "@agent-workbench/protocol";
+import { ALL_AGENTS } from "./definitions";
+import type { AgentProfile } from "./types";
 
 export class AgentRegistry {
   get(id: string): AgentProfile | undefined {
@@ -11,7 +11,9 @@ export class AgentRegistry {
     return Array.from(ALL_AGENTS.values());
   }
 
-  resolveActiveAgent(sessionActiveAgent: string | null | undefined): AgentProfile {
+  resolveActiveAgent(
+    sessionActiveAgent: string | null | undefined,
+  ): AgentProfile {
     if (sessionActiveAgent === "build" || sessionActiveAgent === "plan") {
       const profile = ALL_AGENTS.get(sessionActiveAgent);
       if (profile !== undefined) {

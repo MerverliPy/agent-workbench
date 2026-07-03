@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { Plan, PlanListResponse, PlanDecision } from "../schemas/plan";
+import { Plan, PlanDecision, PlanListResponse } from "../schemas/plan";
 import { SessionIdParams } from "./session";
 
 export const PlanIdParams = z.object({

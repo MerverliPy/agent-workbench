@@ -21,15 +21,13 @@
  */
 
 import type { PlanStep } from "@agent-workbench/protocol";
+import { defaultPolicy } from "./policy";
 import type {
   PermissionEvalInput,
   PermissionEvalResult,
   PermissionOutcome,
   PermissionPolicy,
-  PathRule,
 } from "./types";
-import { defaultPolicy } from "./policy";
-import type { RiskLevel } from "@agent-workbench/protocol";
 
 const PLAN_STEP_TO_TOOL: Record<string, string> = {
   read: "read",
@@ -109,10 +107,7 @@ export class PermissionEngine {
 
   // ── Plan-level evaluation (Phase 13) ────────────────────────────────────
 
-  evaluatePlan(
-    steps: PlanStep[],
-    agentId?: string
-  ): PermissionEvalResult {
+  evaluatePlan(steps: PlanStep[], agentId?: string): PermissionEvalResult {
     let mostRestrictive: PermissionEvalResult | undefined;
 
     for (const step of steps) {
@@ -136,7 +131,11 @@ export class PermissionEngine {
     }
 
     if (mostRestrictive === undefined) {
-      return { outcome: "allow", riskLevel: "low", reason: "Plan has no evaluable steps." };
+      return {
+        outcome: "allow",
+        riskLevel: "low",
+        reason: "Plan has no evaluable steps.",
+      };
     }
     return mostRestrictive;
   }
@@ -159,7 +158,7 @@ export class PermissionEngine {
 
   private checkAgent(
     agentId: string,
-    toolName: string
+    toolName: string,
   ): PermissionEvalResult | undefined {
     for (const rule of this.policy.agentRules) {
       if (
@@ -240,9 +239,9 @@ export class PermissionEngine {
       const prefix = pattern.slice(0, -3); // remove "/**"
       return (
         normalised === prefix ||
-        normalised.startsWith(prefix + "/") ||
-        normalised.includes("/" + prefix + "/") ||
-        normalised.startsWith(prefix + "/")
+        normalised.startsWith(`${prefix}/`) ||
+        normalised.includes(`/${prefix}/`) ||
+        normalised.startsWith(`${prefix}/`)
       );
     }
 
@@ -256,8 +255,8 @@ export class PermissionEngine {
     if (pattern.endsWith(".*")) {
       const prefix = pattern.slice(0, -2); // e.g. ".env"
       return (
-        basename.startsWith(prefix + ".") ||
-        normalised.endsWith("/" + prefix + ".") ||
+        basename.startsWith(`${prefix}.`) ||
+        normalised.endsWith(`/${prefix}.`) ||
         basename === prefix
       );
     }
@@ -277,20 +276,5 @@ export class PermissionEngine {
       deny: 2,
     };
     return order[outcome];
-  }
-
-  /**
-   * Return the more restrictive of two risk levels.
-   * Used internally if needed for future composite rules.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private maxRiskLevel(a: RiskLevel, b: RiskLevel): RiskLevel {
-    const order: Record<RiskLevel, number> = {
-      low: 0,
-      medium: 1,
-      high: 2,
-      critical: 3,
-    };
-    return order[a] >= order[b] ? a : b;
   }
 }

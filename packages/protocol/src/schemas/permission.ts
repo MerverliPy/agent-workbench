@@ -1,10 +1,15 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
+import { Timestamp, Ulid } from "./common";
 
 export const RiskLevel = z.enum(["low", "medium", "high", "critical"]);
 export type RiskLevel = z.infer<typeof RiskLevel>;
 
-export const PermissionRequestStatus = z.enum(["pending", "approved", "denied", "expired"]);
+export const PermissionRequestStatus = z.enum([
+  "pending",
+  "approved",
+  "denied",
+  "expired",
+]);
 export type PermissionRequestStatus = z.infer<typeof PermissionRequestStatus>;
 
 export const PermissionDecisionValue = z.enum(["allow", "deny"]);

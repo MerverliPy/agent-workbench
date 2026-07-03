@@ -1,43 +1,60 @@
-import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
+import { AuthManager, TlsConfig } from "@agent-workbench/auth";
+import { ToolCache } from "@agent-workbench/cache";
+import {
+  PresenceManager,
+  ReviewQueue,
+  SharedSessionManager,
+  ShareManager,
+} from "@agent-workbench/collab";
+import {
+  AgentRegistry,
+  SessionRunner,
+  TokenHealthService,
+} from "@agent-workbench/core";
 import { EventBus } from "@agent-workbench/events";
 import {
-  ProviderRegistry,
-  ProviderMarketplace,
-  SmartRouter,
   CostTracker,
   ProviderHealthMonitor,
+  ProviderMarketplace,
+  ProviderRegistry,
+  SmartRouter,
 } from "@agent-workbench/models";
-import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
-import { PluginRegistry } from "@agent-workbench/plugin-sdk";
-import { AuthManager, authMiddleware, TlsConfig } from "@agent-workbench/auth";
-import { SharedSessionManager } from "@agent-workbench/collab";
-import { PresenceManager } from "@agent-workbench/collab";
-import { ReviewQueue } from "@agent-workbench/collab";
-import { ShareManager } from "@agent-workbench/collab";
-import { loadAllPlugins } from "./plugin-loader";
-import { detectTailscaleIp } from "./utils/tailscale";
 import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool, registerPtyShellTool } from "@agent-workbench/tools";
+import { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import { PtyCommandRunner, SimpleCommandRunner } from "@agent-workbench/shell";
 import {
+  CacheRepository,
   createStorageConnection,
+  FileChangeRepository,
+  LedgerRepository,
+  MessageRepository,
+  PermissionRepository,
+  PlanRepository,
   runMigrations,
   SessionRepository,
-  MessageRepository,
-  ToolCallRepository,
-  LedgerRepository,
-  CacheRepository,
-  FileChangeRepository,
-  PermissionRepository,
   SummaryRepository,
-  PlanRepository,
+  ToolCallRepository,
   WorkspaceRepository,
 } from "@agent-workbench/storage";
-import { ToolCache } from "@agent-workbench/cache";
-import { SimpleCommandRunner, PtyCommandRunner } from "@agent-workbench/shell";
+import {
+  ErrorReporter,
+  MetricsExporter,
+  RequestLogger,
+  Tracer,
+} from "@agent-workbench/telemetry";
+import {
+  registerMutationTools,
+  registerPtyShellTool,
+  registerReadOnlyTools,
+  registerShellTool,
+  ToolRegistry,
+} from "@agent-workbench/tools";
 import { ulid } from "ulid";
 import { createApp } from "./app";
 import { getServerConfig } from "./config";
+import { loadAllPlugins } from "./plugin-loader";
 import { createLogger } from "./utils/logger";
+import { detectTailscaleIp } from "./utils/tailscale";
 
 const config = getServerConfig();
 const logger = createLogger("server");
@@ -60,7 +77,9 @@ const workspaceRepository = new WorkspaceRepository(storage.db);
 // ── Reconcile stale permission requests from previous server instance ──────
 const staleRequests = permissionRepository.listRequests("pending");
 if (staleRequests.length > 0) {
-  logger.info(`Resolving ${staleRequests.length} stale permission requests (server restart)`);
+  logger.info(
+    `Resolving ${staleRequests.length} stale permission requests (server restart)`,
+  );
   for (const req of staleRequests) {
     const decisionId = ulid();
     permissionRepository.createDecision({
@@ -125,7 +144,10 @@ providerHealthMonitor.start();
 const agentRegistry = new AgentRegistry();
 
 // ── Phase 12: Token health service ──────────────────────────────────────────────
-const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
+const tokenHealthService = new TokenHealthService(
+  messageRepository,
+  summaryRepository,
+);
 
 // ── Phase 25: Observability ─────────────────────────────────────────────────
 const tracer = new Tracer({ maxSpans: 10_000 });
@@ -137,31 +159,46 @@ const requestLogger = new RequestLogger({ level: "info" });
 const pluginRegistry = new PluginRegistry();
 logger.info(`Plugin directory: ${pluginRegistry.getPluginsDir()}`);
 
-const pluginLoadResult = await loadAllPlugins({ pluginRegistry, toolRegistry, providerRegistry });
+const pluginLoadResult = await loadAllPlugins({
+  pluginRegistry,
+  toolRegistry,
+  providerRegistry,
+});
 if (pluginLoadResult.loaded > 0 || pluginLoadResult.failed > 0) {
-  logger.info(`Plugins: ${pluginLoadResult.loaded} loaded, ${pluginLoadResult.failed} failed`);
+  logger.info(
+    `Plugins: ${pluginLoadResult.loaded} loaded, ${pluginLoadResult.failed} failed`,
+  );
 }
 
 // ── Phase 27: Auth ─────────────────────────────────────────────────────────
 const authManager = new AuthManager();
 if (authManager.isEnabled) {
   logger.info("Auth is enabled — bearer token required for API access");
-  logger.info(`  Generate a token: curl -X POST http://${config.host}:${config.port}/auth/token \\`);
+  logger.info(
+    `  Generate a token: curl -X POST http://${config.host}:${config.port}/auth/token \\`,
+  );
   logger.info(`    -H "Content-Type: application/json" \\`);
-  logger.info(`    -d '{"secret":"<AGENT_WORKBENCH_AUTH_SECRET>","label":"my-device"}'`);
+  logger.info(
+    `    -d '{"secret":"<AGENT_WORKBENCH_AUTH_SECRET>","label":"my-device"}'`,
+  );
   if (authManager.isTlsEnabled) {
     logger.info("TLS is enabled — server will serve HTTPS");
   }
 } else {
   logger.info("Auth is disabled — all API requests are unauthenticated");
-  logger.info(`  Set AGENT_WORKBENCH_AUTH_SECRET and AGENT_WORKBENCH_AUTH_ENABLED=true to enable`);
+  logger.info(
+    `  Set AGENT_WORKBENCH_AUTH_SECRET and AGENT_WORKBENCH_AUTH_ENABLED=true to enable`,
+  );
 }
 
 // ── Phase 27: Collaboration ───────────────────────────────────────────────
 const sharedSessionManager = new SharedSessionManager({ eventBus });
 logger.info("Collaboration — shared session presence ready");
 
-const shareManager = new ShareManager({ eventBus, baseUrl: `http://${config.host}:${config.port}` });
+const shareManager = new ShareManager({
+  eventBus,
+  baseUrl: `http://${config.host}:${config.port}`,
+});
 logger.info("Collaboration — session sharing ready");
 
 const presenceManager = new PresenceManager(sharedSessionManager);
@@ -240,7 +277,12 @@ if (authManager.isTlsEnabled) {
   logger.info("Phase 27 — TLS enabled, serving HTTPS");
 }
 logger.info("Phase 10 — Shell Execution active");
-logger.info(`Registered tools: ${toolRegistry.list().map((t) => t.name).join(", ")}`);
+logger.info(
+  `Registered tools: ${toolRegistry
+    .list()
+    .map((t) => t.name)
+    .join(", ")}`,
+);
 logger.info("Phase 15 — Provider integration active");
 
 // ── Graceful shutdown ──────────────────────────────────────────────────────
@@ -258,7 +300,10 @@ const shutdown = async (signal: string) => {
 
   // Close storage connection.
   try {
-    if (typeof (storage as unknown as Record<string, unknown>).close === "function") {
+    if (
+      typeof (storage as unknown as Record<string, unknown>).close ===
+      "function"
+    ) {
       ((storage as unknown as Record<string, unknown>).close as () => void)();
     }
   } catch {
@@ -282,7 +327,7 @@ if (authManager.isTlsEnabled) {
     hostname: config.host,
     fetch: app.fetch,
     tls: { key, cert },
-    development: process.env["NODE_ENV"] !== "production",
+    development: process.env.NODE_ENV !== "production",
   });
 
   logger.info(`🔒 HTTPS server ready at https://${config.host}:${config.port}`);
@@ -291,7 +336,7 @@ if (authManager.isTlsEnabled) {
     port: config.port,
     hostname: config.host,
     fetch: app.fetch,
-    development: process.env["NODE_ENV"] !== "production",
+    development: process.env.NODE_ENV !== "production",
   });
 
   logger.info(`🔓 HTTP server ready at http://${config.host}:${config.port}`);

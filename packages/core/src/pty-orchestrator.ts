@@ -15,10 +15,7 @@ import type { PtyCommandRunner } from "@agent-workbench/shell";
  * in ToolDispatcher/SessionRunner before reaching this point.
  */
 export class PtyOrchestrator {
-  private activeProcesses = new Map<
-    string,
-    { abort: () => void }
-  >();
+  private activeProcesses = new Map<string, { abort: () => void }>();
 
   constructor(private readonly runner: PtyCommandRunner) {}
 

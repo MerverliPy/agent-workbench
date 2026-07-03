@@ -1,19 +1,19 @@
-import { ulid } from "ulid";
-import type { Hono } from "hono";
-import {
-  CreateSessionRoute,
-  GetSessionRoute,
-  ListSessionsRoute,
-  UpdateSessionRoute,
-  AbortSessionRoute,
-  SummarizeSessionRoute,
-  DeleteSessionRoute,
-} from "@agent-workbench/protocol";
 import { RunLedger } from "@agent-workbench/core";
 import { EventName } from "@agent-workbench/events";
 import type { EventEnvelope } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import {
+  AbortSessionRoute,
+  CreateSessionRoute,
+  DeleteSessionRoute,
+  GetSessionRoute,
+  ListSessionsRoute,
+  SummarizeSessionRoute,
+  UpdateSessionRoute,
+} from "@agent-workbench/protocol";
+import type { Hono } from "hono";
+import { ulid } from "ulid";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 /**
@@ -24,7 +24,7 @@ import { createJsonRouteHandler } from "./helpers";
  */
 export function registerSessionRoutes(
   app: Hono<ServerAppBindings>,
-  services: ServerServices
+  services: ServerServices,
 ): void {
   const { sessionRepository, sessionRunner } = services;
 
@@ -54,7 +54,7 @@ export function registerSessionRoutes(
         metadataJson: null,
       });
       return rowToProtocol(row);
-    })
+    }),
   );
 
   // GET /session
@@ -78,7 +78,7 @@ export function registerSessionRoutes(
       const nextCursor =
         rows.length === query.limit ? rows[rows.length - 1]?.id : undefined;
       return { items: rows.map(rowToProtocol), nextCursor };
-    })
+    }),
   );
 
   // GET /session/:sessionId
@@ -96,7 +96,7 @@ export function registerSessionRoutes(
         });
       }
       return rowToProtocol(row);
-    })
+    }),
   );
 
   // PATCH /session/:sessionId
@@ -133,8 +133,12 @@ export function registerSessionRoutes(
           ? { activeAgent: body.activeAgent }
           : {}),
         ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.workspaceId !== undefined ? { workspaceId: body.workspaceId } : {}),
-        ...(body.tags !== undefined ? { tagsJson: JSON.stringify(body.tags) } : {}),
+        ...(body.workspaceId !== undefined
+          ? { workspaceId: body.workspaceId }
+          : {}),
+        ...(body.tags !== undefined
+          ? { tagsJson: JSON.stringify(body.tags) }
+          : {}),
         updatedAt: new Date().toISOString(),
       });
       if (updated === undefined) {
@@ -168,14 +172,17 @@ export function registerSessionRoutes(
           const ledger = new RunLedger(
             services.ledgerRepository,
             sessionId,
-            undefined
+            undefined,
           );
-          ledger.recordAgentSelected(body.activeAgent, agentProfile.promptVersion);
+          ledger.recordAgentSelected(
+            body.activeAgent,
+            agentProfile.promptVersion,
+          );
         }
       }
 
       return rowToProtocol(updated);
-    })
+    }),
   );
 
   // POST /session/:sessionId/abort
@@ -199,7 +206,7 @@ export function registerSessionRoutes(
         updatedAt: new Date().toISOString(),
       });
       return rowToProtocol(updated ?? existing);
-    })
+    }),
   );
 
   // POST /session/:sessionId/summarize — Phase 12
@@ -209,7 +216,7 @@ export function registerSessionRoutes(
       const { sessionId } = validated.pathParams as { sessionId: string };
       const result = services.sessionRunner.summarizeSession(sessionId);
       return result;
-    })
+    }),
   );
 
   // DELETE /session/:sessionId
@@ -232,13 +239,13 @@ export function registerSessionRoutes(
         updatedAt: new Date().toISOString(),
       });
       return { deleted: true };
-    })
+    }),
   );
 }
 
 /** Convert a storage session row to the protocol Session shape. */
 function rowToProtocol(
-  row: import("@agent-workbench/storage").SessionRow
+  row: import("@agent-workbench/storage").SessionRow,
 ): import("@agent-workbench/protocol").Session {
   return {
     id: row.id,

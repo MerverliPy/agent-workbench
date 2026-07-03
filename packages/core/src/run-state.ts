@@ -29,7 +29,7 @@ export class RunRegistry {
   register(run: ActiveRun): void {
     if (this.runs.has(run.sessionId)) {
       throw new Error(
-        `Session ${run.sessionId} already has an active run (${this.runs.get(run.sessionId)?.runId}). Wait for it to complete or abort it first.`
+        `Session ${run.sessionId} already has an active run (${this.runs.get(run.sessionId)?.runId}). Wait for it to complete or abort it first.`,
       );
     }
     this.runs.set(run.sessionId, run);

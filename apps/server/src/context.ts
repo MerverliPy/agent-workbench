@@ -1,24 +1,44 @@
-import type { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
-import type { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
-import type { EventBus } from "@agent-workbench/events";
-import type { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
-import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
 import type { AuthManager } from "@agent-workbench/auth";
-import type { SharedSessionManager } from "@agent-workbench/collab";
-import type { PresenceManager } from "@agent-workbench/collab";
-import type { ReviewQueue } from "@agent-workbench/collab";
-import type { ShareManager } from "@agent-workbench/collab";
-import {
-  SessionRepository,
-  MessageRepository,
-  ToolCallRepository,
+import type {
+  PresenceManager,
+  ReviewQueue,
+  SharedSessionManager,
+  ShareManager,
+} from "@agent-workbench/collab";
+import type {
+  AgentRegistry,
+  SessionRunner,
+  TokenHealthService,
+} from "@agent-workbench/core";
+import type { EventBus } from "@agent-workbench/events";
+import type {
+  CostTracker,
+  ProviderHealthMonitor,
+  ProviderMarketplace,
+  ProviderRegistry,
+  SmartRouter,
+} from "@agent-workbench/models";
+import type {
+  PermissionEngine,
+  PermissionGate,
+} from "@agent-workbench/permissions";
+import type { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import type {
   LedgerRepository,
+  MessageRepository,
   PermissionRepository,
-  SummaryRepository,
   PlanRepository,
+  SessionRepository,
+  SummaryRepository,
+  ToolCallRepository,
+  WorkspaceRepository,
 } from "@agent-workbench/storage";
-import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { WorkspaceRepository } from "@agent-workbench/storage";
+import type {
+  ErrorReporter,
+  MetricsExporter,
+  RequestLogger,
+  Tracer,
+} from "@agent-workbench/telemetry";
 
 /** Per-request variables set by middleware. */
 export interface RequestContextVariables {

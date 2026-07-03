@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { asc, eq } from "drizzle-orm";
 import { toolCalls } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type ToolCallRow = typeof toolCalls.$inferSelect;
 export type ToolCallInsert = typeof toolCalls.$inferInsert;
@@ -43,7 +43,7 @@ export class ToolCallRepository {
 
   update(
     id: string,
-    data: Partial<Omit<ToolCallInsert, "id">>
+    data: Partial<Omit<ToolCallInsert, "id">>,
   ): ToolCallRow | undefined {
     this.db.update(toolCalls).set(data).where(eq(toolCalls.id, id)).run();
     return this.findById(id);

@@ -1,11 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { ProviderMarketplace, SmartRouter } from "@agent-workbench/models";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ProviderMarketplace, SmartRouter } from "@agent-workbench/models";
 
 function makeTempDir(): string {
-  const dir = join(tmpdir(), `aw-router-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const dir = join(
+    tmpdir(),
+    `aw-router-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -66,7 +69,9 @@ describe("SmartRouter", () => {
   afterEach(() => {
     try {
       rmSync(tmpDir, { recursive: true, force: true });
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
   });
 
   describe("classify", () => {
@@ -78,19 +83,25 @@ describe("SmartRouter", () => {
     });
 
     it("classifies code generation prompts correctly", () => {
-      const result = router.classify("create a new function that sorts the array");
+      const result = router.classify(
+        "create a new function that sorts the array",
+      );
       expect(result.category).toBe("code_generation");
       expect(result.confidence).toBeGreaterThan(0);
     });
 
     it("classifies summarization prompts correctly", () => {
-      const result = router.classify("summarize the key points from this document");
+      const result = router.classify(
+        "summarize the key points from this document",
+      );
       expect(result.category).toBe("summarization");
       expect(result.confidence).toBeGreaterThan(0);
     });
 
     it("classifies architecture review prompts correctly", () => {
-      const result = router.classify("review the architecture of this system design");
+      const result = router.classify(
+        "review the architecture of this system design",
+      );
       expect(result.category).toBe("architecture_review");
       expect(result.confidence).toBeGreaterThan(0);
     });
@@ -110,7 +121,9 @@ describe("SmartRouter", () => {
     });
 
     it("selects mid-tier provider for code generation", () => {
-      const decision = router.classifyAndRoute("implement a binary search tree");
+      const decision = router.classifyAndRoute(
+        "implement a binary search tree",
+      );
       // Mid-tier (claude) has code_generation in categories and preferred tier
       expect(decision.provider.id).toBe("mid");
       expect(decision.category).toBe("code_generation");
@@ -120,15 +133,21 @@ describe("SmartRouter", () => {
       const decision = router.classifyAndRoute("what is in this directory");
       expect(decision.fallbackChain.length).toBeGreaterThan(0);
       // The selected provider should NOT be in the fallback chain
-      expect(decision.fallbackChain.find((p) => p.id === decision.provider.id)).toBeUndefined();
+      expect(
+        decision.fallbackChain.find((p) => p.id === decision.provider.id),
+      ).toBeUndefined();
     });
 
     it("throws when no enabled providers exist", () => {
       const emptyDir = makeTempDir();
       const emptyMp = new ProviderMarketplace(emptyDir);
       const emptyRouter = new SmartRouter(emptyMp);
-      expect(() => emptyRouter.classifyAndRoute("test")).toThrow("No enabled provider profiles");
-      try { rmSync(emptyDir, { recursive: true, force: true }); } catch {}
+      expect(() => emptyRouter.classifyAndRoute("test")).toThrow(
+        "No enabled provider profiles",
+      );
+      try {
+        rmSync(emptyDir, { recursive: true, force: true });
+      } catch {}
     });
   });
 

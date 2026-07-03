@@ -1,61 +1,70 @@
-import { z } from "zod/v4";
-import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { HealthRoute } from "../routes/health";
-import { EventRoute } from "../routes/event";
-import { GlobalInfoRoute } from "../routes/info";
 import {
-  CreateSessionRoute,
-  ListSessionsRoute,
-  GetSessionRoute,
-  UpdateSessionRoute,
-  AbortSessionRoute,
-  SummarizeSessionRoute,
-  DeleteSessionRoute,
-} from "../routes/session";
-import {
-  SubmitMessageRoute,
-  ListMessagesRoute,
-  GetMessageRoute,
-} from "../routes/message";
+  OpenAPIRegistry,
+  OpenApiGeneratorV3,
+} from "@asteasolutions/zod-to-openapi";
+import type { z } from "zod/v4";
+import { GetAgentRoute, ListAgentsRoute } from "../routes/agent";
+import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
 import {
   GetConfigRoute,
   GetEffectiveConfigRoute,
   ValidateConfigRoute,
 } from "../routes/config";
+import { EventRoute } from "../routes/event";
 import {
-  ListProvidersRoute,
-  GetProviderRoute,
-  ListProviderModelsRoute,
-} from "../routes/provider";
-import {
-  ListFilesRoute,
-  ReadFileRoute,
   GetFileDiffRoute,
   GetFileTreeRoute,
+  ListFilesRoute,
+  ReadFileRoute,
 } from "../routes/file";
+import { HealthRoute } from "../routes/health";
+import { GlobalInfoRoute } from "../routes/info";
 import {
-  ListPermissionRequestsRoute,
-  GetPermissionRequestRoute,
+  CreateProviderProfileRoute,
+  DeleteProviderProfileRoute,
+  GetProviderProfileRoute,
+  ListProviderProfilesRoute,
+  TestProviderConnectionRoute,
+  UpdateProviderProfileRoute,
+} from "../routes/marketplace";
+import {
+  GetMessageRoute,
+  ListMessagesRoute,
+  SubmitMessageRoute,
+} from "../routes/message";
+import {
   DecidePermissionRoute,
   GetEffectivePolicyRoute,
+  GetPermissionRequestRoute,
+  ListPermissionRequestsRoute,
 } from "../routes/permission";
-import { ListToolsRoute, GetToolRoute } from "../routes/tool";
-import { ListAgentsRoute, GetAgentRoute } from "../routes/agent";
-import { GetTokenHealthRoute } from "../routes/token-health";
-import { PrefillPromptRoute, FocusRoute, GetTuiStateRoute } from "../routes/tui";
-import { CreateTokenRoute, GetAuthStatusRoute } from "../routes/auth";
 import {
-  ListProviderProfilesRoute,
-  GetProviderProfileRoute,
-  CreateProviderProfileRoute,
-  UpdateProviderProfileRoute,
-  DeleteProviderProfileRoute,
-  TestProviderConnectionRoute,
-} from "../routes/marketplace";
+  GetProviderRoute,
+  ListProviderModelsRoute,
+  ListProvidersRoute,
+} from "../routes/provider";
+import {
+  AbortSessionRoute,
+  CreateSessionRoute,
+  DeleteSessionRoute,
+  GetSessionRoute,
+  ListSessionsRoute,
+  SummarizeSessionRoute,
+  UpdateSessionRoute,
+} from "../routes/session";
+import { GetTokenHealthRoute } from "../routes/token-health";
+import { GetToolRoute, ListToolsRoute } from "../routes/tool";
+import {
+  FocusRoute,
+  GetTuiStateRoute,
+  PrefillPromptRoute,
+} from "../routes/tui";
 import { ErrorEnvelope } from "../schemas/error-envelope";
 import type { RouteContract } from "../types";
 
-function openApiMethod(method: string): "get" | "post" | "put" | "patch" | "delete" {
+function openApiMethod(
+  method: string,
+): "get" | "post" | "put" | "patch" | "delete" {
   return method.toLowerCase() as "get" | "post" | "put" | "patch" | "delete";
 }
 
@@ -66,7 +75,10 @@ function openApiPath(path: string): string {
 function registerRoute(registry: OpenAPIRegistry, route: RouteContract) {
   const path = openApiPath(route.path);
 
-  const responses: Record<string, { description: string; content?: Record<string, { schema: z.ZodType }> }> = {};
+  const responses: Record<
+    string,
+    { description: string; content?: Record<string, { schema: z.ZodType }> }
+  > = {};
 
   if (route.isStream) {
     responses["200"] = {
@@ -126,7 +138,7 @@ function registerRoute(registry: OpenAPIRegistry, route: RouteContract) {
   registry.registerPath({
     method: openApiMethod(route.method),
     path,
-    request: Object.keys(request).length > 0 ? request as any : undefined,
+    request: Object.keys(request).length > 0 ? (request as any) : undefined,
     responses,
   });
 }
@@ -194,6 +206,8 @@ export function createOpenApiDocument(title: string, version: string) {
       version,
       description: "agent-workbench local API",
     },
-    servers: [{ url: "http://localhost:3000", description: "Local development" }],
+    servers: [
+      { url: "http://localhost:3000", description: "Local development" },
+    ],
   }) as unknown as Record<string, unknown>;
 }

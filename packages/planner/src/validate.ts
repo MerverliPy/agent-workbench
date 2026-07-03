@@ -1,4 +1,9 @@
-import type { Plan, PlanStep, PlanStatus, RiskLevel } from "@agent-workbench/protocol";
+import type {
+  Plan,
+  PlanStatus,
+  PlanStep,
+  RiskLevel,
+} from "@agent-workbench/protocol";
 
 export interface PlanValidationResult {
   valid: boolean;
@@ -30,11 +35,13 @@ export function validatePlan(plan: Plan): PlanValidationResult {
     errors.push(`Invalid plan status: ${plan.status}`);
   }
 
-  const mutableSteps = plan.steps.filter((s) => MUTATION_STEP_TYPES.has(s.type));
+  const mutableSteps = plan.steps.filter((s) =>
+    MUTATION_STEP_TYPES.has(s.type),
+  );
   for (const step of mutableSteps) {
     if (step.targetPath === undefined || step.targetPath.trim().length === 0) {
       errors.push(
-        `Mutation step ${step.order} ("${step.description}") must identify a targetPath.`
+        `Mutation step ${step.order} ("${step.description}") must identify a targetPath.`,
       );
     }
   }
@@ -42,7 +49,7 @@ export function validatePlan(plan: Plan): PlanValidationResult {
   for (const step of plan.steps) {
     if (step.isRisky && step.riskLevel === undefined) {
       errors.push(
-        `Risky step ${step.order} ("${step.description}") must specify a riskLevel.`
+        `Risky step ${step.order} ("${step.description}") must specify a riskLevel.`,
       );
     }
   }
@@ -52,7 +59,7 @@ export function validatePlan(plan: Plan): PlanValidationResult {
     const curr = plan.steps[i];
     if (prev !== undefined && curr !== undefined && curr.order <= prev.order) {
       errors.push(
-        `Plan steps must be in ascending order (found ${prev.order} then ${curr.order}).`
+        `Plan steps must be in ascending order (found ${prev.order} then ${curr.order}).`,
       );
     }
   }

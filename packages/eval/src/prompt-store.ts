@@ -35,8 +35,6 @@ export interface PromptTemplate {
  * as `.prompt.md` files, with git-backed version history.
  */
 export class PromptStore {
-  private baseDir: string;
-
   constructor(baseDir?: string) {
     this.baseDir = baseDir || "~/.agent-workbench/prompts/library";
   }
@@ -65,7 +63,10 @@ export class PromptStore {
   render(template: PromptTemplate, variables: Record<string, string>): string {
     let result = template.content;
     for (const [key, value] of Object.entries(variables)) {
-      result = result.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g"), value);
+      result = result.replace(
+        new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g"),
+        value,
+      );
     }
     return result;
   }

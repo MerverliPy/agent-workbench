@@ -1,5 +1,5 @@
-import { ulid } from "ulid";
 import type { CacheRepository } from "@agent-workbench/storage";
+import { ulid } from "ulid";
 
 /**
  * Session-scoped tool result cache backed by the existing CacheRepository
@@ -28,7 +28,7 @@ export class ToolCache {
     sessionId: string,
     projectPath: string,
     cacheType: string,
-    cacheKey: string
+    cacheKey: string,
   ): unknown | undefined {
     const entry = this.repo.findByKey(sessionId, cacheType, cacheKey);
     if (entry === undefined) return undefined;
@@ -65,7 +65,7 @@ export class ToolCache {
     cacheKey: string,
     value: unknown,
     sourceHash?: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     // Invalidate any existing live entry for this key.
     const existing = this.repo.findByKey(sessionId, cacheType, cacheKey);
@@ -84,8 +84,7 @@ export class ToolCache {
       createdAt: new Date().toISOString(),
       expiresAt: null,
       invalidatedAt: null,
-      metadataJson:
-        metadata !== undefined ? JSON.stringify(metadata) : null,
+      metadataJson: metadata !== undefined ? JSON.stringify(metadata) : null,
     });
   }
 
@@ -116,7 +115,7 @@ export class ToolCache {
   invalidateAffectedByPath(
     sessionId: string,
     projectPath: string,
-    _mutatedPath: string
+    _mutatedPath: string,
   ): void {
     const active = this.repo.listActiveBySession(sessionId);
     for (const entry of active) {

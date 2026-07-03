@@ -1,11 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { PluginRegistry, type PluginManifest } from "@agent-workbench/plugin-sdk";
-import { ToolRegistry } from "@agent-workbench/tools";
+import { join } from "node:path";
 import { ProviderRegistry } from "@agent-workbench/models";
-import { loadToolPlugin, loadAllPlugins } from "@agent-workbench/server/public";
+import {
+  type PluginManifest,
+  PluginRegistry,
+} from "@agent-workbench/plugin-sdk";
+import { loadAllPlugins, loadToolPlugin } from "@agent-workbench/server/public";
+import { ToolRegistry } from "@agent-workbench/tools";
 
 describe("plugin-loader", () => {
   let tmpDir: string;
@@ -44,7 +47,10 @@ describe("plugin-loader", () => {
   ): string {
     const pluginDir = join(tmpDir, dirName);
     mkdirSync(pluginDir, { recursive: true });
-    writeFileSync(join(pluginDir, "plugin.json"), JSON.stringify(manifest, null, 2));
+    writeFileSync(
+      join(pluginDir, "plugin.json"),
+      JSON.stringify(manifest, null, 2),
+    );
     writeFileSync(join(pluginDir, "index.js"), sourceCode);
     return pluginDir;
   }
@@ -57,7 +63,12 @@ describe("plugin-loader", () => {
         "test-tool-plugin",
         makeManifest({
           name: "test-tool-plugin",
-          provides: { tools: ["my-tool"], providers: [], panels: [], hooks: [] },
+          provides: {
+            tools: ["my-tool"],
+            providers: [],
+            panels: [],
+            hooks: [],
+          },
         }),
         `
 export default {
@@ -88,7 +99,10 @@ export default {
     it("returns false for plugin with no tools", async () => {
       const pluginDir = createPluginDir(
         "empty-tool-plugin",
-        makeManifest({ name: "empty-tool", provides: { tools: [], providers: [], panels: [], hooks: [] } }),
+        makeManifest({
+          name: "empty-tool",
+          provides: { tools: [], providers: [], panels: [], hooks: [] },
+        }),
         `export default { name: "empty", version: "1.0.0", tools: null };`,
       );
 
@@ -103,7 +117,12 @@ export default {
         "mixed-tool-plugin",
         makeManifest({
           name: "mixed-tool",
-          provides: { tools: ["good-tool", "bad-tool"], providers: [], panels: [], hooks: [] },
+          provides: {
+            tools: ["good-tool", "bad-tool"],
+            providers: [],
+            panels: [],
+            hooks: [],
+          },
         }),
         `
 export default {
@@ -142,7 +161,12 @@ export default {
         makeManifest({
           name: "enabled-plugin",
           enabled: true,
-          provides: { tools: ["enabled-tool"], providers: [], panels: [], hooks: [] },
+          provides: {
+            tools: ["enabled-tool"],
+            providers: [],
+            panels: [],
+            hooks: [],
+          },
         }),
         `
 export default {
@@ -165,7 +189,12 @@ export default {
         makeManifest({
           name: "disabled-plugin",
           enabled: false,
-          provides: { tools: ["disabled-tool"], providers: [], panels: [], hooks: [] },
+          provides: {
+            tools: ["disabled-tool"],
+            providers: [],
+            panels: [],
+            hooks: [],
+          },
         }),
         `export default { name: "disabled", version: "1.0.0", tools: [] };`,
       );
@@ -183,7 +212,11 @@ export default {
       // Mark the disabled one
       registry.disable("disabled-plugin");
 
-      const result = await loadAllPlugins({ pluginRegistry: registry, toolRegistry, providerRegistry });
+      const result = await loadAllPlugins({
+        pluginRegistry: registry,
+        toolRegistry,
+        providerRegistry,
+      });
       expect(result.loaded).toBeGreaterThanOrEqual(1);
       expect(result.failed).toBe(0);
 
@@ -193,7 +226,11 @@ export default {
     });
 
     it("handles empty plugin list gracefully", async () => {
-      const result = await loadAllPlugins({ pluginRegistry: registry, toolRegistry, providerRegistry });
+      const result = await loadAllPlugins({
+        pluginRegistry: registry,
+        toolRegistry,
+        providerRegistry,
+      });
       expect(result.loaded).toBe(0);
       expect(result.failed).toBe(0);
     });

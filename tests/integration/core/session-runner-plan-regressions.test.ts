@@ -1,15 +1,15 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { SessionRunner } from "@agent-workbench/core";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
+import { copyFixtureProject } from "../../helpers/fixtures";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import { copyFixtureProject } from "../../helpers/fixtures";
-import { SessionRunner } from "@agent-workbench/core";
-import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
-import type { TestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 let fixture: ReturnType<typeof copyFixtureProject>;
@@ -19,11 +19,21 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -32,7 +42,7 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
 
 function buildRunner(
   base: ReturnType<typeof createTestServer>,
-  permPolicy: PermissionPolicy
+  permPolicy: PermissionPolicy,
 ): { runner: SessionRunner; gate: PermissionGate } {
   const engine = new PermissionEngine(permPolicy);
   const gate = new PermissionGate();
@@ -62,7 +72,7 @@ function buildRunner(
 function createSession(
   services: ReturnType<typeof createTestServer>["services"],
   sessionId: string,
-  projectPath: string
+  projectPath: string,
 ): void {
   services.sessionRepository.create({
     id: sessionId,
@@ -79,7 +89,7 @@ function createSession(
 
 function collectLedgerEvents(
   services: ReturnType<typeof createTestServer>["services"],
-  sessionId: string
+  sessionId: string,
 ): string[] {
   return services.ledgerRepository
     .listBySession(sessionId)
@@ -109,7 +119,11 @@ describe("Plan step order mapping", () => {
         {
           toolCalls: [
             { id: "c-read", name: "read", input: { path: "src/hello.ts" } },
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "new" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "new" },
+            },
             { id: "c-bash", name: "bash", input: { command: "echo done" } },
             { id: "c-glob", name: "glob", input: { pattern: "*.ts" } },
           ],
@@ -132,9 +146,10 @@ describe("Plan step order mapping", () => {
     expect(plan.status).toBe("completed");
 
     // Plan must contain only mutation/risky steps (write + bash = 2), not read/grep/glob
-    const steps = plan.stepsJson !== null
-      ? (JSON.parse(plan.stepsJson) as Array<{ type: string; order: number }>)
-      : [];
+    const steps =
+      plan.stepsJson !== null
+        ? (JSON.parse(plan.stepsJson) as Array<{ type: string; order: number }>)
+        : [];
     expect(steps.length).toBe(2);
 
     const stepTypes = steps.map((s) => s.type).sort();
@@ -161,14 +176,18 @@ describe("Plan step order mapping", () => {
 
     // Verify step lifecycle: proposed → approved → (step_started → step_completed)* → completed
     const planEventSequence = planEvents.filter(
-      (e) => e === "plan.proposed" || e === "plan.approved" || e === "plan.step_started"
-        || e === "plan.step_completed" || e === "plan.completed"
+      (e) =>
+        e === "plan.proposed" ||
+        e === "plan.approved" ||
+        e === "plan.step_started" ||
+        e === "plan.step_completed" ||
+        e === "plan.completed",
     );
     expect(planEventSequence.indexOf("plan.proposed")).toBeLessThan(
-      planEventSequence.indexOf("plan.approved")
+      planEventSequence.indexOf("plan.approved"),
     );
     expect(planEventSequence.indexOf("plan.approved")).toBeLessThan(
-      planEventSequence.indexOf("plan.step_started")
+      planEventSequence.indexOf("plan.step_started"),
     );
     expect(planEventSequence.includes("plan.completed")).toBe(true);
   });
@@ -185,7 +204,11 @@ describe("Pre-dispatch plan.step_failed", () => {
         {
           toolCalls: [
             { id: "c-bash-empty", name: "bash", input: { command: "" } },
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "ok" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "ok" },
+            },
           ],
         },
         { text: "Done." },
@@ -208,7 +231,9 @@ describe("Pre-dispatch plan.step_failed", () => {
 
     // plan.step_failed must be in the ledger for the bash step
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
-    const stepFailedEvents = ledgerEvents.filter((e) => e === "plan.step_failed");
+    const stepFailedEvents = ledgerEvents.filter(
+      (e) => e === "plan.step_failed",
+    );
     expect(stepFailedEvents.length).toBeGreaterThanOrEqual(1);
 
     // plan.completed must NOT appear
@@ -226,7 +251,11 @@ describe("Pre-dispatch plan.step_failed", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write-unsafe", name: "write", input: { path: unsafePath, content: "bad" } },
+            {
+              id: "c-write-unsafe",
+              name: "write",
+              input: { path: unsafePath, content: "bad" },
+            },
           ],
         },
         { text: "Done." },
@@ -255,14 +284,24 @@ describe("Pre-dispatch plan.step_failed", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const writeCall = toolCalls.find((t) => t.toolName === "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
   });
 
   it("emits plan.step_failed when plan is denied by policy", async () => {
     const denyMutationPolicy: PermissionPolicy = {
       toolRules: [
-        { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
-        { toolName: "write", outcome: "deny", riskLevel: "critical", reason: "mutation denied" },
+        {
+          toolName: "read",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
+        {
+          toolName: "write",
+          outcome: "deny",
+          riskLevel: "critical",
+          reason: "mutation denied",
+        },
       ],
       pathRules: [],
       commandRules: [],
@@ -275,7 +314,11 @@ describe("Pre-dispatch plan.step_failed", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "x" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "x" },
+            },
           ],
         },
         { text: "Blocked." },
@@ -306,7 +349,7 @@ describe("Pre-dispatch plan.step_failed", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const writeCall = toolCalls.find((t) => t.toolName === "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBeOneOf(["denied", "failed"]);
+    expect(writeCall?.status).toBeOneOf(["denied", "failed"]);
   });
 });
 
@@ -321,12 +364,20 @@ describe("Revert path safety", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write1", name: "write", input: { path: "target.txt", content: "new content" } },
+            {
+              id: "c-write1",
+              name: "write",
+              input: { path: "target.txt", content: "new content" },
+            },
           ],
         },
         {
           toolCalls: [
-            { id: "c-revert", name: "revert_last_change", input: { path: "../outside.txt" } },
+            {
+              id: "c-revert",
+              name: "revert_last_change",
+              input: { path: "../outside.txt" },
+            },
           ],
         },
         { text: "Done." },
@@ -342,14 +393,16 @@ describe("Revert path safety", () => {
 
     // Revert call must be failed
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
-    const revertCall = toolCalls.find((t) => t.toolName === "revert_last_change");
+    const revertCall = toolCalls.find(
+      (t) => t.toolName === "revert_last_change",
+    );
     expect(revertCall).toBeDefined();
-    expect(revertCall!.status).toBe("failed");
+    expect(revertCall?.status).toBe("failed");
 
     // No file outside the fixture root should have been touched.
     // assertSafePath should have thrown before any mutation against an
     // outside-project path, so the revert call is safely blocked.
-    expect(revertCall!.status).toBe("failed");
+    expect(revertCall?.status).toBe("failed");
   });
 
   it("blocks revert_last_change with no prior change", async () => {
@@ -360,7 +413,11 @@ describe("Revert path safety", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-revert", name: "revert_last_change", input: { path: "never_written.txt" } },
+            {
+              id: "c-revert",
+              name: "revert_last_change",
+              input: { path: "never_written.txt" },
+            },
           ],
         },
         { text: "Done." },
@@ -376,9 +433,11 @@ describe("Revert path safety", () => {
 
     // Revert must be failed
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
-    const revertCall = toolCalls.find((t) => t.toolName === "revert_last_change");
+    const revertCall = toolCalls.find(
+      (t) => t.toolName === "revert_last_change",
+    );
     expect(revertCall).toBeDefined();
-    expect(revertCall!.status).toBe("failed");
+    expect(revertCall?.status).toBe("failed");
   });
 });
 
@@ -394,7 +453,11 @@ describe("Plan incomplete/abort", () => {
         {
           toolCalls: [
             { id: "c-bash", name: "bash", input: { command: "" } },
-            { id: "c-write", name: "write", input: { path: "../outside.txt", content: "x" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "../outside.txt", content: "x" },
+            },
           ],
         },
         { text: "All failed." },
@@ -420,7 +483,9 @@ describe("Plan incomplete/abort", () => {
     expect(ledgerEvents).toContain("plan.failed");
 
     // At least one plan.step_failed
-    const stepFailedCount = ledgerEvents.filter((e) => e === "plan.step_failed").length;
+    const stepFailedCount = ledgerEvents.filter(
+      (e) => e === "plan.step_failed",
+    ).length;
     expect(stepFailedCount).toBeGreaterThanOrEqual(1);
   });
 
@@ -431,9 +496,7 @@ describe("Plan incomplete/abort", () => {
     const server = createTestServer({
       storage: testDb.connection,
       permissionPolicy: ALLOW_ALL_POLICY,
-      modelTurns: [
-        { text: "Should not be reached." },
-      ],
+      modelTurns: [{ text: "Should not be reached." }],
     });
 
     const { runner } = buildRunner(server, ALLOW_ALL_POLICY);
@@ -464,7 +527,11 @@ describe("Plan incomplete/abort", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write-ok", name: "write", input: { path: "target.txt", content: "updated" } },
+            {
+              id: "c-write-ok",
+              name: "write",
+              input: { path: "target.txt", content: "updated" },
+            },
             { id: "c-bash-bad", name: "bash", input: { command: "" } },
           ],
         },
@@ -494,11 +561,11 @@ describe("Plan incomplete/abort", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const writeCall = toolCalls.find((t) => t.toolName === "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("completed");
+    expect(writeCall?.status).toBe("completed");
 
     // The bash must have failed
     const bashCall = toolCalls.find((t) => t.toolName === "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBe("failed");
+    expect(bashCall?.status).toBe("failed");
   });
 });

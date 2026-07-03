@@ -1,17 +1,16 @@
+import { ApiError } from "@agent-workbench/sdk";
+import type { TextareaRenderable } from "@opentui/core";
 import type { JSX } from "@opentui/solid";
 import { createSignal } from "solid-js";
-import type { TextareaRenderable } from "@opentui/core";
 import { sdk } from "../../lib/sdk";
 import {
-  PLACEHOLDER_SESSION_ID,
   activeSessionId,
   appendMessage,
   appendSystemNotice,
-  runStatus,
-  setRunStatus,
+  PLACEHOLDER_SESSION_ID,
   serverStatus,
+  setRunStatus,
 } from "../../state/app";
-import { ApiError } from "@agent-workbench/sdk";
 
 /**
  * Prompt editor.
@@ -53,10 +52,10 @@ export function PromptEditor(): JSX.Element {
     setRunStatus("submitting");
 
     try {
-      await sdk.messages.submit(
-        activeSessionId() ?? PLACEHOLDER_SESSION_ID,
-        { content, role: "user" },
-      );
+      await sdk.messages.submit(activeSessionId() ?? PLACEHOLDER_SESSION_ID, {
+        content,
+        role: "user",
+      });
       // If we reach here (Phase 6+), the server acknowledged the message.
       // Events will carry the assistant response via SSE.
     } catch (err) {
@@ -79,7 +78,9 @@ export function PromptEditor(): JSX.Element {
   }
 
   const isDisabled = (): boolean =>
-    isSubmitting() || serverStatus() === "disconnected" || serverStatus() === "error";
+    isSubmitting() ||
+    serverStatus() === "disconnected" ||
+    serverStatus() === "error";
 
   return (
     <box
@@ -87,7 +88,11 @@ export function PromptEditor(): JSX.Element {
       flexShrink={0}
       flexDirection="column"
       border={true}
-      title={isDisabled() ? " Prompt (server offline) " : " Prompt  [Enter=newline  Ctrl+Enter=submit] "}
+      title={
+        isDisabled()
+          ? " Prompt (server offline) "
+          : " Prompt  [Enter=newline  Ctrl+Enter=submit] "
+      }
       titleAlignment="left"
     >
       <textarea
@@ -96,7 +101,9 @@ export function PromptEditor(): JSX.Element {
         }}
         focused={true}
         flexGrow={1}
-        placeholder={isDisabled() ? "Server not connected…" : "Type your prompt here…"}
+        placeholder={
+          isDisabled() ? "Server not connected…" : "Type your prompt here…"
+        }
         keyBindings={[{ name: "return", ctrl: true, action: "submit" }]}
         onSubmit={() => {
           void handleSubmit();

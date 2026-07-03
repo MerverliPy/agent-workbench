@@ -1,14 +1,14 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
-import { createTestDb } from "../../helpers/test-db";
-import { createTestServer } from "../../helpers/test-server";
 import { FaultModelProvider } from "../../helpers/faults";
 import type { TestDb } from "../../helpers/test-db";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { createTestDb } from "../../helpers/test-db";
+import { createTestServer } from "../../helpers/test-server";
 
 let testDb: TestDb;
 let projectDir: string;
@@ -18,12 +18,27 @@ const ASK_WRITE_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "ask", riskLevel: "high", reason: "test" },
     { toolName: "edit", outcome: "ask", riskLevel: "high", reason: "test" },
-    { toolName: "apply_patch", outcome: "ask", riskLevel: "high", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "ask",
+      riskLevel: "high",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "ask", riskLevel: "high", reason: "test" },
-    { toolName: "revert_last_change", outcome: "ask", riskLevel: "high", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "ask",
+      riskLevel: "high",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -38,10 +53,15 @@ beforeAll(() => {
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
-function createSession(server: ReturnType<typeof createTestServer>, sessionId: string): void {
+function createSession(
+  server: ReturnType<typeof createTestServer>,
+  sessionId: string,
+): void {
   server.services.sessionRepository.create({
     id: sessionId,
     projectPath: projectDir,
@@ -76,20 +96,22 @@ describe("Abort fault injection — pre-aborted signal", () => {
 
     // No model.call_started should be recorded (run returns before executeLoop).
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const modelStarted = ledger.filter((e) => e.eventType === "model.call_started");
+    const modelStarted = ledger.filter(
+      (e) => e.eventType === "model.call_started",
+    );
     expect(modelStarted.length).toBe(0);
 
     // No run.aborted in ledger either — run returns before ledger.recordRunStarted.
-    const allLedger = ledger.filter((e) => e.eventType !== "agent.profile_applied");
+    const allLedger = ledger.filter(
+      (e) => e.eventType !== "agent.profile_applied",
+    );
     expect(allLedger.length).toBe(0);
   });
 });
 
 describe("Abort fault injection — during model call", () => {
   it("model throws AbortError via FaultModelProvider → run.status is aborted", async () => {
-    const faultProvider = new FaultModelProvider([
-      { type: "abort" },
-    ]);
+    const faultProvider = new FaultModelProvider([{ type: "abort" }]);
 
     const server = createTestServer({
       storage: testDb.connection,
@@ -99,7 +121,10 @@ describe("Abort fault injection — during model call", () => {
     const sessionId = ulid();
     createSession(server, sessionId);
 
-    const result = await server.sessionRunner.run(sessionId, "abort during model");
+    const result = await server.sessionRunner.run(
+      sessionId,
+      "abort during model",
+    );
 
     expect(result.status).toBe("aborted");
 
@@ -120,7 +145,11 @@ describe("Abort fault injection — while waiting for permission", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "call-1", name: "write", input: { path: "abort-target.txt", content: "BAD CONTENT" } },
+            {
+              id: "call-1",
+              name: "write",
+              input: { path: "abort-target.txt", content: "BAD CONTENT" },
+            },
           ],
         },
       ],
@@ -151,11 +180,15 @@ describe("Abort fault injection — while waiting for permission", () => {
     expect(runCompleted.length).toBe(0);
 
     // No plan.completed (plan should not complete on abort).
-    const planCompleted = ledger.filter((e) => e.eventType === "plan.completed");
+    const planCompleted = ledger.filter(
+      (e) => e.eventType === "plan.completed",
+    );
     expect(planCompleted.length).toBe(0);
 
     // No shell.command_started (not relevant to this test but good sanity check).
-    const shellStarted = ledger.filter((e) => e.eventType === "shell.command_started");
+    const shellStarted = ledger.filter(
+      (e) => e.eventType === "shell.command_started",
+    );
     expect(shellStarted.length).toBe(0);
   });
 
@@ -166,7 +199,11 @@ describe("Abort fault injection — while waiting for permission", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "call-1", name: "bash", input: { command: "echo 'should not run'" } },
+            {
+              id: "call-1",
+              name: "bash",
+              input: { command: "echo 'should not run'" },
+            },
           ],
         },
         { text: "Done." },
@@ -187,7 +224,9 @@ describe("Abort fault injection — while waiting for permission", () => {
     expect(result.status).toBeOneOf(["aborted", "failed"]);
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const shellStarted = ledger.filter((e) => e.eventType === "shell.command_started");
+    const shellStarted = ledger.filter(
+      (e) => e.eventType === "shell.command_started",
+    );
     expect(shellStarted.length).toBe(0);
   });
 });

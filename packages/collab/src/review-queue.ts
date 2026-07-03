@@ -28,13 +28,17 @@
  * ```
  */
 
-import { EventName } from "@agent-workbench/events";
 import type { EventBus } from "@agent-workbench/events";
+import { EventName } from "@agent-workbench/events";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 /** The possible states of a review item. */
-export type ReviewStatus = "pending" | "approved" | "rejected" | "changes_requested";
+export type ReviewStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "changes_requested";
 
 /** A single review item in the queue. */
 export interface ReviewItem {
@@ -155,7 +159,11 @@ export class ReviewQueue {
    * Emits `review.approved` on the event bus.
    * Returns null if the review is not found.
    */
-  approve(reviewId: string, reviewerId: string, comment?: string): ReviewItem | null {
+  approve(
+    reviewId: string,
+    reviewerId: string,
+    comment?: string,
+  ): ReviewItem | null {
     return this.transition(reviewId, "approved", reviewerId, comment);
   }
 
@@ -165,7 +173,11 @@ export class ReviewQueue {
    * Emits `review.rejected` on the event bus.
    * Returns null if the review is not found.
    */
-  reject(reviewId: string, reviewerId: string, comment?: string): ReviewItem | null {
+  reject(
+    reviewId: string,
+    reviewerId: string,
+    comment?: string,
+  ): ReviewItem | null {
     return this.transition(reviewId, "rejected", reviewerId, comment);
   }
 
@@ -175,7 +187,11 @@ export class ReviewQueue {
    * Emits `review.changes_requested` on the event bus.
    * Returns null if the review is not found.
    */
-  requestChanges(reviewId: string, reviewerId: string, comment: string): ReviewItem | null {
+  requestChanges(
+    reviewId: string,
+    reviewerId: string,
+    comment: string,
+  ): ReviewItem | null {
     if (!comment || comment.trim().length === 0) {
       throw new Error("Comment is required when requesting changes.");
     }
@@ -254,7 +270,9 @@ export class ReviewQueue {
 
     for (const [id, item] of this.items) {
       if (item.status !== "pending") {
-        const resolvedAt = item.reviewedAt ? new Date(item.reviewedAt).getTime() : Date.now();
+        const resolvedAt = item.reviewedAt
+          ? new Date(item.reviewedAt).getTime()
+          : Date.now();
         if (resolvedAt < cutoff) {
           expired.push(id);
         }
@@ -317,7 +335,9 @@ export class ReviewQueue {
   /** Generate a unique review ID. */
   private generateId(): string {
     const entropy = crypto.randomUUID().replace(/-/g, "");
-    const suffix = Buffer.from(entropy, "hex").toString("base64url").slice(0, 22);
+    const suffix = Buffer.from(entropy, "hex")
+      .toString("base64url")
+      .slice(0, 22);
     const candidate = `${STORE_PREFIX}${suffix}`;
     if (this.items.has(candidate)) {
       return this.generateId();

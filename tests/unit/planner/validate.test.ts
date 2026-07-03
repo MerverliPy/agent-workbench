@@ -1,6 +1,11 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
-import { validatePlan, computePlanRiskLevel, hasMutationSteps, hasRiskySteps } from "@agent-workbench/planner";
+import { describe, expect, it } from "bun:test";
+import {
+  computePlanRiskLevel,
+  hasMutationSteps,
+  hasRiskySteps,
+  validatePlan,
+} from "@agent-workbench/planner";
 import type { Plan, PlanStep } from "@agent-workbench/protocol";
 
 function makeStep(overrides: Partial<PlanStep> = {}): PlanStep {
@@ -58,9 +63,7 @@ describe("validatePlan", () => {
 
   it("rejects mutation step without targetPath", () => {
     const plan = makePlan({
-      steps: [
-        makeStep({ order: 1, type: "write", description: "Write file" }),
-      ],
+      steps: [makeStep({ order: 1, type: "write", description: "Write file" })],
     });
     const result = validatePlan(plan);
     expect(result.valid).toBe(false);

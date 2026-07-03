@@ -1,16 +1,22 @@
 import type { JSX } from "@opentui/solid";
-import { Header } from "./Header";
-import { SessionSidebar } from "../session/SessionSidebar";
+import { Show } from "solid-js";
+import {
+  commandPaletteOpen,
+  diffViewerOpen,
+  ledgerPanelOpen,
+  permissionModalOpen,
+  tokenHealthOpen,
+} from "../../state/app";
 import { MessageTimeline } from "../messages/MessageTimeline";
-import { PromptEditor } from "../prompt/PromptEditor";
-import { StatusBar } from "../status/StatusBar";
 import { CommandPalette } from "../palette/CommandPalette";
-import { PermissionModal } from "../panels/PermissionModal";
 import { DiffViewer } from "../panels/DiffViewer";
 import { LedgerPanel } from "../panels/LedgerPanel";
+import { PermissionModal } from "../panels/PermissionModal";
 import { TokenHealthPanel } from "../panels/TokenHealthPanel";
-import { commandPaletteOpen, permissionModalOpen, diffViewerOpen, ledgerPanelOpen, tokenHealthOpen } from "../../state/app";
-import { Show } from "solid-js";
+import { PromptEditor } from "../prompt/PromptEditor";
+import { SessionSidebar } from "../session/SessionSidebar";
+import { StatusBar } from "../status/StatusBar";
+import { Header } from "./Header";
 
 /**
  * Root chat-first layout.

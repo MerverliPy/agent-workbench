@@ -1,5 +1,9 @@
 import type { JSX } from "@opentui/solid";
-import { tokenHealth, compactionSuggestion, setTokenHealthOpen } from "../../state/app";
+import {
+  compactionSuggestion,
+  setTokenHealthOpen,
+  tokenHealth,
+} from "../../state/app";
 
 export function TokenHealthPanel(): JSX.Element {
   const th = tokenHealth();
@@ -35,7 +39,14 @@ export function TokenHealthPanel(): JSX.Element {
   }
 
   const statusLabel = th.level.toUpperCase();
-  const statusColor = th.level === "critical" ? "red" : th.level === "strained" ? "yellow" : th.level === "watch" ? "yellow" : "green";
+  const _statusColor =
+    th.level === "critical"
+      ? "red"
+      : th.level === "strained"
+        ? "yellow"
+        : th.level === "watch"
+          ? "yellow"
+          : "green";
   const barWidth = 40;
   const filledChars = Math.round((th.utilizationPercent / 100) * barWidth);
   const emptyChars = barWidth - filledChars;
@@ -50,7 +61,7 @@ export function TokenHealthPanel(): JSX.Element {
 
   if (compaction !== null) {
     lines.push(
-      `Compaction: ~${compaction.currentTokens} → ~${compaction.estimatedCompactedTokens ?? "?"} tokens`
+      `Compaction: ~${compaction.currentTokens} → ~${compaction.estimatedCompactedTokens ?? "?"} tokens`,
     );
     if (compaction.reason !== undefined) {
       lines.push(`Reason: ${compaction.reason}`);

@@ -1,12 +1,15 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
-import { parseProviderConfig, ProviderConfigError } from "@agent-workbench/models";
+import { describe, expect, it } from "bun:test";
+import {
+  ProviderConfigError,
+  parseProviderConfig,
+} from "@agent-workbench/models";
 
 describe("parseProviderConfig", () => {
   it("throws ProviderConfigError when AGENT_WORKBENCH_PROVIDER is not set", () => {
     expect(() => parseProviderConfig({})).toThrow(ProviderConfigError);
     expect(() => parseProviderConfig({})).toThrow(
-      "AGENT_WORKBENCH_PROVIDER is not set"
+      "AGENT_WORKBENCH_PROVIDER is not set",
     );
   });
 
@@ -14,12 +17,12 @@ describe("parseProviderConfig", () => {
     expect(() =>
       parseProviderConfig({
         AGENT_WORKBENCH_PROVIDER: "openai",
-      })
+      }),
     ).toThrow(ProviderConfigError);
     expect(() =>
       parseProviderConfig({
         AGENT_WORKBENCH_PROVIDER: "openai",
-      })
+      }),
     ).toThrow("requires OPENAI_API_KEY");
   });
 

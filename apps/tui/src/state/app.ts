@@ -1,6 +1,5 @@
+import type { DiffPreview, PermissionRequest } from "@agent-workbench/protocol";
 import { createSignal } from "solid-js";
-import type { PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
-import type { Plan } from "@agent-workbench/protocol";
 
 /**
  * Placeholder session ID used while server session APIs return 501.
@@ -22,7 +21,11 @@ export const PLACEHOLDER_SESSION: PlaceholderSession = {
   status: "active",
 };
 
-export type ServerStatus = "connecting" | "connected" | "disconnected" | "error";
+export type ServerStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "error";
 
 export type RunStatus = "idle" | "submitting" | "error";
 
@@ -36,7 +39,8 @@ export interface DisplayMessage {
 
 // ── Server connection state ────────────────────────────────────────────────
 
-export const [serverStatus, setServerStatus] = createSignal<ServerStatus>("connecting");
+export const [serverStatus, setServerStatus] =
+  createSignal<ServerStatus>("connecting");
 
 /** Last server error message, or null when clear. */
 export const [serverError, setServerError] = createSignal<string | null>(null);
@@ -75,7 +79,9 @@ export function addPendingPermissionRequest(req: PermissionRequest): void {
  * Called by App.tsx when a permission.decided event arrives.
  */
 export function removePendingPermissionRequest(requestId: string): void {
-  setPendingPermissionRequests((prev) => prev.filter((r) => r.id !== requestId));
+  setPendingPermissionRequests((prev) =>
+    prev.filter((r) => r.id !== requestId),
+  );
 }
 
 // ── Message timeline ──────────────────────────────────────────────────────
@@ -101,7 +107,8 @@ export function appendSystemNotice(content: string): void {
 
 export const [commandPaletteOpen, setCommandPaletteOpen] = createSignal(false);
 
-export const [permissionModalOpen, setPermissionModalOpen] = createSignal(false);
+export const [permissionModalOpen, setPermissionModalOpen] =
+  createSignal(false);
 
 export const [ledgerPanelOpen, setLedgerPanelOpen] = createSignal(false);
 
@@ -129,7 +136,12 @@ export const [mutationStatus, setMutationStatus] = createSignal<
 
 // ── Phase 10: Shell execution state ──────────────────────────────────────
 
-export type ShellStatus = "idle" | "running" | "completed" | "failed" | "aborted";
+export type ShellStatus =
+  | "idle"
+  | "running"
+  | "completed"
+  | "failed"
+  | "aborted";
 
 export const [shellStatus, setShellStatus] = createSignal<ShellStatus>("idle");
 
@@ -138,7 +150,9 @@ export interface ShellOutputChunk {
   chunk: string;
 }
 
-export const [shellOutputChunks, setShellOutputChunks] = createSignal<ShellOutputChunk[]>([]);
+export const [shellOutputChunks, setShellOutputChunks] = createSignal<
+  ShellOutputChunk[]
+>([]);
 
 export function appendShellOutputChunk(chunk: ShellOutputChunk): void {
   setShellOutputChunks((prev) => [...prev, chunk]);
@@ -151,7 +165,9 @@ export function clearShellOutput(): void {
 
 // ── Phase 11: Agent mode state ─────────────────────────────────────────
 
-export const [currentAgentId, setCurrentAgentId] = createSignal<string | null>(null);
+export const [currentAgentId, setCurrentAgentId] = createSignal<string | null>(
+  null,
+);
 
 export interface AgentInfo {
   id: string;
@@ -159,7 +175,9 @@ export interface AgentInfo {
   mode: string;
 }
 
-export const [availableAgents, setAvailableAgents] = createSignal<AgentInfo[]>([]);
+export const [availableAgents, setAvailableAgents] = createSignal<AgentInfo[]>(
+  [],
+);
 
 export function selectAgent(agentId: string): void {
   setCurrentAgentId(agentId);
@@ -177,7 +195,8 @@ export interface TokenHealthState {
   compactionSuggested: boolean;
 }
 
-export const [tokenHealth, setTokenHealth] = createSignal<TokenHealthState | null>(null);
+export const [tokenHealth, setTokenHealth] =
+  createSignal<TokenHealthState | null>(null);
 
 export const [compactionSuggestion, setCompactionSuggestion] = createSignal<{
   currentTokens: number;
@@ -192,11 +211,18 @@ export interface PlanState {
   status: string;
   summary: string;
   riskLevel: string;
-  steps: Array<{ order: number; type: string; description: string; targetPath?: string }>;
+  steps: Array<{
+    order: number;
+    type: string;
+    description: string;
+    targetPath?: string;
+  }>;
   targetFiles: string[];
 }
 
-export const [currentPlan, setCurrentPlan] = createSignal<PlanState | null>(null);
+export const [currentPlan, setCurrentPlan] = createSignal<PlanState | null>(
+  null,
+);
 
 // ── Phase 16: Streaming model response state ──────────────────────────────
 
@@ -210,7 +236,9 @@ export const [streamingContent, setStreamingContent] = createSignal<string>("");
  * ID of the currently streaming message slot. Set when streaming starts
  * and cleared when streaming completes.
  */
-export const [streamingMessageId, setStreamingMessageId] = createSignal<string | null>(null);
+export const [streamingMessageId, setStreamingMessageId] = createSignal<
+  string | null
+>(null);
 
 /**
  * Append text to the current streaming content.
@@ -259,7 +287,9 @@ export interface SessionListItem {
 }
 
 export const [sessions, setSessions] = createSignal<SessionListItem[]>([]);
-export const [activeSessionId, setActiveSessionId] = createSignal<string | null>(null);
+export const [activeSessionId, setActiveSessionId] = createSignal<
+  string | null
+>(null);
 
 const perSessionMessages = new Map<string, DisplayMessage[]>();
 

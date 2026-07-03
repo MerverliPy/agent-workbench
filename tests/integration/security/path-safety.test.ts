@@ -1,16 +1,18 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { SessionRunner } from "@agent-workbench/core";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
+import {
+  copyFixtureProject,
+  createSymlinkEscapeFixture,
+} from "../../helpers/fixtures";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import { copyFixtureProject, createSymlinkEscapeFixture } from "../../helpers/fixtures";
-import type { SymlinkEscapeFixture } from "../../helpers/fixtures";
-import { SessionRunner } from "@agent-workbench/core";
-import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
-import type { TestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 let fixture: ReturnType<typeof copyFixtureProject>;
@@ -20,12 +22,27 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -37,15 +54,35 @@ const GIT_DENY_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [
-    { pattern: ".git/**", outcome: "deny", riskLevel: "critical", reason: "test-git-deny" },
+    {
+      pattern: ".git/**",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "test-git-deny",
+    },
   ],
   commandRules: [],
   agentRules: [],
@@ -53,7 +90,7 @@ const GIT_DENY_POLICY: PermissionPolicy = {
 
 function buildRunner(
   base: ReturnType<typeof createTestServer>,
-  permPolicy: PermissionPolicy
+  permPolicy: PermissionPolicy,
 ): { runner: SessionRunner; gate: PermissionGate } {
   const engine = new PermissionEngine(permPolicy);
   const gate = new PermissionGate();
@@ -83,7 +120,7 @@ function buildRunner(
 function createSession(
   services: ReturnType<typeof createTestServer>["services"],
   sessionId: string,
-  projectPath: string
+  projectPath: string,
 ): void {
   services.sessionRepository.create({
     id: sessionId,
@@ -100,7 +137,7 @@ function createSession(
 
 function collectLedgerEvents(
   services: ReturnType<typeof createTestServer>["services"],
-  sessionId: string
+  sessionId: string,
 ): string[] {
   return services.ledgerRepository
     .listBySession(sessionId)
@@ -110,7 +147,7 @@ function collectLedgerEvents(
 function findToolCall(
   server: ReturnType<typeof createTestServer>,
   sessionId: string,
-  toolName: string
+  toolName: string,
 ) {
   return server.toolCallRepository
     .listBySession(sessionId)
@@ -138,7 +175,11 @@ describe("Path traversal rejection", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "../outside.txt", content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "../outside.txt", content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -153,7 +194,7 @@ describe("Path traversal rejection", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     const outsidePath = resolve(fixture.projectPath, "..", "outside.txt");
     expect(existsSync(outsidePath)).toBe(false);
@@ -169,7 +210,11 @@ describe("Path traversal rejection", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "../../etc/evil.txt", content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "../../etc/evil.txt", content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -184,7 +229,7 @@ describe("Path traversal rejection", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("tool.failed");
@@ -198,7 +243,11 @@ describe("Path traversal rejection", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: absPath, content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: absPath, content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -213,7 +262,7 @@ describe("Path traversal rejection", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     expect(existsSync(absPath)).toBe(false);
 
@@ -228,7 +277,11 @@ describe("Path traversal rejection", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "src/../../outside.txt", content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "src/../../outside.txt", content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -243,7 +296,7 @@ describe("Path traversal rejection", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("tool.failed");
@@ -271,7 +324,7 @@ describe("Path traversal rejection", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("failed");
+    expect(readCall?.status).toBe("failed");
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("tool.failed");
@@ -287,7 +340,11 @@ describe("Path traversal rejection", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-read", name: "read", input: { path: "src/../src/ok.txt" } },
+            {
+              id: "c-read",
+              name: "read",
+              input: { path: "src/../src/ok.txt" },
+            },
           ],
         },
         { text: "Done." },
@@ -302,7 +359,7 @@ describe("Path traversal rejection", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
 
     expect(existsSync(safePath)).toBe(true);
     expect(readFileSync(safePath, "utf8")).toBe("safe content\n");
@@ -323,7 +380,11 @@ describe("Encoded-looking traversal", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: encodedPath, content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: encodedPath, content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -343,19 +404,19 @@ describe("Encoded-looking traversal", () => {
     // If it succeeded, the file must be inside the fixture root.
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    if (writeCall!.status === "completed") {
+    if (writeCall?.status === "completed") {
       // Must be inside fixture root (as a literal filename)
       const literalInside = join(fixture.projectPath, encodedPath);
       expect(existsSync(literalInside)).toBe(true);
       // Safe literal write — plan may complete
     } else {
       // If rejected, must be recorded as failed/denied
-      expect(writeCall!.status).toBeOneOf(["failed", "denied"]);
+      expect(writeCall?.status).toBeOneOf(["failed", "denied"]);
     }
 
     // Ledger must reflect the outcome
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
-    if (writeCall!.status === "completed") {
+    if (writeCall?.status === "completed") {
       expect(ledgerEvents).toContain("plan.completed");
     } else {
       expect(ledgerEvents).toContain("tool.failed");
@@ -373,7 +434,11 @@ describe("Encoded-looking traversal", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: encodedPath, content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: encodedPath, content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -393,16 +458,16 @@ describe("Encoded-looking traversal", () => {
     // If it succeeded, the file must be inside the fixture root.
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    if (writeCall!.status === "completed") {
+    if (writeCall?.status === "completed") {
       const literalInside = join(fixture.projectPath, encodedPath);
       expect(existsSync(literalInside)).toBe(true);
     } else {
-      expect(writeCall!.status).toBeOneOf(["failed", "denied"]);
+      expect(writeCall?.status).toBeOneOf(["failed", "denied"]);
     }
 
     // Ledger must reflect the outcome
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
-    if (writeCall!.status === "completed") {
+    if (writeCall?.status === "completed") {
       expect(ledgerEvents).toContain("plan.completed");
     } else {
       expect(ledgerEvents).toContain("tool.failed");
@@ -421,7 +486,11 @@ describe("Sensitive path denial", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: ".env", content: "SECRET=leaked" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: ".env", content: "SECRET=leaked" },
+            },
           ],
         },
         { text: "Done." },
@@ -436,7 +505,7 @@ describe("Sensitive path denial", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("tool.failed");
@@ -449,7 +518,11 @@ describe("Sensitive path denial", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: ".env.production", content: "SECRET=leaked" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: ".env.production", content: "SECRET=leaked" },
+            },
           ],
         },
         { text: "Done." },
@@ -464,7 +537,7 @@ describe("Sensitive path denial", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
   });
 
   it("rejects *.key file write", async () => {
@@ -474,7 +547,11 @@ describe("Sensitive path denial", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "certs/server.key", content: "PRIVATE KEY" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "certs/server.key", content: "PRIVATE KEY" },
+            },
           ],
         },
         { text: "Done." },
@@ -489,7 +566,7 @@ describe("Sensitive path denial", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
   });
 
   it("rejects *.pem file write", async () => {
@@ -499,7 +576,11 @@ describe("Sensitive path denial", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "ssl/cert.pem", content: "CERT" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "ssl/cert.pem", content: "CERT" },
+            },
           ],
         },
         { text: "Done." },
@@ -514,7 +595,7 @@ describe("Sensitive path denial", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
   });
 
   it("rejects .git/config mutation via policy path rules", async () => {
@@ -526,7 +607,11 @@ describe("Sensitive path denial", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: ".git/config", content: "[core]" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: ".git/config", content: "[core]" },
+            },
           ],
         },
         { text: "Done." },
@@ -572,7 +657,7 @@ describe("Sensitive path denial", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("failed");
+    expect(readCall?.status).toBe("failed");
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("tool.failed");
@@ -591,7 +676,11 @@ describe("Sensitive path: plan does not bypass", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: ".env", content: "X" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: ".env", content: "X" },
+            },
           ],
         },
         { text: "Done." },
@@ -614,7 +703,7 @@ describe("Sensitive path: plan does not bypass", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
   });
 });
 
@@ -628,7 +717,11 @@ describe("Safe negative controls", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "new content\n" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "new content\n" },
+            },
           ],
         },
         { text: "Done." },
@@ -643,9 +736,12 @@ describe("Safe negative controls", () => {
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("completed");
+    expect(writeCall?.status).toBe("completed");
 
-    const content = readFileSync(join(fixture.projectPath, "target.txt"), "utf8");
+    const content = readFileSync(
+      join(fixture.projectPath, "target.txt"),
+      "utf8",
+    );
     expect(content).toBe("new content\n");
   });
 
@@ -671,7 +767,7 @@ describe("Safe negative controls", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
   });
 
   it("allows env.example — not matched by sensitive path rules", async () => {
@@ -699,7 +795,7 @@ describe("Safe negative controls", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
 
     expect(readFileSync(safeEnvPath, "utf8")).toBe("EXAMPLE_KEY=value\n");
   });
@@ -731,7 +827,7 @@ describe("Safe negative controls", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
   });
 
   it("allows docs/env-template.txt — safe read", async () => {
@@ -746,7 +842,11 @@ describe("Safe negative controls", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-read", name: "read", input: { path: "docs/env-template.txt" } },
+            {
+              id: "c-read",
+              name: "read",
+              input: { path: "docs/env-template.txt" },
+            },
           ],
         },
         { text: "Done." },
@@ -761,7 +861,7 @@ describe("Safe negative controls", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
   });
 
   it("allows config/env.sample — not sensitive", async () => {
@@ -776,7 +876,11 @@ describe("Safe negative controls", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-read", name: "read", input: { path: "config/env.sample" } },
+            {
+              id: "c-read",
+              name: "read",
+              input: { path: "config/env.sample" },
+            },
           ],
         },
         { text: "Done." },
@@ -791,7 +895,7 @@ describe("Safe negative controls", () => {
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
   });
 });
 
@@ -825,7 +929,11 @@ describe("Symlink escape", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "escape-link", content: "evil" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "escape-link", content: "evil" },
+            },
           ],
         },
         { text: "Done." },
@@ -833,18 +941,18 @@ describe("Symlink escape", () => {
     });
     const { runner } = buildRunner(server, ALLOW_ALL_POLICY);
     const sessionId = ulid();
-    createSession(server.services, sessionId, symFix!.projectPath);
+    createSession(server.services, sessionId, symFix?.projectPath);
 
     const result = await runner.run(sessionId, "Write through symlink");
     expect(result.status).toBeOneOf(["completed", "failed"]);
 
     // The symlink target must remain unchanged
-    expect(readFileSync(symFix!.externalTarget, "utf8")).toBe("DO NOT TOUCH\n");
+    expect(readFileSync(symFix?.externalTarget, "utf8")).toBe("DO NOT TOUCH\n");
 
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
     // Symlink resolution in assertSafePath should reject the escape
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     testDb2.cleanup();
   });
@@ -870,17 +978,17 @@ describe("Symlink escape", () => {
     });
     const { runner } = buildRunner(server, ALLOW_ALL_POLICY);
     const sessionId = ulid();
-    createSession(server.services, sessionId, symFix!.projectPath);
+    createSession(server.services, sessionId, symFix?.projectPath);
 
     const result = await runner.run(sessionId, "Read through symlink");
     expect(result.status).toBeOneOf(["completed", "failed"]);
 
     // External target must remain unchanged
-    expect(readFileSync(symFix!.externalTarget, "utf8")).toBe("DO NOT TOUCH\n");
+    expect(readFileSync(symFix?.externalTarget, "utf8")).toBe("DO NOT TOUCH\n");
 
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("failed");
+    expect(readCall?.status).toBe("failed");
 
     testDb2.cleanup();
   });

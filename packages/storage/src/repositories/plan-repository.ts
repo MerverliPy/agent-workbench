@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { asc, eq } from "drizzle-orm";
 import { plans } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type PlanRow = typeof plans.$inferSelect;
 export type PlanInsert = typeof plans.$inferInsert;
@@ -41,7 +41,10 @@ export class PlanRepository {
     return this.findById(data.id) as PlanRow;
   }
 
-  update(id: string, data: Partial<Omit<PlanInsert, "id">>): PlanRow | undefined {
+  update(
+    id: string,
+    data: Partial<Omit<PlanInsert, "id">>,
+  ): PlanRow | undefined {
     const existing = this.findById(id);
     if (existing === undefined) return undefined;
     this.db.update(plans).set(data).where(eq(plans.id, id)).run();

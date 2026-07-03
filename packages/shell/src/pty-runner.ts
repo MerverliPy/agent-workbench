@@ -1,20 +1,17 @@
-import {
-  DEFAULT_TIMEOUT_MS,
-  MAX_TIMEOUT_MS,
-} from "./types";
-import type { ShellRunOptions, ShellResult } from "./types";
-import { redactSecrets } from "./redact";
 import { PtyOutputBuffer } from "./pty-output-buffer";
 import {
-  type PtySize,
-  DEFAULT_PTY_SIZE,
   createPtyResizeHandler,
+  DEFAULT_PTY_SIZE,
   type PtyResizeHandler,
+  type PtySize,
 } from "./pty-resize";
+import { redactSecrets } from "./redact";
+import type { ShellResult, ShellRunOptions } from "./types";
+import { DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS } from "./types";
 
 const encoder = new TextEncoder();
 
-function byteLength(s: string): number {
+function _byteLength(s: string): number {
   return encoder.encode(s).length;
 }
 
@@ -51,7 +48,7 @@ export class PtyCommandRunner {
     );
 
     this.outputBuffer.clear();
-    let stdoutBuf = "";
+    let _stdoutBuf = "";
     let stderrBuf = "";
     let timedOut = false;
     let exitSignal: string | null = null;
@@ -130,7 +127,7 @@ export class PtyCommandRunner {
               const chunk = new TextDecoder().decode(result.value);
               const redacted = redactSecrets(chunk);
               this.outputBuffer.append(redacted);
-              stdoutBuf += redacted;
+              _stdoutBuf += redacted;
               opts.onStdout?.(redacted);
             }),
           );

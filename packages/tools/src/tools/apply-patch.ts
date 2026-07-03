@@ -9,13 +9,17 @@
  * Ownership:   packages/tools, packages/diff, packages/storage
  */
 
-import { z } from "zod/v4";
-import { ulid } from "ulid";
 import { applyMutation } from "@agent-workbench/diff";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { RegisteredTool, ToolExecutor, ToolExecutionContext } from "../types";
-import { assertSafePath } from "../path-guard";
+import { ulid } from "ulid";
+import { z } from "zod/v4";
 import type { MutationToolOptions } from "../mutation-context";
+import { assertSafePath } from "../path-guard";
+import type {
+  RegisteredTool,
+  ToolExecutionContext,
+  ToolExecutor,
+} from "../types";
 
 // ── Input / Result schemas ────────────────────────────────────────────────────
 
@@ -46,8 +50,14 @@ const definition: ToolDefinition = {
   inputSchema: {
     type: "object",
     properties: {
-      path: { type: "string", description: "File path to patch (relative to project root)." },
-      patch: { type: "string", description: "Unified diff patch string (--- / +++ format)." },
+      path: {
+        type: "string",
+        description: "File path to patch (relative to project root).",
+      },
+      patch: {
+        type: "string",
+        description: "Unified diff patch string (--- / +++ format).",
+      },
     },
     required: ["path", "patch"],
   },
@@ -55,9 +65,14 @@ const definition: ToolDefinition = {
 
 // ── Factory ───────────────────────────────────────────────────────────────────
 
-export function createApplyPatchTool(options: MutationToolOptions): RegisteredTool {
+export function createApplyPatchTool(
+  options: MutationToolOptions,
+): RegisteredTool {
   const executor: ToolExecutor = {
-    async execute(input: unknown, context: ToolExecutionContext): Promise<unknown> {
+    async execute(
+      input: unknown,
+      context: ToolExecutionContext,
+    ): Promise<unknown> {
       const parsed = ApplyPatchInput.safeParse(input);
       if (!parsed.success) {
         throw new Error(`apply_patch: invalid input: ${parsed.error.message}`);
@@ -69,7 +84,7 @@ export function createApplyPatchTool(options: MutationToolOptions): RegisteredTo
 
       const result = await applyMutation(
         { type: "apply_patch", path: resolvedPath, patch },
-        context.projectRoot
+        context.projectRoot,
       );
 
       if (!result.success) {
@@ -96,7 +111,7 @@ export function createApplyPatchTool(options: MutationToolOptions): RegisteredTo
       options.toolCache?.invalidateAffectedByPath(
         context.sessionId,
         context.projectRoot,
-        resolvedPath
+        resolvedPath,
       );
 
       return {

@@ -1,6 +1,10 @@
 import type { JSX } from "@opentui/solid";
 import { For, Show } from "solid-js";
-import { messages, streamingContent, streamingMessageId } from "../../state/app";
+import {
+  messages,
+  streamingContent,
+  streamingMessageId,
+} from "../../state/app";
 
 /** Role display labels. */
 const ROLE_LABELS: Record<string, string> = {
@@ -58,8 +62,15 @@ export function MessageTimeline(): JSX.Element {
       >
         <For each={messages()}>
           {(msg) => (
-            <box flexDirection="column" paddingX={1} paddingY={0} flexShrink={0}>
-              <text content={`${roleLabel(msg.role)}  ${msg.createdAt.slice(11, 19)}`} />
+            <box
+              flexDirection="column"
+              paddingX={1}
+              paddingY={0}
+              flexShrink={0}
+            >
+              <text
+                content={`${roleLabel(msg.role)}  ${msg.createdAt.slice(11, 19)}`}
+              />
               <text content={msg.content} flexGrow={1} />
               <text content="" />
             </box>
@@ -67,7 +78,9 @@ export function MessageTimeline(): JSX.Element {
         </For>
 
         {/* Phase 16: Streaming message — rendered incrementally as deltas arrive */}
-        <Show when={streamingMessageId() !== null && streamingContent().length > 0}>
+        <Show
+          when={streamingMessageId() !== null && streamingContent().length > 0}
+        >
           <box flexDirection="column" paddingX={1} paddingY={0} flexShrink={0}>
             <text content={`[assistant]  (streaming...)`} />
             <text content={streamingContent()} flexGrow={1} />

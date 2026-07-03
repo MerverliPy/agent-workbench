@@ -1,6 +1,6 @@
-import { eq, asc, desc, and } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { fileChanges } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type FileChangeRow = typeof fileChanges.$inferSelect;
 export type FileChangeInsert = typeof fileChanges.$inferInsert;
@@ -45,18 +45,12 @@ export class FileChangeRepository {
    * Return the most recent file-change record for a specific session + path.
    * Used by the revert_last_change tool to locate the mutation to undo.
    */
-  findLatestByPath(
-    sessionId: string,
-    path: string
-  ): FileChangeRow | undefined {
+  findLatestByPath(sessionId: string, path: string): FileChangeRow | undefined {
     const rows = this.db
       .select()
       .from(fileChanges)
       .where(
-        and(
-          eq(fileChanges.sessionId, sessionId),
-          eq(fileChanges.path, path)
-        )
+        and(eq(fileChanges.sessionId, sessionId), eq(fileChanges.path, path)),
       )
       .orderBy(desc(fileChanges.createdAt))
       .limit(1)

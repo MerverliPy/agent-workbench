@@ -1,21 +1,22 @@
-import type { HttpTransport } from "../transport/http";
-import { SseTransport, type EventCallback, type EventFilter } from "../transport/sse";
 import type { EventEnvelope } from "@agent-workbench/protocol";
 import {
-  STREAM_EVENT_TYPES,
-  type ModelStreamDeltaPayload,
   type ModelStreamCompletePayload,
+  type ModelStreamDeltaPayload,
   type ModelStreamErrorPayload,
+  STREAM_EVENT_TYPES,
 } from "@agent-workbench/protocol";
+import type { HttpTransport } from "../transport/http";
+import {
+  type EventCallback,
+  type EventFilter,
+  SseTransport,
+} from "../transport/sse";
 
 export class EventResource {
   private sse: SseTransport;
   private connected = false;
 
-  constructor(
-    private transport: HttpTransport,
-    private baseUrl: string,
-  ) {
+  constructor(_transport: HttpTransport, baseUrl: string) {
     this.sse = new SseTransport({ url: `${baseUrl}/global/event` });
   }
 
@@ -48,25 +49,21 @@ export class EventResource {
 
   // ── Streaming helpers (Phase 16) ──────────────────────────────────────────
 
-  onStreamDelta(
-    callback: (payload: ModelStreamDeltaPayload) => void
-  ): void {
+  onStreamDelta(callback: (payload: ModelStreamDeltaPayload) => void): void {
     this.sse.on(STREAM_EVENT_TYPES.DELTA, (event: EventEnvelope) => {
       callback(event.payload as ModelStreamDeltaPayload);
     });
   }
 
   onStreamComplete(
-    callback: (payload: ModelStreamCompletePayload) => void
+    callback: (payload: ModelStreamCompletePayload) => void,
   ): void {
     this.sse.on(STREAM_EVENT_TYPES.COMPLETE, (event: EventEnvelope) => {
       callback(event.payload as ModelStreamCompletePayload);
     });
   }
 
-  onStreamError(
-    callback: (payload: ModelStreamErrorPayload) => void
-  ): void {
+  onStreamError(callback: (payload: ModelStreamErrorPayload) => void): void {
     this.sse.on(STREAM_EVENT_TYPES.ERROR, (event: EventEnvelope) => {
       callback(event.payload as ModelStreamErrorPayload);
     });

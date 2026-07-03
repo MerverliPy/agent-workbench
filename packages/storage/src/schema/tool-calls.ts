@@ -1,4 +1,4 @@
-import { sqliteTable, text, index } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const toolCalls = sqliteTable(
   "tool_calls",
@@ -21,5 +21,5 @@ export const toolCalls = sqliteTable(
     index("tool_calls_run_id_idx").on(table.runId),
     index("tool_calls_message_id_idx").on(table.messageId),
     index("tool_calls_status_idx").on(table.status),
-  ]
+  ],
 );

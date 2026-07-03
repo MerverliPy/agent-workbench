@@ -88,30 +88,22 @@
       "indexes": {
         "cache_entries_session_id_idx": {
           "name": "cache_entries_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "cache_entries_cache_type_idx": {
           "name": "cache_entries_cache_type_idx",
-          "columns": [
-            "cache_type"
-          ],
+          "columns": ["cache_type"],
           "isUnique": false
         },
         "cache_entries_cache_key_idx": {
           "name": "cache_entries_cache_key_idx",
-          "columns": [
-            "cache_key"
-          ],
+          "columns": ["cache_key"],
           "isUnique": false
         },
         "cache_entries_expires_at_idx": {
           "name": "cache_entries_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },
@@ -176,16 +168,12 @@
       "indexes": {
         "config_snapshots_session_id_idx": {
           "name": "config_snapshots_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "config_snapshots_run_id_idx": {
           "name": "config_snapshots_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         }
       },
@@ -292,30 +280,22 @@
       "indexes": {
         "file_changes_session_id_idx": {
           "name": "file_changes_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "file_changes_run_id_idx": {
           "name": "file_changes_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "file_changes_path_idx": {
           "name": "file_changes_path_idx",
-          "columns": [
-            "path"
-          ],
+          "columns": ["path"],
           "isUnique": false
         },
         "file_changes_change_type_idx": {
           "name": "file_changes_change_type_idx",
-          "columns": [
-            "change_type"
-          ],
+          "columns": ["change_type"],
           "isUnique": false
         }
       },
@@ -402,23 +382,17 @@
       "indexes": {
         "messages_session_id_idx": {
           "name": "messages_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "messages_run_id_idx": {
           "name": "messages_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "messages_role_idx": {
           "name": "messages_role_idx",
-          "columns": [
-            "role"
-          ],
+          "columns": ["role"],
           "isUnique": false
         }
       },
@@ -490,9 +464,7 @@
       "indexes": {
         "permission_decisions_request_id_idx": {
           "name": "permission_decisions_request_id_idx",
-          "columns": [
-            "request_id"
-          ],
+          "columns": ["request_id"],
           "isUnique": false
         }
       },
@@ -620,30 +592,22 @@
       "indexes": {
         "permission_requests_session_id_idx": {
           "name": "permission_requests_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "permission_requests_run_id_idx": {
           "name": "permission_requests_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "permission_requests_tool_call_id_idx": {
           "name": "permission_requests_tool_call_id_idx",
-          "columns": [
-            "tool_call_id"
-          ],
+          "columns": ["tool_call_id"],
           "isUnique": false
         },
         "permission_requests_status_idx": {
           "name": "permission_requests_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -752,30 +716,22 @@
       "indexes": {
         "plans_session_id_idx": {
           "name": "plans_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "plans_run_id_idx": {
           "name": "plans_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "plans_status_idx": {
           "name": "plans_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "plans_created_at_idx": {
           "name": "plans_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -862,37 +818,27 @@
       "indexes": {
         "run_ledger_session_id_idx": {
           "name": "run_ledger_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "run_ledger_run_id_idx": {
           "name": "run_ledger_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "run_ledger_event_category_idx": {
           "name": "run_ledger_event_category_idx",
-          "columns": [
-            "event_category"
-          ],
+          "columns": ["event_category"],
           "isUnique": false
         },
         "run_ledger_event_type_idx": {
           "name": "run_ledger_event_type_idx",
-          "columns": [
-            "event_type"
-          ],
+          "columns": ["event_type"],
           "isUnique": false
         },
         "run_ledger_created_at_idx": {
           "name": "run_ledger_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -986,16 +932,12 @@
       "indexes": {
         "sessions_status_idx": {
           "name": "sessions_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "sessions_workspace_idx": {
           "name": "sessions_workspace_idx",
-          "columns": [
-            "workspace_id"
-          ],
+          "columns": ["workspace_id"],
           "isUnique": false
         }
       },
@@ -1075,23 +1017,17 @@
       "indexes": {
         "summaries_session_id_idx": {
           "name": "summaries_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "summaries_run_id_idx": {
           "name": "summaries_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "summaries_summary_type_idx": {
           "name": "summaries_summary_type_idx",
-          "columns": [
-            "summary_type"
-          ],
+          "columns": ["summary_type"],
           "isUnique": false
         }
       },
@@ -1191,30 +1127,22 @@
       "indexes": {
         "tool_calls_session_id_idx": {
           "name": "tool_calls_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "tool_calls_run_id_idx": {
           "name": "tool_calls_run_id_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         },
         "tool_calls_message_id_idx": {
           "name": "tool_calls_message_id_idx",
-          "columns": [
-            "message_id"
-          ],
+          "columns": ["message_id"],
           "isUnique": false
         },
         "tool_calls_status_idx": {
           "name": "tool_calls_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -1287,16 +1215,12 @@
       "indexes": {
         "workspaces_archived_idx": {
           "name": "workspaces_archived_idx",
-          "columns": [
-            "archived"
-          ],
+          "columns": ["archived"],
           "isUnique": false
         },
         "workspaces_name_idx": {
           "name": "workspaces_name_idx",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": false
         }
       },

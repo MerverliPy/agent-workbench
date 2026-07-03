@@ -1,12 +1,12 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ulid } from "ulid";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import type { TestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 let server: ReturnType<typeof createTestServer>;
@@ -16,7 +16,7 @@ beforeAll(() => {
   testDb = createTestDb();
 
   projectDir = mkdtempSync(join(tmpdir(), "agent-wb-readonly-"));
-  writeFileSync(join(projectDir, "hello.ts"), 'export const x = 1;\n');
+  writeFileSync(join(projectDir, "hello.ts"), "export const x = 1;\n");
 
   server = createTestServer({
     storage: testDb.connection,
@@ -33,7 +33,9 @@ beforeAll(() => {
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
 function createSession(sessionId: string): void {
@@ -66,9 +68,11 @@ describe("SessionRunner — read-only tool flow", () => {
 
     const userMsg = messages.find((m) => m.role === "user");
     expect(userMsg).toBeDefined();
-    expect(userMsg!.content).toBe("Read hello.ts");
+    expect(userMsg?.content).toBe("Read hello.ts");
 
-    const assistantMsg = messages.find((m) => m.role === "assistant" && m.contentFormat === "text");
+    const assistantMsg = messages.find(
+      (m) => m.role === "assistant" && m.contentFormat === "text",
+    );
     expect(assistantMsg).toBeDefined();
 
     // Verify tool call persisted
@@ -76,12 +80,12 @@ describe("SessionRunner — read-only tool flow", () => {
     expect(allToolCalls.length).toBeGreaterThanOrEqual(1);
     const readCall = allToolCalls.find((t) => t.toolName === "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
   });
 
   it("errors for unknown session", async () => {
     await expect(
-      server.sessionRunner.run("nonexistent", "hello")
+      server.sessionRunner.run("nonexistent", "hello"),
     ).rejects.toThrow("Session not found");
   });
 
@@ -94,7 +98,7 @@ describe("SessionRunner — read-only tool flow", () => {
 
     // Second run should fail with concurrency error
     await expect(
-      server.sessionRunner.run(sessionId, "Second message")
+      server.sessionRunner.run(sessionId, "Second message"),
     ).rejects.toThrow("already has an active run");
 
     // Wait for first run to complete

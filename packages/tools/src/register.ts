@@ -6,25 +6,25 @@
  * Phase 8 will add permission policies per tool.
  */
 
-import type { ToolRegistry } from "./registry";
-import { createReadTool } from "./tools/read";
-import { createGrepTool } from "./tools/grep";
-import { createGlobTool } from "./tools/glob";
 import type { ToolCache } from "@agent-workbench/cache";
-
+import type { MutationToolOptions } from "./mutation-context";
+import type { ToolRegistry } from "./registry";
+import { createApplyPatchTool } from "./tools/apply-patch";
+// Phase 10 bash tool
+import { type BashToolOptions, createBashTool } from "./tools/bash";
+import { createDiffPreviewTool } from "./tools/diff-preview";
+import { createEditTool } from "./tools/edit";
+import { createGlobTool } from "./tools/glob";
+import { createGrepTool } from "./tools/grep";
+// Phase 23 PTY shell tool
+import {
+  createPtyShellTool,
+  type PtyShellToolOptions,
+} from "./tools/pty-shell";
+import { createReadTool } from "./tools/read";
+import { createRevertLastChangeTool } from "./tools/revert-last-change";
 // Phase 9 mutation tools
 import { createWriteTool } from "./tools/write";
-import { createEditTool } from "./tools/edit";
-import { createApplyPatchTool } from "./tools/apply-patch";
-import { createDiffPreviewTool } from "./tools/diff-preview";
-import { createRevertLastChangeTool } from "./tools/revert-last-change";
-import type { MutationToolOptions } from "./mutation-context";
-
-// Phase 10 bash tool
-import { createBashTool, type BashToolOptions } from "./tools/bash";
-
-// Phase 23 PTY shell tool
-import { createPtyShellTool, type PtyShellToolOptions } from "./tools/pty-shell";
 
 export interface RegisterReadOnlyToolsOptions {
   /** Optional session-scoped cache for read/grep/glob results. */
@@ -39,11 +39,9 @@ export interface RegisterReadOnlyToolsOptions {
  */
 export function registerReadOnlyTools(
   registry: ToolRegistry,
-  options: RegisterReadOnlyToolsOptions = {}
+  options: RegisterReadOnlyToolsOptions = {},
 ): void {
-  const toolOpts = options.cache !== undefined
-    ? { cache: options.cache }
-    : {};
+  const toolOpts = options.cache !== undefined ? { cache: options.cache } : {};
   registry.register(createReadTool(toolOpts));
   registry.register(createGrepTool(toolOpts));
   registry.register(createGlobTool(toolOpts));
@@ -61,7 +59,7 @@ export function registerReadOnlyTools(
  */
 export function registerMutationTools(
   registry: ToolRegistry,
-  options: MutationToolOptions
+  options: MutationToolOptions,
 ): void {
   registry.register(createWriteTool(options));
   registry.register(createEditTool(options));
@@ -78,7 +76,7 @@ export function registerMutationTools(
  */
 export function registerShellTool(
   registry: ToolRegistry,
-  options: BashToolOptions
+  options: BashToolOptions,
 ): void {
   registry.register(createBashTool(options));
 }
@@ -88,7 +86,7 @@ export function registerShellTool(
  */
 export function registerPtyShellTool(
   registry: ToolRegistry,
-  options: PtyShellToolOptions
+  options: PtyShellToolOptions,
 ): void {
   registry.register(createPtyShellTool(options));
 }

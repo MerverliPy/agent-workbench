@@ -1,19 +1,30 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { PluginManifest } from "@agent-workbench/plugin-sdk";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import type { TestDb } from "../../helpers/test-db";
-import type { PluginManifest } from "@agent-workbench/plugin-sdk";
 
 let testDb: TestDb;
 
 beforeAll(() => {
   testDb = createTestDb();
   // Nuke persistent plugin registry from prior test runs.
-  const cleanServer = createTestServer({ storage: testDb.connection, modelTurns: [] });
+  const cleanServer = createTestServer({
+    storage: testDb.connection,
+    modelTurns: [],
+  });
   const plugins = cleanServer.services.pluginRegistry.list();
   for (const p of plugins) {
     cleanServer.services.pluginRegistry.unregister(p.name);
@@ -33,7 +44,10 @@ describe("Plugin routes — /plugins", () => {
 
   afterEach(async () => {
     // Clean up the persistent plugin registry between tests.
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
     const plugins = server.services.pluginRegistry.list();
     for (const p of plugins) {
       server.services.pluginRegistry.unregister(p.name);
@@ -57,13 +71,22 @@ describe("Plugin routes — /plugins", () => {
   function createPluginDir(dirName: string, manifest: PluginManifest): string {
     const pluginDir = join(tmpDir, dirName);
     mkdirSync(pluginDir, { recursive: true });
-    writeFileSync(join(pluginDir, "plugin.json"), JSON.stringify(manifest, null, 2));
-    writeFileSync(join(pluginDir, "index.js"), "export default { name: 'test', version: '1.0.0', tools: [] };");
+    writeFileSync(
+      join(pluginDir, "plugin.json"),
+      JSON.stringify(manifest, null, 2),
+    );
+    writeFileSync(
+      join(pluginDir, "index.js"),
+      "export default { name: 'test', version: '1.0.0', tools: [] };",
+    );
     return pluginDir;
   }
 
   it("lists installed plugins", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     // Register a plugin
     const pluginDir = createPluginDir("test-plugin", makeManifest());
@@ -82,7 +105,10 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("returns empty list when no plugins installed", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const res = await server.app.request("/plugins", { method: "GET" });
     expect(res.status).toBe(200);
@@ -92,16 +118,24 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("gets a plugin by name", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const pluginDir = createPluginDir("my-plugin", makeManifest({ name: "my-plugin" }));
+    const pluginDir = createPluginDir(
+      "my-plugin",
+      makeManifest({ name: "my-plugin" }),
+    );
     server.services.pluginRegistry.register(
       server.services.pluginRegistry.loadManifest(pluginDir),
       "local:my-plugin",
       pluginDir,
     );
 
-    const res = await server.app.request("/plugins/my-plugin", { method: "GET" });
+    const res = await server.app.request("/plugins/my-plugin", {
+      method: "GET",
+    });
     expect(res.status).toBe(200);
 
     const body = (await res.json()) as Record<string, unknown>;
@@ -111,14 +145,22 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("returns 404 for unknown plugin", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const res = await server.app.request("/plugins/nonexistent", { method: "GET" });
+    const res = await server.app.request("/plugins/nonexistent", {
+      method: "GET",
+    });
     expect(res.status).toBe(404);
   });
 
   it("enables a disabled plugin", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const pluginDir = createPluginDir(
       "toggle-plugin",
@@ -130,7 +172,9 @@ describe("Plugin routes — /plugins", () => {
       pluginDir,
     );
 
-    const res = await server.app.request("/plugins/toggle-plugin/enable", { method: "POST" });
+    const res = await server.app.request("/plugins/toggle-plugin/enable", {
+      method: "POST",
+    });
     expect(res.status).toBe(200);
 
     const body = (await res.json()) as Record<string, unknown>;
@@ -139,7 +183,10 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("disables an enabled plugin", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const pluginDir = createPluginDir(
       "toggle-plugin",
@@ -151,7 +198,9 @@ describe("Plugin routes — /plugins", () => {
       pluginDir,
     );
 
-    const res = await server.app.request("/plugins/toggle-plugin/disable", { method: "POST" });
+    const res = await server.app.request("/plugins/toggle-plugin/disable", {
+      method: "POST",
+    });
     expect(res.status).toBe(200);
 
     const body = (await res.json()) as Record<string, unknown>;
@@ -160,9 +209,15 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("filters to only list fields in the response", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const pluginDir = createPluginDir("fields-test", makeManifest({ name: "fields-test" }));
+    const pluginDir = createPluginDir(
+      "fields-test",
+      makeManifest({ name: "fields-test" }),
+    );
     server.services.pluginRegistry.register(
       server.services.pluginRegistry.loadManifest(pluginDir),
       "local:fields-test",
@@ -170,7 +225,9 @@ describe("Plugin routes — /plugins", () => {
     );
 
     const res = await server.app.request("/plugins", { method: "GET" });
-    const body = (await res.json()) as { items: Array<Record<string, unknown>> };
+    const body = (await res.json()) as {
+      items: Array<Record<string, unknown>>;
+    };
     const item = body.items[0]!;
 
     // Only the fields from the route response, not raw PluginRecord
@@ -186,9 +243,15 @@ describe("Plugin routes — /plugins", () => {
   // ── Install / uninstall ───────────────────────────────────────────────
 
   it("installs a plugin from local path", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const pluginDir = createPluginDir("install-target", makeManifest({ name: "install-target" }));
+    const pluginDir = createPluginDir(
+      "install-target",
+      makeManifest({ name: "install-target" }),
+    );
 
     const res = await server.app.request("/plugins", {
       method: "POST",
@@ -209,7 +272,10 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("rejects install with missing source", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const res = await server.app.request("/plugins", {
       method: "POST",
@@ -220,7 +286,10 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("rejects install from nonexistent path", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const res = await server.app.request("/plugins", {
       method: "POST",
@@ -231,9 +300,15 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("rejects duplicate install", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const pluginDir = createPluginDir("dup-target", makeManifest({ name: "dup-target" }));
+    const pluginDir = createPluginDir(
+      "dup-target",
+      makeManifest({ name: "dup-target" }),
+    );
 
     // First install
     await server.app.request("/plugins", {
@@ -252,7 +327,10 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("npm and git sources return 501", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
     const npmRes = await server.app.request("/plugins", {
       method: "POST",
@@ -270,9 +348,15 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("uninstalls a plugin and removes its directory", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const pluginDir = createPluginDir("uninstall-target", makeManifest({ name: "uninstall-target" }));
+    const pluginDir = createPluginDir(
+      "uninstall-target",
+      makeManifest({ name: "uninstall-target" }),
+    );
 
     // Install
     await server.app.request("/plugins", {
@@ -287,7 +371,9 @@ describe("Plugin routes — /plugins", () => {
     expect(listBody.items).toHaveLength(1);
 
     // Uninstall
-    const delRes = await server.app.request("/plugins/uninstall-target", { method: "DELETE" });
+    const delRes = await server.app.request("/plugins/uninstall-target", {
+      method: "DELETE",
+    });
     expect(delRes.status).toBe(200);
 
     const delBody = (await delRes.json()) as Record<string, unknown>;
@@ -301,9 +387,14 @@ describe("Plugin routes — /plugins", () => {
   });
 
   it("returns 404 when uninstalling unknown plugin", async () => {
-    const server = createTestServer({ storage: testDb.connection, modelTurns: [] });
+    const server = createTestServer({
+      storage: testDb.connection,
+      modelTurns: [],
+    });
 
-    const res = await server.app.request("/plugins/nonexistent", { method: "DELETE" });
+    const res = await server.app.request("/plugins/nonexistent", {
+      method: "DELETE",
+    });
     expect(res.status).toBe(404);
   });
 });

@@ -7,7 +7,10 @@ export interface AgentProfile {
   description: string;
   capabilities: string[];
   systemPrompt: string;
-  permissionProfile: Array<{ toolName: string; outcome: "allow" | "ask" | "deny" }>;
+  permissionProfile: Array<{
+    toolName: string;
+    outcome: "allow" | "ask" | "deny";
+  }>;
   defaultModel?: string;
   tokenBudget?: number;
   promptVersion: string;

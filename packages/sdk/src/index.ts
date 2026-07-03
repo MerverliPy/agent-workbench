@@ -1,25 +1,27 @@
-export { WorkbenchClient } from "./client";
 export type { WorkbenchClientOptions } from "./client";
-
-export { HttpTransport } from "./transport/http";
-export { SseTransport } from "./transport/sse";
-export { SdkError, ApiError } from "./transport/errors";
-export type { EventCallback, EventFilter, ErrorCallback } from "./transport/sse";
-export type { HttpTransportOptions } from "./transport/http";
-
+export { WorkbenchClient } from "./client";
 export {
-  HealthResource,
-  EventResource,
-  SessionResource,
-  MessageResource,
+  AgentResource,
+  AuthResource,
   ConfigResource,
-  ProviderResource,
+  EventResource,
   FileResource,
+  HealthResource,
+  MessageResource,
   PermissionResource,
+  PlanResource,
+  ProviderResource,
+  SessionResource,
+  TokenHealthResource,
   ToolResource,
   TuiResource,
-  AgentResource,
-  TokenHealthResource,
-  AuthResource,
-  PlanResource,
 } from "./resources";
+export { ApiError, SdkError } from "./transport/errors";
+export type { HttpTransportOptions } from "./transport/http";
+export { HttpTransport } from "./transport/http";
+export type {
+  ErrorCallback,
+  EventCallback,
+  EventFilter,
+} from "./transport/sse";
+export { SseTransport } from "./transport/sse";

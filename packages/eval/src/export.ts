@@ -64,17 +64,21 @@ export class ResultsExporter {
   }
 
   /** Query runs from the repository with optional filters */
-  private queryRuns(opts: ExportOptions): Array<ReturnType<EvalRepository["listRuns"]>[number] & { metrics?: ReturnType<EvalRepository["findMetricsByRun"]> }> {
+  private queryRuns(opts: ExportOptions): Array<
+    ReturnType<EvalRepository["listRuns"]>[number] & {
+      metrics?: ReturnType<EvalRepository["findMetricsByRun"]>;
+    }
+  > {
     let runs = this.repo.listRuns(opts.maxRuns ?? 100, 0);
 
     // Apply model filter
     if (opts.models && opts.models.length > 0) {
-      runs = runs.filter((r) => opts.models!.includes(r.model));
+      runs = runs.filter((r) => opts.models?.includes(r.model));
     }
 
     // Apply benchmark filter
     if (opts.benchmarks && opts.benchmarks.length > 0) {
-      runs = runs.filter((r) => opts.benchmarks!.includes(r.benchmarkId));
+      runs = runs.filter((r) => opts.benchmarks?.includes(r.benchmarkId));
     }
 
     // Attach metrics for each run
@@ -86,7 +90,11 @@ export class ResultsExporter {
 
   /** Format as CSV */
   private toCsv(
-    runs: Array<ReturnType<EvalRepository["listRuns"]>[number] & { metrics?: ReturnType<EvalRepository["findMetricsByRun"]> }>,
+    runs: Array<
+      ReturnType<EvalRepository["listRuns"]>[number] & {
+        metrics?: ReturnType<EvalRepository["findMetricsByRun"]>;
+      }
+    >,
   ): string {
     const header = [
       "run_id",
@@ -133,12 +141,16 @@ export class ResultsExporter {
       ].join(",");
     });
 
-    return [header, ...rows].join("\n") + "\n";
+    return `${[header, ...rows].join("\n")}\n`;
   }
 
   /** Format as JSON */
   private toJson(
-    runs: Array<ReturnType<EvalRepository["listRuns"]>[number] & { metrics?: ReturnType<EvalRepository["findMetricsByRun"]> }>,
+    runs: Array<
+      ReturnType<EvalRepository["listRuns"]>[number] & {
+        metrics?: ReturnType<EvalRepository["findMetricsByRun"]>;
+      }
+    >,
     opts: ExportOptions,
   ): string {
     const payload: Record<string, unknown> = {

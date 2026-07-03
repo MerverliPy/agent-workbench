@@ -1,7 +1,11 @@
 import { z } from "zod/v4";
+import { Pagination, Ulid } from "../schemas/common";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { Workspace, CreateWorkspaceRequest, UpdateWorkspaceRequest } from "../schemas/workspace";
-import { Ulid, Pagination } from "../schemas/common";
+import {
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+  Workspace,
+} from "../schemas/workspace";
 
 export const WorkspaceIdParams = z.object({
   workspaceId: z.string().min(1),
@@ -21,7 +25,10 @@ export const ListWorkspacesRoute = {
   query: Pagination.extend({
     archived: z.boolean().optional(),
   }).optional(),
-  response: z.object({ items: z.array(Workspace), nextCursor: Ulid.optional() }),
+  response: z.object({
+    items: z.array(Workspace),
+    nextCursor: Ulid.optional(),
+  }),
   errors: [ErrorEnvelope],
 } as const;
 

@@ -1,15 +1,15 @@
-import type { Hono } from "hono";
-import {
-  ListFilesRoute,
-  ReadFileRoute,
-  GetFileDiffRoute,
-  GetFileTreeRoute,
-} from "@agent-workbench/protocol";
-import type { ServerAppBindings } from "../context";
-import { createJsonRouteHandler } from "./helpers";
-import { ApiError } from "../errors";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import {
+  GetFileDiffRoute,
+  GetFileTreeRoute,
+  ListFilesRoute,
+  ReadFileRoute,
+} from "@agent-workbench/protocol";
+import type { Hono } from "hono";
+import type { ServerAppBindings } from "../context";
+import { ApiError } from "../errors";
+import { createJsonRouteHandler } from "./helpers";
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -122,10 +122,14 @@ async function readFileContent(
     });
   }
 
-  const maxBytes = limit ? Math.min(limit * 1000, MAX_FILE_SIZE) : MAX_FILE_SIZE;
+  const maxBytes = limit
+    ? Math.min(limit * 1000, MAX_FILE_SIZE)
+    : MAX_FILE_SIZE;
   const content = await fs.readFile(resolved, "utf-8");
   const truncated = content.length > maxBytes;
-  const displayed = truncated ? content.slice(0, maxBytes) + "\n... (truncated)" : content;
+  const displayed = truncated
+    ? `${content.slice(0, maxBytes)}\n... (truncated)`
+    : content;
 
   return { path: filePath, content: displayed, truncated };
 }
@@ -161,17 +165,14 @@ export function registerFileRoutes(app: Hono<ServerAppBindings>) {
   // GET /file/diff — not yet implemented (requires diff engine)
   app.get(
     GetFileDiffRoute.path,
-    createJsonRouteHandler(
-      GetFileDiffRoute,
-      async () => {
-        throw new ApiError({
-          status: 501,
-          code: "NOT_IMPLEMENTED",
-          message: "File diff is not yet implemented",
-          recoverable: true,
-        });
-      },
-    ),
+    createJsonRouteHandler(GetFileDiffRoute, async () => {
+      throw new ApiError({
+        status: 501,
+        code: "NOT_IMPLEMENTED",
+        message: "File diff is not yet implemented",
+        recoverable: true,
+      });
+    }),
   );
 
   // GET /file/tree — recursive directory listing (delegates to list for now)

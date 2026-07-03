@@ -17,21 +17,34 @@
  * const newId = await importSession(JSON.parse(raw), repos);
  * ```
  */
-export { exportSession, importSession } from "./session-export";
-export { ShareManager } from "./share-manager";
-export type { ShareRecord, CreateShareOptions, ShareResult } from "./share-manager";
-export { SharedSessionManager } from "./shared-session";
-export type { SharedSessionUser, SharedSessionRole, JoinSessionOptions } from "./shared-session";
+
+export type { EnterSessionOptions, SessionPresence } from "./presence";
 export { PresenceManager } from "./presence";
-export type { SessionPresence, EnterSessionOptions } from "./presence";
-export { ReviewQueue } from "./review-queue";
-export type { ReviewItem, ReviewStatus, SubmitReviewOptions } from "./review-queue";
 export type {
-  SessionExport,
-  ExportedMessage,
-  ExportedToolCall,
-  ExportedPermission,
+  ReviewItem,
+  ReviewStatus,
+  SubmitReviewOptions,
+} from "./review-queue";
+export { ReviewQueue } from "./review-queue";
+export type {
   ExportedLedgerEntry,
+  ExportedMessage,
+  ExportedPermission,
+  ExportedToolCall,
   ExportOptions,
   Repositories,
+  SessionExport,
 } from "./session-export";
+export { exportSession, importSession } from "./session-export";
+export type {
+  CreateShareOptions,
+  ShareRecord,
+  ShareResult,
+} from "./share-manager";
+export { ShareManager } from "./share-manager";
+export type {
+  JoinSessionOptions,
+  SharedSessionRole,
+  SharedSessionUser,
+} from "./shared-session";
+export { SharedSessionManager } from "./shared-session";

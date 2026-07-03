@@ -41,7 +41,7 @@ class MetricsRegistry {
       lines.push(`# TYPE ${name} gauge`);
       lines.push(`${name} ${value}`);
     }
-    return lines.join("\n") + "\n";
+    return `${lines.join("\n")}\n`;
   }
 }
 

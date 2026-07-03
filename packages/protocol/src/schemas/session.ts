@@ -1,8 +1,14 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
 import { AgentId } from "./agent";
+import { Timestamp, Ulid } from "./common";
 
-export const SessionStatus = z.enum(["active", "idle", "aborted", "archived", "deleted"]);
+export const SessionStatus = z.enum([
+  "active",
+  "idle",
+  "aborted",
+  "archived",
+  "deleted",
+]);
 export type SessionStatus = z.infer<typeof SessionStatus>;
 
 export const Session = z.object({

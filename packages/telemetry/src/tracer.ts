@@ -44,10 +44,7 @@ export class Tracer {
    * Start a new trace span and execute the handler within it.
    * The span is automatically closed when the handler completes or throws.
    */
-  async trace<T>(
-    options: TraceOptions,
-    handler: TraceHandler<T>,
-  ): Promise<T> {
+  async trace<T>(options: TraceOptions, handler: TraceHandler<T>): Promise<T> {
     const span = this.startSpan(options);
     try {
       const result = await handler(span);
@@ -70,9 +67,10 @@ export class Tracer {
 
     const span: InternalSpan = {
       spanId,
-      traceId: this.spans.length > 0
-        ? (this.spans[this.spans.length - 1]?.traceId ?? traceId)
-        : traceId,
+      traceId:
+        this.spans.length > 0
+          ? (this.spans[this.spans.length - 1]?.traceId ?? traceId)
+          : traceId,
       name: options.name,
       status: "unset",
       startTime: performance.now(),

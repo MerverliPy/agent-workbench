@@ -21,7 +21,7 @@ function parseHost(value: string | undefined): string {
 
   if (!LOOPBACK_HOSTS.has(host)) {
     throw new Error(
-      `Non-loopback host \"${host}\" is not allowed in Phase 3. Use 127.0.0.1, ::1, or localhost.`
+      `Non-loopback host "${host}" is not allowed in Phase 3. Use 127.0.0.1, ::1, or localhost.`,
     );
   }
 

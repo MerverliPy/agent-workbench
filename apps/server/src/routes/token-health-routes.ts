@@ -1,12 +1,12 @@
-import type { Hono } from "hono";
 import { GetTokenHealthRoute } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import type { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 export function registerTokenHealthRoutes(
   app: Hono<ServerAppBindings>,
-  services: ServerServices
+  services: ServerServices,
 ): void {
   const { sessionRunner } = services;
 
@@ -25,6 +25,6 @@ export function registerTokenHealthRoutes(
           recoverable: false,
         });
       }
-    })
+    }),
   );
 }

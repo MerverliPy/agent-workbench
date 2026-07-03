@@ -119,7 +119,10 @@ export class ProviderHealthMonitor {
     const errorRate = probes.length > 0 ? errors / probes.length : 0;
 
     // Compute latency percentiles
-    const latencies = probes.filter((p) => p.ok).map((p) => p.latencyMs).sort((a, b) => a - b);
+    const latencies = probes
+      .filter((p) => p.ok)
+      .map((p) => p.latencyMs)
+      .sort((a, b) => a - b);
 
     // Determine overall status
     let status: ProviderHealthStatus["status"];
@@ -176,7 +179,8 @@ export class ProviderHealthMonitor {
         providerId: profiles[i]?.id ?? "unknown",
         status: "unhealthy" as const,
         errorRate: 1,
-        lastError: r.reason instanceof Error ? r.reason.message : String(r.reason),
+        lastError:
+          r.reason instanceof Error ? r.reason.message : String(r.reason),
         lastCheckedAt: new Date().toISOString(),
       };
     });
@@ -197,9 +201,10 @@ export class ProviderHealthMonitor {
       // Ollama runs locally; OpenAI/Anthropic/OpenRouter may not have a
       // lightweight health endpoint, so we do a minimal probe.
       if (profile.baseUrl && profile.baseUrl.length > 0) {
-        const healthUrl = profile.providerType === "ollama"
-          ? `${profile.baseUrl.replace(/\/v1$/, "")}/api/tags`
-          : `${profile.baseUrl}/models`;
+        const healthUrl =
+          profile.providerType === "ollama"
+            ? `${profile.baseUrl.replace(/\/v1$/, "")}/api/tags`
+            : `${profile.baseUrl}/models`;
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5_000);
@@ -209,7 +214,8 @@ export class ProviderHealthMonitor {
             method: "GET",
             signal: controller.signal,
           });
-          ok = response.ok || response.status === 401 || response.status === 403;
+          ok =
+            response.ok || response.status === 401 || response.status === 403;
           // 401/403 means the endpoint is alive but requires auth — that's healthy
           if (!ok) {
             errorMsg = `HTTP ${response.status}`;

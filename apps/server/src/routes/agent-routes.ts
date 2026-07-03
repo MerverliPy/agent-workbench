@@ -1,16 +1,13 @@
+import type { AgentDefinition, AgentListItem } from "@agent-workbench/protocol";
+import { GetAgentRoute, ListAgentsRoute } from "@agent-workbench/protocol";
 import type { Hono } from "hono";
-import { ListAgentsRoute, GetAgentRoute } from "@agent-workbench/protocol";
-import type {
-  AgentDefinition,
-  AgentListItem,
-} from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 export function registerAgentRoutes(
   app: Hono<ServerAppBindings>,
-  services: ServerServices
+  services: ServerServices,
 ): void {
   const { agentRegistry } = services;
 
@@ -28,7 +25,7 @@ export function registerAgentRoutes(
         promptVersion: p.promptVersion,
       }));
       return items;
-    })
+    }),
   );
 
   app.get(
@@ -54,6 +51,6 @@ export function registerAgentRoutes(
         promptVersion: profile.promptVersion,
       };
       return def;
-    })
+    }),
   );
 }

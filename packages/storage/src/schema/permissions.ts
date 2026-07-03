@@ -1,4 +1,4 @@
-import { sqliteTable, text, index } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const permissionRequests = sqliteTable(
   "permission_requests",
@@ -25,7 +25,7 @@ export const permissionRequests = sqliteTable(
     index("permission_requests_run_id_idx").on(table.runId),
     index("permission_requests_tool_call_id_idx").on(table.toolCallId),
     index("permission_requests_status_idx").on(table.status),
-  ]
+  ],
 );
 
 export const permissionDecisions = sqliteTable(
@@ -40,5 +40,5 @@ export const permissionDecisions = sqliteTable(
     createdAt: text("created_at").notNull(),
     metadataJson: text("metadata_json"),
   },
-  (table) => [index("permission_decisions_request_id_idx").on(table.requestId)]
+  (table) => [index("permission_decisions_request_id_idx").on(table.requestId)],
 );

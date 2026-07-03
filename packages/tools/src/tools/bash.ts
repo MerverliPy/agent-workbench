@@ -1,8 +1,8 @@
-import { z } from "zod";
-import type { RegisteredTool, ToolExecutionContext } from "../types";
 import type { ToolDefinition } from "@agent-workbench/protocol";
 import type { SimpleCommandRunner } from "@agent-workbench/shell";
 import { DEFAULT_TIMEOUT_MS } from "@agent-workbench/shell";
+import { z } from "zod";
+import type { RegisteredTool, ToolExecutionContext } from "../types";
 
 export const BashInput = z.object({
   command: z.string().min(1, "command is required"),
@@ -42,7 +42,7 @@ export function createBashTool(options: BashToolOptions): RegisteredTool {
     executor: {
       async execute(
         input: unknown,
-        context: ToolExecutionContext
+        context: ToolExecutionContext,
       ): Promise<BashResult> {
         const parsed = BashInput.safeParse(input);
         if (!parsed.success) {
@@ -58,8 +58,12 @@ export function createBashTool(options: BashToolOptions): RegisteredTool {
           cwd: effectiveCwd,
           timeout: effectiveTimeout,
           ...(context.signal !== undefined ? { signal: context.signal } : {}),
-          ...(context.onStdout !== undefined ? { onStdout: context.onStdout } : {}),
-          ...(context.onStderr !== undefined ? { onStderr: context.onStderr } : {}),
+          ...(context.onStdout !== undefined
+            ? { onStdout: context.onStdout }
+            : {}),
+          ...(context.onStderr !== undefined
+            ? { onStderr: context.onStderr }
+            : {}),
         });
 
         return {

@@ -7,11 +7,18 @@
 // Design: lightweight orchestration layer. Actual benchmark execution is delegated
 // to external tools. This package manages the lifecycle, caching, and reporting.
 
-import { ulid } from "ulid";
-import { EvalRepository, type EvalRepository as EvalRepositoryType } from "./storage/eval-repository";
-import { MetricsCollector } from "./metrics";
 import type { EvalBenchmarkId } from "@agent-workbench/protocol";
-import { runPromptfooEval, runLmEvalHarnessBenchmark, runCustomEvalScript } from "./integrations";
+import { ulid } from "ulid";
+import {
+  runCustomEvalScript,
+  runLmEvalHarnessBenchmark,
+  runPromptfooEval,
+} from "./integrations";
+import { MetricsCollector } from "./metrics";
+import {
+  EvalRepository,
+  type EvalRepository as EvalRepositoryType,
+} from "./storage/eval-repository";
 
 export interface EvalRunOptions {
   /** Benchmark to run */
@@ -183,9 +190,19 @@ export class EvalRunner {
 
       // Use MetricsCollector for cost estimation
       const metrics = new MetricsCollector(this.repo);
-      const totalInput = scores.reduce((s, score) => s + score.itemCount * 250, 0); // estimate ~250 input tokens per item
-      const totalOutput = scores.reduce((s, score) => s + score.itemCount * 500, 0); // estimate ~500 output tokens per item
-      const costUsd = metrics.computeCostPerEval(options.model, totalInput, totalOutput);
+      const totalInput = scores.reduce(
+        (s, score) => s + score.itemCount * 250,
+        0,
+      ); // estimate ~250 input tokens per item
+      const totalOutput = scores.reduce(
+        (s, score) => s + score.itemCount * 500,
+        0,
+      ); // estimate ~500 output tokens per item
+      const costUsd = metrics.computeCostPerEval(
+        options.model,
+        totalInput,
+        totalOutput,
+      );
 
       const result: EvalResult = {
         id: runId,
@@ -198,7 +215,11 @@ export class EvalRunner {
           itemsPassed,
           durationMs,
           costUsd,
-          tokensUsed: { input: totalInput, output: totalOutput, total: totalInput + totalOutput },
+          tokensUsed: {
+            input: totalInput,
+            output: totalOutput,
+            total: totalInput + totalOutput,
+          },
           latencyMs: { p50: durationMs, p95: durationMs, p99: durationMs },
           errorRate: 0,
         },
@@ -239,7 +260,12 @@ export class EvalRunner {
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      this.repo.updateRunStatus(runId, "failed", new Date().toISOString(), errorMessage);
+      this.repo.updateRunStatus(
+        runId,
+        "failed",
+        new Date().toISOString(),
+        errorMessage,
+      );
       throw err;
     }
   }
@@ -289,9 +315,11 @@ export class EvalRunner {
     options: EvalRunOptions,
   ): Promise<{ scores: EvalResult["scores"]; rawOutput: string }> {
     const result = await runPromptfooEval(options, {
-      prompts: options.params?.prompts as string[] ?? ["Test prompt"],
+      prompts: (options.params?.prompts as string[]) ?? ["Test prompt"],
       systemPrompt: (options.params?.systemPrompt as string) ?? "",
-      ...(options.params?.assertions ? { assertions: options.params.assertions as any[] } : {}),
+      ...(options.params?.assertions
+        ? { assertions: options.params.assertions as any[] }
+        : {}),
       ...(options.limit ? { repeats: options.limit } : {}),
     });
     return { scores: result.scores, rawOutput: result.rawOutput };

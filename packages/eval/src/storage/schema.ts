@@ -2,7 +2,13 @@
 //
 // Follows the Drizzle SQLite pattern from @agent-workbench/storage.
 
-import { sqliteTable, text, real, integer, index } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  integer,
+  real,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 /** Evaluation runs — a benchmark execution against a model + provider */
 export const evalRuns = sqliteTable(
@@ -32,7 +38,9 @@ export const evalScores = sqliteTable(
   "eval_scores",
   {
     id: text("id").primaryKey(),
-    runId: text("run_id").notNull().references(() => evalRuns.id),
+    runId: text("run_id")
+      .notNull()
+      .references(() => evalRuns.id),
     task: text("task").notNull(), // e.g. "mmlu_astronomy", "code_generation"
     score: real("score").notNull(),
     metric: text("metric").notNull(), // accuracy | exact_match | bleu | rouge | pass_at_k | custom
@@ -46,7 +54,9 @@ export const evalScores = sqliteTable(
 
 /** Aggregated metrics per eval run */
 export const evalMetrics = sqliteTable("eval_metrics", {
-  runId: text("run_id").primaryKey().references(() => evalRuns.id),
+  runId: text("run_id")
+    .primaryKey()
+    .references(() => evalRuns.id),
   accuracy: real("accuracy"),
   totalItems: integer("total_items").notNull().default(0),
   itemsPassed: integer("items_passed").notNull().default(0),
@@ -98,7 +108,9 @@ export const comparisonResults = sqliteTable(
   "comparison_results",
   {
     id: text("id").primaryKey(),
-    comparisonId: text("comparison_id").notNull().references(() => comparisonRuns.id),
+    comparisonId: text("comparison_id")
+      .notNull()
+      .references(() => comparisonRuns.id),
     model: text("model").notNull(),
     provider: text("provider").notNull(),
     output: text("output").notNull(),

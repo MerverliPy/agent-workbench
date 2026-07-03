@@ -33,7 +33,11 @@ export class InMemoryTokenStore {
   startCleanup(intervalMs = 300_000): void {
     if (this.cleanupTimer) return;
     this.cleanupTimer = setInterval(() => this.removeExpired(), intervalMs);
-    if (typeof this.cleanupTimer === "object" && this.cleanupTimer !== null && "unref" in this.cleanupTimer) {
+    if (
+      typeof this.cleanupTimer === "object" &&
+      this.cleanupTimer !== null &&
+      "unref" in this.cleanupTimer
+    ) {
       // Prevent timer from keeping the process alive in Bun
     }
   }

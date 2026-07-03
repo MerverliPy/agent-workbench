@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import solid from "vite-plugin-solid";
 
 export default defineConfig({
   plugins: [
@@ -28,7 +28,8 @@ export default defineConfig({
         // Network-first for API calls, cache-first for everything else (default)
         runtimeCaching: [
           {
-            urlPattern: /^\/(session|file|git|tool|health|info|event|permission|provider|agent|config|message|plan)/,
+            urlPattern:
+              /^\/(session|file|git|tool|health|info|event|permission|provider|agent|config|message|plan)/,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",

@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { ModelProvider, Model } from "../schemas/provider";
+import { Model, ModelProvider } from "../schemas/provider";
 
 export const ProviderIdParams = z.object({
   providerId: z.string().min(1),

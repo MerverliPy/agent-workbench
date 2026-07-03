@@ -1,10 +1,16 @@
-import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
-import { StubModelProvider } from "./stub-provider";
-import { OpenAICompatibleProvider } from "./providers/openai-compatible";
-import { AnthropicProvider } from "./providers/anthropic";
-import { createOpenRouterProvider, createOllamaProvider } from "./providers/openrouter";
-import { parseProviderConfig, detectAvailableProviders } from "./provider-config";
 import { ProviderConfigError } from "./errors";
+import {
+  detectAvailableProviders,
+  parseProviderConfig,
+} from "./provider-config";
+import { AnthropicProvider } from "./providers/anthropic";
+import { OpenAICompatibleProvider } from "./providers/openai-compatible";
+import {
+  createOllamaProvider,
+  createOpenRouterProvider,
+} from "./providers/openrouter";
+import { StubModelProvider } from "./stub-provider";
+import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
 
 export interface ProviderEntry {
   id: string;
@@ -78,9 +84,11 @@ export class ProviderRegistry {
   // ── Registration methods ────────────────────────────────────────────
 
   private registerStubProvider(override?: ModelProvider): void {
-    const provider = override ?? new StubModelProvider({
-      textResponse: "Hello! I am the agent-workbench stub assistant.",
-    });
+    const provider =
+      override ??
+      new StubModelProvider({
+        textResponse: "Hello! I am the agent-workbench stub assistant.",
+      });
     this.providerMap.set(STUB_PROVIDER_ID, provider);
     this.metaMap.set(STUB_PROVIDER_ID, {
       id: STUB_PROVIDER_ID,
@@ -182,7 +190,10 @@ export class ProviderRegistry {
           return this.registerOllama(config, fetchImpl);
         default:
           if (isExplicit) {
-            this.registerErrorMeta(providerId, `Unknown provider: ${providerId}`);
+            this.registerErrorMeta(
+              providerId,
+              `Unknown provider: ${providerId}`,
+            );
           }
           return "error";
       }
@@ -309,9 +320,7 @@ export class ProviderRegistry {
    * Get the provider with fallback.
    * If the primary provider errors, try the next in the fallback chain.
    */
-  async callWithFallback(
-    request: ModelRequest,
-  ): Promise<ModelResponse> {
+  async callWithFallback(request: ModelRequest): Promise<ModelResponse> {
     const allIds = [this.defaultProviderId, ...this.fallbackChain];
 
     let lastError: Error | undefined;

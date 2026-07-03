@@ -1,4 +1,7 @@
-import type { ToolRegistry, ToolExecutionContext } from "@agent-workbench/tools";
+import type {
+  ToolExecutionContext,
+  ToolRegistry,
+} from "@agent-workbench/tools";
 import type { ToolCallRequest, ToolCallResult } from "./types";
 
 /**
@@ -31,7 +34,7 @@ export class ToolCallDispatcher {
    */
   async dispatch(
     request: ToolCallRequest,
-    context: ToolExecutionContext
+    context: ToolExecutionContext,
   ): Promise<ToolCallResult> {
     const tool = this.registry.lookup(request.name);
 

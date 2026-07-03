@@ -16,7 +16,15 @@ export function registerObservabilityRoutes(
   app: Hono<ServerAppBindings>,
   services: ServerServices,
 ): void {
-  const { tracer, metricsExporter, errorReporter, requestLogger, providerHealthMonitor, sessionRepository, costTracker } = services;
+  const {
+    tracer,
+    metricsExporter,
+    errorReporter,
+    requestLogger,
+    providerHealthMonitor,
+    sessionRepository,
+    costTracker,
+  } = services;
 
   // ── Prometheus metrics endpoint ──────────────────────────────────────────
 
@@ -119,7 +127,10 @@ export function registerObservabilityRoutes(
       }
     }
 
-    const latencyByOperation: Record<string, { p50: number; p95: number; p99: number; count: number }> = {};
+    const latencyByOperation: Record<
+      string,
+      { p50: number; p95: number; p99: number; count: number }
+    > = {};
     for (const [name, durations] of durationMap) {
       const sorted = durations.sort((a, b) => a - b);
       latencyByOperation[name] = {
@@ -133,7 +144,10 @@ export function registerObservabilityRoutes(
     // Cost data
     const dailyTotals = costTracker.getDailyTotals();
     const costTrends = Array.from(dailyTotals.entries())
-      .map(([date, cost]) => ({ date, cost: Math.round(cost * 1000000) / 1000000 }))
+      .map(([date, cost]) => ({
+        date,
+        cost: Math.round(cost * 1000000) / 1000000,
+      }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
     // Error count

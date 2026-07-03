@@ -1,11 +1,11 @@
-import type { Hono } from "hono";
 import {
-  SubmitMessageRoute,
-  ListMessagesRoute,
   GetMessageRoute,
+  ListMessagesRoute,
+  SubmitMessageRoute,
 } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import type { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 /**
@@ -18,7 +18,7 @@ import { createJsonRouteHandler } from "./helpers";
  */
 export function registerMessageRoutes(
   app: Hono<ServerAppBindings>,
-  services: ServerServices
+  services: ServerServices,
 ): void {
   const { sessionRunner, messageRepository, sessionRepository } = services;
 
@@ -79,7 +79,7 @@ export function registerMessageRoutes(
         message: result.error ?? `Run ${result.status} without a response`,
         recoverable: result.status === "aborted",
       });
-    })
+    }),
   );
 
   // GET /session/:sessionId/message
@@ -98,7 +98,7 @@ export function registerMessageRoutes(
       }
       const rows = messageRepository.listBySession(sessionId);
       return { items: rows.map(rowToProtocol) };
-    })
+    }),
   );
 
   // GET /session/:sessionId/message/:messageId
@@ -119,13 +119,13 @@ export function registerMessageRoutes(
         });
       }
       return rowToProtocol(msg);
-    })
+    }),
   );
 }
 
 /** Convert a storage message row to the protocol Message shape. */
 function rowToProtocol(
-  row: import("@agent-workbench/storage").MessageRow
+  row: import("@agent-workbench/storage").MessageRow,
 ): import("@agent-workbench/protocol").Message {
   return {
     id: row.id,

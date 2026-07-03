@@ -1,10 +1,9 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { Hono } from "hono";
-import { createTestDb } from "../helpers/test-db";
-import { createTestServer } from "../helpers/test-server";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { ErrorEnvelope } from "@agent-workbench/protocol";
 import type { TestDb } from "../helpers/test-db";
+import { createTestDb } from "../helpers/test-db";
+import { createTestServer } from "../helpers/test-server";
 
 let testDb: TestDb;
 let server: ReturnType<typeof createTestServer>;
@@ -49,7 +48,7 @@ describe("Server API contract — error envelopes", () => {
   it("error response does not include stack traces", async () => {
     const res = await server.app.request("/nonexistent-route");
     const body = await res.json();
-    const bodyStr = JSON.stringify(body);
+    const _bodyStr = JSON.stringify(body);
 
     expect(body.error).toBeDefined();
     expect(body.error.stack).toBeUndefined();
@@ -78,9 +77,12 @@ describe("Server API contract — error envelopes", () => {
   });
 
   it("delete nonexistent session returns error envelope", async () => {
-    const res = await server.app.request("/session/00000000000000000000000000", {
-      method: "DELETE",
-    });
+    const res = await server.app.request(
+      "/session/00000000000000000000000000",
+      {
+        method: "DELETE",
+      },
+    );
     // 404 or error envelope expected.
     const body = await res.json();
     expect(body).toHaveProperty("error");

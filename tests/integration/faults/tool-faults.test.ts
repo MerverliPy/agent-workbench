@@ -1,14 +1,13 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import { FaultModelProvider } from "../../helpers/faults";
-import type { TestDb } from "../../helpers/test-db";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
 
 let testDb: TestDb;
 let projectDir: string;
@@ -18,12 +17,27 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -37,10 +51,15 @@ beforeAll(() => {
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
-function createSession(server: ReturnType<typeof createTestServer>, sessionId: string): void {
+function createSession(
+  server: ReturnType<typeof createTestServer>,
+  sessionId: string,
+): void {
   server.services.sessionRepository.create({
     id: sessionId,
     projectPath: projectDir,
@@ -71,7 +90,10 @@ describe("Tool fault injection — unknown tool", () => {
     const sessionId = ulid();
     createSession(server, sessionId);
 
-    const result = await server.sessionRunner.run(sessionId, "call unknown tool");
+    const result = await server.sessionRunner.run(
+      sessionId,
+      "call unknown tool",
+    );
 
     expect(result.status).toBe("completed");
 
@@ -79,7 +101,7 @@ describe("Tool fault injection — unknown tool", () => {
     const unknown = toolCalls.find((t) => t.toolName === "nonexistent_tool");
     expect(unknown).toBeDefined();
     // Unknown tool is denied by agent availability check before dispatch.
-    expect(unknown!.status).toBe("denied");
+    expect(unknown?.status).toBe("denied");
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
     expect(ledger.some((e) => e.eventType === "tool.denied")).toBe(true);
@@ -118,7 +140,7 @@ describe("Tool fault injection — malformed mutation input", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const writeCall = toolCalls.find((t) => t.toolName === "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("failed");
+    expect(writeCall?.status).toBe("failed");
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
     expect(ledger.some((e) => e.eventType === "tool.failed")).toBe(true);
@@ -154,7 +176,7 @@ describe("Tool fault injection — malformed mutation input", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const patchCall = toolCalls.find((t) => t.toolName === "apply_patch");
     expect(patchCall).toBeDefined();
-    expect(patchCall!.status).toBe("failed");
+    expect(patchCall?.status).toBe("failed");
   });
 });
 
@@ -165,9 +187,7 @@ describe("Tool fault injection — malformed bash input", () => {
       permissionPolicy: ALLOW_ALL_POLICY,
       modelTurns: [
         {
-          toolCalls: [
-            { id: "call-1", name: "bash", input: { } },
-          ],
+          toolCalls: [{ id: "call-1", name: "bash", input: {} }],
         },
         { text: "Done." },
       ],
@@ -181,13 +201,15 @@ describe("Tool fault injection — malformed bash input", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const bashCall = toolCalls.find((t) => t.toolName === "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBe("failed");
+    expect(bashCall?.status).toBe("failed");
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
     expect(ledger.some((e) => e.eventType === "tool.failed")).toBe(true);
 
     // Must not record shell.command_started for a blocked bash.
-    const shellStarted = ledger.filter((e) => e.eventType === "shell.command_started");
+    const shellStarted = ledger.filter(
+      (e) => e.eventType === "shell.command_started",
+    );
     expect(shellStarted.length).toBe(0);
   });
 
@@ -213,10 +235,12 @@ describe("Tool fault injection — malformed bash input", () => {
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const bashCall = toolCalls.find((t) => t.toolName === "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBe("failed");
+    expect(bashCall?.status).toBe("failed");
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const shellStarted = ledger.filter((e) => e.eventType === "shell.command_started");
+    const shellStarted = ledger.filter(
+      (e) => e.eventType === "shell.command_started",
+    );
     expect(shellStarted.length).toBe(0);
   });
 });

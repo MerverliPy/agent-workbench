@@ -1,4 +1,4 @@
-import type { TaskCategory, ProviderProfile } from "@agent-workbench/protocol";
+import type { ProviderProfile, TaskCategory } from "@agent-workbench/protocol";
 import type { ProviderMarketplace } from "./marketplace";
 
 /**
@@ -172,16 +172,23 @@ export class SmartRouter {
   /**
    * Select the best provider for a given task classification.
    */
-  route(
-    classification: TaskClassification,
-  ): RoutingDecision {
+  route(classification: TaskClassification): RoutingDecision {
     const { category } = classification;
 
     // Get all enabled providers sorted by priority order:
     // preferred → fallback → emergency
-    const preferred = this.marketplace.list({ tier: "preferred", enabledOnly: true });
-    const fallback = this.marketplace.list({ tier: "fallback", enabledOnly: true });
-    const emergency = this.marketplace.list({ tier: "emergency", enabledOnly: true });
+    const preferred = this.marketplace.list({
+      tier: "preferred",
+      enabledOnly: true,
+    });
+    const fallback = this.marketplace.list({
+      tier: "fallback",
+      enabledOnly: true,
+    });
+    const emergency = this.marketplace.list({
+      tier: "emergency",
+      enabledOnly: true,
+    });
 
     // Score and rank providers by task suitability
     const scored = [...preferred, ...fallback, ...emergency]
@@ -256,9 +263,8 @@ export class SmartRouter {
 
     // Cost efficiency (lower cost = higher score, capped at 30)
     const totalCost = profile.costPer1KInput + profile.costPer1KOutput;
-    const costEfficiency = totalCost > 0
-      ? Math.max(0, 30 - totalCost * 1000)
-      : 30;
+    const costEfficiency =
+      totalCost > 0 ? Math.max(0, 30 - totalCost * 1000) : 30;
     score += costEfficiency;
 
     // Enabled bonus

@@ -1,13 +1,13 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ulid } from "ulid";
-import { createTestDb } from "../../helpers/test-db";
-import { createTestServer } from "../../helpers/test-server";
 import { FaultModelProvider } from "../../helpers/faults";
 import type { TestDb } from "../../helpers/test-db";
+import { createTestDb } from "../../helpers/test-db";
+import { createTestServer } from "../../helpers/test-server";
 
 let testDb: TestDb;
 let projectDir: string;
@@ -19,10 +19,15 @@ beforeAll(() => {
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
-function createSession(server: ReturnType<typeof createTestServer>, sessionId: string): void {
+function createSession(
+  server: ReturnType<typeof createTestServer>,
+  sessionId: string,
+): void {
   server.services.sessionRepository.create({
     id: sessionId,
     projectPath: projectDir,
@@ -57,7 +62,9 @@ describe("Model fault injection — normal Error", () => {
     expect(result.assistantMessageId).toBeUndefined();
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const failedEntries = ledger.filter((e) => e.eventType === "model.call_failed");
+    const failedEntries = ledger.filter(
+      (e) => e.eventType === "model.call_failed",
+    );
     expect(failedEntries.length).toBeGreaterThanOrEqual(1);
 
     const runFailedEntries = ledger.filter((e) => e.eventType === "run.failed");
@@ -72,7 +79,9 @@ describe("Model fault injection — normal Error", () => {
       {
         type: "normal",
         turn: {
-          toolCalls: [{ id: "call-1", name: "read", input: { path: "nonexistent.ts" } }],
+          toolCalls: [
+            { id: "call-1", name: "read", input: { path: "nonexistent.ts" } },
+          ],
         },
       },
       { type: "error", message: "Second call crashed" },
@@ -98,7 +107,9 @@ describe("Model fault injection — normal Error", () => {
     expect(readCall).toBeDefined();
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const modelFailed = ledger.filter((e) => e.eventType === "model.call_failed");
+    const modelFailed = ledger.filter(
+      (e) => e.eventType === "model.call_failed",
+    );
     expect(modelFailed.length).toBeGreaterThanOrEqual(1);
 
     const runFailed = ledger.filter((e) => e.eventType === "run.failed");
@@ -109,9 +120,7 @@ describe("Model fault injection — normal Error", () => {
   });
 
   it("model throws AbortError → run.status is aborted", async () => {
-    const faultProvider = new FaultModelProvider([
-      { type: "abort" },
-    ]);
+    const faultProvider = new FaultModelProvider([{ type: "abort" }]);
 
     const server = createTestServer({
       storage: testDb.connection,
@@ -164,13 +173,17 @@ describe("Model fault injection — normal Error", () => {
       {
         type: "normal",
         turn: {
-          toolCalls: [{ id: "call-1", name: "read", input: { path: "nonexistent.ts" } }],
+          toolCalls: [
+            { id: "call-1", name: "read", input: { path: "nonexistent.ts" } },
+          ],
         },
       },
       {
         type: "normal",
         turn: {
-          toolCalls: [{ id: "call-2", name: "read", input: { path: "nonexistent.ts" } }],
+          toolCalls: [
+            { id: "call-2", name: "read", input: { path: "nonexistent.ts" } },
+          ],
         },
       },
       { type: "normal", turn: { text: "Read twice." } },
@@ -192,7 +205,9 @@ describe("Model fault injection — normal Error", () => {
     expect(toolCalls.filter((t) => t.toolName === "read").length).toBe(2);
 
     const ledger = server.services.ledgerRepository.listBySession(sessionId);
-    const modelCompleted = ledger.filter((e) => e.eventType === "model.call_completed");
+    const modelCompleted = ledger.filter(
+      (e) => e.eventType === "model.call_completed",
+    );
     expect(modelCompleted.length).toBeGreaterThanOrEqual(2);
   });
 });

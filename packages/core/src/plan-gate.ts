@@ -1,8 +1,11 @@
-import { ulid } from "ulid";
+import type {
+  PermissionEngine,
+  PermissionGate,
+} from "@agent-workbench/permissions";
+import { computePlanRiskLevel, validatePlan } from "@agent-workbench/planner";
 import type { Plan, PlanStep } from "@agent-workbench/protocol";
-import type { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import type { PlanRepository } from "@agent-workbench/storage";
-import { validatePlan, computePlanRiskLevel } from "@agent-workbench/planner";
+import { ulid } from "ulid";
 import type { EventPublisher } from "./event-publisher";
 import type { RunLedger } from "./run-ledger";
 
@@ -32,7 +35,7 @@ export class PlanGate {
   constructor(
     private readonly planRepository: PlanRepository,
     private readonly permissionEngine: PermissionEngine,
-    private readonly permissionGate: PermissionGate
+    private readonly permissionGate: PermissionGate,
   ) {}
 
   buildPlan(
@@ -45,7 +48,7 @@ export class PlanGate {
       description: string;
     }>,
     summary: string,
-    targetFiles: string[]
+    targetFiles: string[],
   ): Plan {
     const now = new Date().toISOString();
 
@@ -78,7 +81,7 @@ export class PlanGate {
     events: EventPublisher,
     ledger: RunLedger,
     signal: AbortSignal,
-    agentId?: string
+    agentId?: string,
   ): Promise<"proceed" | "blocked"> {
     const validation = validatePlan(plan);
     if (!validation.valid) {
@@ -100,12 +103,12 @@ export class PlanGate {
     ledger.recordPlanProposed(
       pendingPlan.id,
       pendingPlan.summary,
-      pendingPlan.riskLevel
+      pendingPlan.riskLevel,
     );
 
     const evalResult = this.permissionEngine.evaluatePlan(
       pendingPlan.steps,
-      agentId
+      agentId,
     );
 
     if (evalResult.outcome === "deny") {
@@ -119,7 +122,7 @@ export class PlanGate {
     if (evalResult.outcome === "ask") {
       const decision = await this.permissionGate.waitForDecision(
         planPermReqId,
-        signal
+        signal,
       );
 
       if (signal.aborted || decision === "deny") {

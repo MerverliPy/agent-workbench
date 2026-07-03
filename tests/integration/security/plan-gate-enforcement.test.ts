@@ -1,15 +1,15 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { SessionRunner } from "@agent-workbench/core";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
+import { copyFixtureProject } from "../../helpers/fixtures";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import { copyFixtureProject } from "../../helpers/fixtures";
-import { SessionRunner } from "@agent-workbench/core";
-import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
-import type { TestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 let fixture: ReturnType<typeof copyFixtureProject>;
@@ -19,17 +19,42 @@ const ALLOW_ALL_WITH_COMMAND_DENY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [
-    { pattern: "rm -rf", outcome: "deny", riskLevel: "critical", reason: "destructive" },
-    { pattern: "sudo rm", outcome: "deny", riskLevel: "critical", reason: "privileged delete" },
+    {
+      pattern: "rm -rf",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "destructive",
+    },
+    {
+      pattern: "sudo rm",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "privileged delete",
+    },
   ],
   agentRules: [],
 };
@@ -39,12 +64,27 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "revert_last_change", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -54,14 +94,39 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
 const DENY_WRITE_POLICY: PermissionPolicy = {
   toolRules: [
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "write", outcome: "deny", riskLevel: "critical", reason: "write denied by test" },
-    { toolName: "edit", outcome: "deny", riskLevel: "critical", reason: "write denied by test" },
-    { toolName: "apply_patch", outcome: "deny", riskLevel: "critical", reason: "write denied by test" },
+    {
+      toolName: "write",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "write denied by test",
+    },
+    {
+      toolName: "edit",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "write denied by test",
+    },
+    {
+      toolName: "apply_patch",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "write denied by test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "ask", riskLevel: "high", reason: "test" },
-    { toolName: "revert_last_change", outcome: "deny", riskLevel: "critical", reason: "revert denied by test" },
-    { toolName: "diff_preview", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "revert_last_change",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "revert denied by test",
+    },
+    {
+      toolName: "diff_preview",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -70,7 +135,7 @@ const DENY_WRITE_POLICY: PermissionPolicy = {
 
 function buildRunner(
   base: ReturnType<typeof createTestServer>,
-  permPolicy: PermissionPolicy
+  permPolicy: PermissionPolicy,
 ): { runner: SessionRunner; gate: PermissionGate } {
   const engine = new PermissionEngine(permPolicy);
   const gate = new PermissionGate();
@@ -100,7 +165,7 @@ function buildRunner(
 function createSession(
   services: ReturnType<typeof createTestServer>["services"],
   sessionId: string,
-  projectPath: string
+  projectPath: string,
 ): void {
   services.sessionRepository.create({
     id: sessionId,
@@ -117,7 +182,7 @@ function createSession(
 
 function collectLedgerEvents(
   services: ReturnType<typeof createTestServer>["services"],
-  sessionId: string
+  sessionId: string,
 ): string[] {
   return services.ledgerRepository
     .listBySession(sessionId)
@@ -127,7 +192,7 @@ function collectLedgerEvents(
 function findToolCall(
   server: ReturnType<typeof createTestServer>,
   sessionId: string,
-  toolName: string
+  toolName: string,
 ) {
   return server.toolCallRepository
     .listBySession(sessionId)
@@ -155,8 +220,16 @@ describe("Denied plan blocks execution", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write1", name: "write", input: { path: "target.txt", content: "x" } },
-            { id: "c-write2", name: "write", input: { path: "other.txt", content: "y" } },
+            {
+              id: "c-write1",
+              name: "write",
+              input: { path: "target.txt", content: "x" },
+            },
+            {
+              id: "c-write2",
+              name: "write",
+              input: { path: "other.txt", content: "y" },
+            },
           ],
         },
         { text: "Blocked." },
@@ -204,7 +277,11 @@ describe("Approved plan does not bypass per-tool permission", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "new" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "new" },
+            },
           ],
         },
         { text: "Done." },
@@ -221,10 +298,12 @@ describe("Approved plan does not bypass per-tool permission", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     const plan = plans[plans.length - 1];
     expect(plan).toBeDefined();
-    expect(plan!.status).toBe("denied");
+    expect(plan?.status).toBe("denied");
 
     // Target file must be unchanged
-    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe("original content\n");
+    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe(
+      "original content\n",
+    );
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("plan.denied");
@@ -235,13 +314,38 @@ describe("Approved plan does not bypass per-tool permission", () => {
     // Write: tool:allow but path rule denies the target
     const pathDenyPolicy: PermissionPolicy = {
       toolRules: [
-        { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
-        { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
-        { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
-        { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
+        {
+          toolName: "read",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
+        {
+          toolName: "write",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
+        {
+          toolName: "grep",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
+        {
+          toolName: "glob",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
       ],
       pathRules: [
-        { pattern: "denied/**", outcome: "deny", riskLevel: "critical", reason: "test-deny-zone" },
+        {
+          pattern: "denied/**",
+          outcome: "deny",
+          riskLevel: "critical",
+          reason: "test-deny-zone",
+        },
       ],
       commandRules: [],
       agentRules: [],
@@ -255,7 +359,11 @@ describe("Approved plan does not bypass per-tool permission", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "denied/file.txt", content: "bad" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "denied/file.txt", content: "bad" },
+            },
           ],
         },
         { text: "Done." },
@@ -272,7 +380,7 @@ describe("Approved plan does not bypass per-tool permission", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     const plan = plans[plans.length - 1];
     expect(plan).toBeDefined();
-    expect(plan!.status).toBeOneOf(["denied", "failed"]);
+    expect(plan?.status).toBeOneOf(["denied", "failed"]);
 
     // No file must have been created
     expect(existsSync(deniedPath)).toBe(false);
@@ -311,12 +419,12 @@ describe("Approved plan does not bypass shell hard-deny", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     const plan = plans[plans.length - 1];
     expect(plan).toBeDefined();
-    expect(plan!.status).toBe("denied");
+    expect(plan?.status).toBe("denied");
 
     // Bash must NOT have executed
     const bashCall = findToolCall(server, sessionId, "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBeOneOf(["denied", "failed"]);
+    expect(bashCall?.status).toBeOneOf(["denied", "failed"]);
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("plan.denied");
@@ -331,7 +439,11 @@ describe("Approved plan does not bypass shell hard-deny", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-bash", name: "bash", input: { command: "sudo rm /var/log/auth.log" } },
+            {
+              id: "c-bash",
+              name: "bash",
+              input: { command: "sudo rm /var/log/auth.log" },
+            },
           ],
         },
         { text: "Done." },
@@ -347,11 +459,11 @@ describe("Approved plan does not bypass shell hard-deny", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     const plan = plans[plans.length - 1];
     expect(plan).toBeDefined();
-    expect(plan!.status).toBe("denied");
+    expect(plan?.status).toBe("denied");
 
     const bashCall = findToolCall(server, sessionId, "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBeOneOf(["denied", "failed"]);
+    expect(bashCall?.status).toBeOneOf(["denied", "failed"]);
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).not.toContain("shell.command_started");
@@ -367,13 +479,29 @@ describe("Agent restriction blocks mutation even with plan", () => {
     // When running as plan agent, the write call must be denied.
     const planDenyPolicy: PermissionPolicy = {
       toolRules: [
-        { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
-        { toolName: "write", outcome: "ask", riskLevel: "high", reason: "test" },
+        {
+          toolName: "read",
+          outcome: "allow",
+          riskLevel: "low",
+          reason: "test",
+        },
+        {
+          toolName: "write",
+          outcome: "ask",
+          riskLevel: "high",
+          reason: "test",
+        },
       ],
       pathRules: [],
       commandRules: [],
       agentRules: [
-        { agentId: "plan", toolName: "write", outcome: "deny", riskLevel: "high", reason: "plan agent denies write" },
+        {
+          agentId: "plan",
+          toolName: "write",
+          outcome: "deny",
+          riskLevel: "high",
+          reason: "plan agent denies write",
+        },
       ],
     };
 
@@ -383,7 +511,11 @@ describe("Agent restriction blocks mutation even with plan", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "plan wrote" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "plan wrote" },
+            },
           ],
         },
         { text: "Done." },
@@ -394,16 +526,20 @@ describe("Agent restriction blocks mutation even with plan", () => {
     createSession(server.services, sessionId, fixture.projectPath);
 
     // Run explicitly as plan agent
-    const result = await runner.run(sessionId, "Write as plan agent", { agentId: "plan" });
+    const result = await runner.run(sessionId, "Write as plan agent", {
+      agentId: "plan",
+    });
     expect(result.status).toBeOneOf(["completed", "failed"]);
 
     // Write must be denied
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBeOneOf(["denied", "failed"]);
+    expect(writeCall?.status).toBeOneOf(["denied", "failed"]);
 
     // File must be unchanged
-    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe("original content\n");
+    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe(
+      "original content\n",
+    );
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).not.toContain("plan.completed");
@@ -421,7 +557,11 @@ describe("Safe plan completes when all gates pass", () => {
         {
           toolCalls: [
             { id: "c-read", name: "read", input: { path: "target.txt" } },
-            { id: "c-write", name: "write", input: { path: "target.txt", content: "updated safely\n" } },
+            {
+              id: "c-write",
+              name: "write",
+              input: { path: "target.txt", content: "updated safely\n" },
+            },
             { id: "c-bash", name: "bash", input: { command: "echo all ok" } },
           ],
         },
@@ -444,20 +584,22 @@ describe("Safe plan completes when all gates pass", () => {
     // Read must be completed
     const readCall = findToolCall(server, sessionId, "read");
     expect(readCall).toBeDefined();
-    expect(readCall!.status).toBe("completed");
+    expect(readCall?.status).toBe("completed");
 
     // Write must be completed
     const writeCall = findToolCall(server, sessionId, "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("completed");
+    expect(writeCall?.status).toBe("completed");
 
     // Bash must be completed
     const bashCall = findToolCall(server, sessionId, "bash");
     expect(bashCall).toBeDefined();
-    expect(bashCall!.status).toBe("completed");
+    expect(bashCall?.status).toBe("completed");
 
     // File must be updated
-    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe("updated safely\n");
+    expect(readFileSync(join(fixture.projectPath, "target.txt"), "utf8")).toBe(
+      "updated safely\n",
+    );
 
     const ledgerEvents = collectLedgerEvents(server.services, sessionId);
     expect(ledgerEvents).toContain("plan.proposed");

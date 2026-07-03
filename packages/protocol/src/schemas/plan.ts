@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
+import { Timestamp, Ulid } from "./common";
 import { RiskLevel } from "./permission";
 
 export const PlanStatus = z.enum([

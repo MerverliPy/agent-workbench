@@ -1,17 +1,25 @@
-import type { CompactionSuggestion, ContextBudgetInput, ContextMessageSummary } from "./types";
 import { calculateBudget } from "./budget";
+import type {
+  CompactionSuggestion,
+  ContextBudgetInput,
+  ContextMessageSummary,
+} from "./types";
 
-export function suggestCompaction(input: ContextBudgetInput): CompactionSuggestion {
+export function suggestCompaction(
+  input: ContextBudgetInput,
+): CompactionSuggestion {
   const budget = calculateBudget(input);
 
   if (budget.level === "healthy") {
     return { suggested: false, currentTokens: budget.used };
   }
 
-  const nonSystemMessages = input.messages.filter((m: ContextMessageSummary) => m.role !== "system");
+  const nonSystemMessages = input.messages.filter(
+    (m: ContextMessageSummary) => m.role !== "system",
+  );
   const estimatedCompactedTokens = estimateCompactedSize(
     input.systemPromptContent?.length ?? 0,
-    nonSystemMessages.length
+    nonSystemMessages.length,
   );
 
   return {
@@ -29,7 +37,7 @@ export function suggestCompaction(input: ContextBudgetInput): CompactionSuggesti
 
 function estimateCompactedSize(
   systemPromptLength: number,
-  recentMessageCount: number
+  recentMessageCount: number,
 ): number {
   const systemTokens = Math.ceil(systemPromptLength / 4);
   const recentTokens = recentMessageCount * 200;

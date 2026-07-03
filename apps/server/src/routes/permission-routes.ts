@@ -20,18 +20,18 @@
  * The route does NOT execute tools or compute permission policy.
  */
 
-import { ulid } from "ulid";
-import type { Hono } from "hono";
-import {
-  ListPermissionRequestsRoute,
-  GetPermissionRequestRoute,
-  DecidePermissionRoute,
-  GetEffectivePolicyRoute,
-} from "@agent-workbench/protocol";
 import { EventName } from "@agent-workbench/events";
 import type { EventEnvelope } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import {
+  DecidePermissionRoute,
+  GetEffectivePolicyRoute,
+  GetPermissionRequestRoute,
+  ListPermissionRequestsRoute,
+} from "@agent-workbench/protocol";
+import type { Hono } from "hono";
+import { ulid } from "ulid";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 type PermissionServices = Pick<
@@ -45,7 +45,7 @@ type PermissionServices = Pick<
 
 export function registerPermissionRoutes(
   app: Hono<ServerAppBindings>,
-  services: PermissionServices
+  services: PermissionServices,
 ): void {
   const {
     permissionRepository,
@@ -64,29 +64,26 @@ export function registerPermissionRoutes(
         const query = validated.query as { status?: string };
         const rows = permissionRepository.listRequests(query.status);
         return { items: rows.map(rowToProtocolRequest) };
-      }
-    )
+      },
+    ),
   );
 
   // GET /permission/request/:requestId
   app.get(
     GetPermissionRequestRoute.path,
-    createJsonRouteHandler(
-      GetPermissionRequestRoute,
-      (_ctx, { validated }) => {
-        const { requestId } = validated.pathParams as { requestId: string };
-        const row = permissionRepository.findRequestById(requestId);
-        if (row === undefined) {
-          throw new ApiError({
-            status: 404,
-            code: "NOT_FOUND",
-            message: `Permission request not found: ${requestId}`,
-            recoverable: true,
-          });
-        }
-        return rowToProtocolRequest(row);
+    createJsonRouteHandler(GetPermissionRequestRoute, (_ctx, { validated }) => {
+      const { requestId } = validated.pathParams as { requestId: string };
+      const row = permissionRepository.findRequestById(requestId);
+      if (row === undefined) {
+        throw new ApiError({
+          status: 404,
+          code: "NOT_FOUND",
+          message: `Permission request not found: ${requestId}`,
+          recoverable: true,
+        });
       }
-    )
+      return rowToProtocolRequest(row);
+    }),
   );
 
   // POST /permission/request/:requestId/decision
@@ -187,8 +184,8 @@ export function registerPermissionRoutes(
         permissionGate.resolve(requestId, body.decision);
 
         return rowToProtocolDecision(decisionRow);
-      }
-    )
+      },
+    ),
   );
 
   // GET /permission/policy/effective
@@ -197,14 +194,14 @@ export function registerPermissionRoutes(
     createJsonRouteHandler(GetEffectivePolicyRoute, () => {
       const policy = permissionEngine.getEffectivePolicy();
       return { policy: policy as unknown as Record<string, unknown> };
-    })
+    }),
   );
 }
 
 // ── Row → protocol mappers ────────────────────────────────────────────────────
 
 function rowToProtocolRequest(
-  row: import("@agent-workbench/storage").PermissionRequestRow
+  row: import("@agent-workbench/storage").PermissionRequestRow,
 ): import("@agent-workbench/protocol").PermissionRequest {
   return {
     id: row.id,
@@ -221,21 +218,24 @@ function rowToProtocolRequest(
     command: row.command ?? undefined,
     diffSummary: row.diffSummaryJson ?? undefined,
     dryRunSummary: row.dryRunSummaryJson ?? undefined,
-    status: row.status as import("@agent-workbench/protocol").PermissionRequestStatus,
+    status:
+      row.status as import("@agent-workbench/protocol").PermissionRequestStatus,
     createdAt: row.createdAt,
     expiresAt: row.expiresAt ?? undefined,
   };
 }
 
 function rowToProtocolDecision(
-  row: import("@agent-workbench/storage").PermissionDecisionRow
+  row: import("@agent-workbench/storage").PermissionDecisionRow,
 ): import("@agent-workbench/protocol").PermissionDecision {
   return {
     id: row.id,
     requestId: row.requestId,
-    decision: row.decision as import("@agent-workbench/protocol").PermissionDecisionValue,
+    decision:
+      row.decision as import("@agent-workbench/protocol").PermissionDecisionValue,
     decidedBy: row.decidedBy ?? undefined,
-    scope: row.scope as import("@agent-workbench/protocol").PermissionDecision["scope"],
+    scope:
+      row.scope as import("@agent-workbench/protocol").PermissionDecision["scope"],
     reason: row.reason ?? undefined,
     createdAt: row.createdAt,
   };

@@ -1,5 +1,5 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { previewCommand } from "@agent-workbench/shell";
 
 describe("previewCommand", () => {

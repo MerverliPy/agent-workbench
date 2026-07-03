@@ -1,11 +1,11 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { TestDb } from "../helpers/test-db";
 import { createTestDb } from "../helpers/test-db";
 import { createTestServer } from "../helpers/test-server";
-import type { TestDb } from "../helpers/test-db";
 
 let testDb: TestDb;
 let server: ReturnType<typeof createTestServer>;
@@ -16,15 +16,15 @@ beforeAll(() => {
   projectDir = mkdtempSync(join(tmpdir(), "agent-wb-e2e-sess-"));
   server = createTestServer({
     storage: testDb.connection,
-    modelTurns: [
-      { text: "Hello! This is a test response." },
-    ],
+    modelTurns: [{ text: "Hello! This is a test response." }],
   });
 });
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
 describe("Session lifecycle (E2E)", () => {
@@ -37,7 +37,7 @@ describe("Session lifecycle (E2E)", () => {
       body: JSON.stringify({ projectPath: projectDir, title: "E2E test" }),
     });
     expect(res.status).toBeOneOf([200, 201]);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("id");
     expect(body.projectPath).toBe(projectDir);
     expect(body.status).toBe("active");
@@ -47,7 +47,7 @@ describe("Session lifecycle (E2E)", () => {
   it("GET /session lists sessions", async () => {
     const res = await server.app.request("/session");
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("items");
     expect(Array.isArray(body.items)).toBe(true);
     const items = body.items as Array<{ id: string }>;
@@ -57,7 +57,7 @@ describe("Session lifecycle (E2E)", () => {
   it("GET /session/:id returns session", async () => {
     const res = await server.app.request(`/session/${sessionId}`);
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.id).toBe(sessionId);
     expect(body.projectPath).toBe(projectDir);
   });
@@ -69,14 +69,14 @@ describe("Session lifecycle (E2E)", () => {
       body: JSON.stringify({ content: "Hello agent", role: "user" }),
     });
     expect(res.status).toBeOneOf([200, 201]);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("runId");
   });
 
   it("GET /session/:id/message lists messages", async () => {
     const res = await server.app.request(`/session/${sessionId}/message`);
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("items");
     expect(Array.isArray(body.items)).toBe(true);
     const items = body.items as Array<{ role: string }>;
@@ -91,7 +91,7 @@ describe("Session lifecycle (E2E)", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectPath: projectDir }),
     });
-    const createBody = await createRes.json() as Record<string, unknown>;
+    const createBody = (await createRes.json()) as Record<string, unknown>;
     const abortSessionId = createBody.id as string;
 
     const res = await server.app.request(`/session/${abortSessionId}/abort`, {
@@ -105,7 +105,7 @@ describe("Session lifecycle (E2E)", () => {
       method: "DELETE",
     });
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("deleted", true);
   });
 
@@ -115,7 +115,7 @@ describe("Session lifecycle (E2E)", () => {
     if (res.status === 404) {
       // ok
     } else {
-      const body = await res.json() as Record<string, unknown>;
+      const body = (await res.json()) as Record<string, unknown>;
       expect(body.status).toBe("deleted");
     }
   });

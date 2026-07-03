@@ -1,10 +1,14 @@
-import type { JSX } from "@opentui/solid";
-import { For, createSignal, createMemo, Show } from "solid-js";
-import { useKeyboard } from "@opentui/solid";
-import { setCommandPaletteOpen, appendSystemNotice, setMessages } from "../../state/app";
-import { sdk } from "../../lib/sdk";
-import { formatKeybindings } from "../../lib/keybindings";
 import { ApiError } from "@agent-workbench/sdk";
+import type { JSX } from "@opentui/solid";
+import { useKeyboard } from "@opentui/solid";
+import { createMemo, createSignal, For, Show } from "solid-js";
+import { formatKeybindings } from "../../lib/keybindings";
+import { sdk } from "../../lib/sdk";
+import {
+  appendSystemNotice,
+  setCommandPaletteOpen,
+  setMessages,
+} from "../../state/app";
 
 interface PaletteCommand {
   readonly name: string;
@@ -148,9 +152,7 @@ export function CommandPalette(): JSX.Element {
       action: async () => {
         try {
           const result = await sdk.sessions.list();
-          appendSystemNotice(
-            `Sessions: ${result.items?.length ?? 0} active.`,
-          );
+          appendSystemNotice(`Sessions: ${result.items?.length ?? 0} active.`);
         } catch (err) {
           appendSystemNotice(
             err instanceof ApiError
@@ -266,12 +268,7 @@ export function CommandPalette(): JSX.Element {
       padding={1}
     >
       {/* Search query display */}
-      <box
-        height={1}
-        flexDirection="row"
-        flexShrink={0}
-        border={false}
-      >
+      <box height={1} flexDirection="row" flexShrink={0} border={false}>
         <text content={`  > ${query()}█`} />
       </box>
       <text content="" />

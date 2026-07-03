@@ -7,13 +7,16 @@
  * POST /session/import              — Import session from JSON body
  */
 
-import { Hono } from "hono";
-import type { ServerAppBindings, ServerServices } from "../context";
 import { exportSession, importSession } from "@agent-workbench/collab";
+import type { Hono } from "hono";
+import type { ServerAppBindings, ServerServices } from "../context";
 import { ApiError } from "../errors";
 import { handleAppError } from "../middleware/error-handler";
 
-export function registerCollabRoutes(app: Hono<ServerAppBindings>, services: ServerServices): void {
+export function registerCollabRoutes(
+  app: Hono<ServerAppBindings>,
+  services: ServerServices,
+): void {
   const repos = {
     sessionRepository: services.sessionRepository,
     messageRepository: services.messageRepository,
@@ -35,18 +38,37 @@ export function registerCollabRoutes(app: Hono<ServerAppBindings>, services: Ser
         maxToolOutputLength: Math.min(maxLen, 50000),
       });
 
-      c.header("Content-Disposition", `attachment; filename="session-${sessionId.slice(0, 8)}.json"`);
+      c.header(
+        "Content-Disposition",
+        `attachment; filename="session-${sessionId.slice(0, 8)}.json"`,
+      );
       return c.json(data);
     } catch (err) {
       if (err instanceof Error && err.message.startsWith("Session not found")) {
         return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: err.message, recoverable: true }),
+          new ApiError({
+            status: 404,
+            code: "NOT_FOUND",
+            message: err.message,
+            recoverable: true,
+          }),
           404,
         );
       }
-      return handleAppError(err instanceof Error
-        ? new ApiError({ status: 500, code: "EXPORT_FAILED", message: err.message, recoverable: false })
-        : new ApiError({ status: 500, code: "EXPORT_FAILED", message: "Unknown error", recoverable: false }),
+      return handleAppError(
+        err instanceof Error
+          ? new ApiError({
+              status: 500,
+              code: "EXPORT_FAILED",
+              message: err.message,
+              recoverable: false,
+            })
+          : new ApiError({
+              status: 500,
+              code: "EXPORT_FAILED",
+              message: "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }
@@ -56,12 +78,13 @@ export function registerCollabRoutes(app: Hono<ServerAppBindings>, services: Ser
   app.post("/session/import", async (c) => {
     try {
       const body = await c.req.json();
-      if (!body || !body.formatVersion || !body.session) {
+      if (!body?.formatVersion || !body.session) {
         return c.json(
           new ApiError({
             status: 400,
             code: "BAD_REQUEST",
-            message: "Invalid session export format. Must include formatVersion and session.",
+            message:
+              "Invalid session export format. Must include formatVersion and session.",
             recoverable: true,
           }),
           400,
@@ -73,13 +96,29 @@ export function registerCollabRoutes(app: Hono<ServerAppBindings>, services: Ser
     } catch (err) {
       if (err instanceof SyntaxError) {
         return c.json(
-          new ApiError({ status: 400, code: "BAD_REQUEST", message: "Invalid JSON body.", recoverable: true }),
+          new ApiError({
+            status: 400,
+            code: "BAD_REQUEST",
+            message: "Invalid JSON body.",
+            recoverable: true,
+          }),
           400,
         );
       }
-      return handleAppError(err instanceof Error
-        ? new ApiError({ status: 500, code: "IMPORT_FAILED", message: err.message, recoverable: false })
-        : new ApiError({ status: 500, code: "IMPORT_FAILED", message: "Unknown error", recoverable: false }),
+      return handleAppError(
+        err instanceof Error
+          ? new ApiError({
+              status: 500,
+              code: "IMPORT_FAILED",
+              message: err.message,
+              recoverable: false,
+            })
+          : new ApiError({
+              status: 500,
+              code: "IMPORT_FAILED",
+              message: "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }

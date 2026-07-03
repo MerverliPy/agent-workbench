@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { ProviderMarketplace, ProviderHealthMonitor } from "@agent-workbench/models";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  ProviderHealthMonitor,
+  ProviderMarketplace,
+} from "@agent-workbench/models";
 
 function makeTempDir(): string {
-  const dir = join(tmpdir(), `aw-health-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const dir = join(
+    tmpdir(),
+    `aw-health-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -25,14 +31,18 @@ describe("ProviderHealthMonitor", () => {
       model: "gpt-4o",
       enabled: true,
     });
-    monitor = new ProviderHealthMonitor(marketplace, { checkIntervalMs: 10_000 });
+    monitor = new ProviderHealthMonitor(marketplace, {
+      checkIntervalMs: 10_000,
+    });
   });
 
   afterEach(() => {
     monitor.stop();
     try {
       rmSync(tmpDir, { recursive: true, force: true });
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
   });
 
   it("returns unknown status when no probes exist", () => {
@@ -84,7 +94,7 @@ describe("ProviderHealthMonitor", () => {
     monitor.recordSuccess("test-provider", 100);
     const allStatus = monitor.getAllStatus();
     expect(allStatus).toHaveLength(1);
-    expect(allStatus[0]!.providerId).toBe("test-provider");
+    expect(allStatus[0]?.providerId).toBe("test-provider");
   });
 
   it("starts and stops without errors", () => {

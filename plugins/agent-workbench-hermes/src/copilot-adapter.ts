@@ -9,7 +9,12 @@
  * Copilot-specific headers for model selection.
  */
 
-import type { PluginModelMessage, PluginToolDefinition, PluginModelResponse, PluginStreamChunk } from "@agent-workbench/plugin-sdk";
+import type {
+  PluginModelMessage,
+  PluginModelResponse,
+  PluginStreamChunk,
+  PluginToolDefinition,
+} from "@agent-workbench/plugin-sdk";
 
 export interface CopilotAdapterConfig {
   readonly model: string;
@@ -26,7 +31,10 @@ export class CopilotAdapter {
 
   constructor(config: CopilotAdapterConfig) {
     this.model = config.model;
-    this.baseUrl = (config.baseUrl ?? "https://api.githubcopilot.com").replace(/\/+$/, "");
+    this.baseUrl = (config.baseUrl ?? "https://api.githubcopilot.com").replace(
+      /\/+$/,
+      "",
+    );
     this.apiKey = config.apiKey;
   }
 
@@ -47,21 +55,27 @@ export class CopilotAdapter {
 
     if (!response.ok) {
       const text = await response.text().catch(() => "unknown error");
-      throw new Error(`[copilot] API ${response.status}: ${text.slice(0, 200)}`);
+      throw new Error(
+        `[copilot] API ${response.status}: ${text.slice(0, 200)}`,
+      );
     }
 
     const json = (await response.json()) as Record<string, unknown>;
-    const choice = (json.choices as Array<Record<string, unknown>> | undefined)?.[0];
+    const choice = (
+      json.choices as Array<Record<string, unknown>> | undefined
+    )?.[0];
     const message = choice?.message as Record<string, unknown> | undefined;
     const content = (message?.content as string | null) ?? "";
     const usage = json.usage as Record<string, unknown> | undefined;
 
     return {
       content,
-      usage: usage ? {
-        inputTokens: (usage.prompt_tokens as number) ?? 0,
-        outputTokens: (usage.completion_tokens as number) ?? 0,
-      } : undefined,
+      usage: usage
+        ? {
+            inputTokens: (usage.prompt_tokens as number) ?? 0,
+            outputTokens: (usage.completion_tokens as number) ?? 0,
+          }
+        : undefined,
     };
   }
 
@@ -82,7 +96,9 @@ export class CopilotAdapter {
 
     if (!response.ok) {
       const text = await response.text().catch(() => "unknown error");
-      throw new Error(`[copilot] API ${response.status}: ${text.slice(0, 200)}`);
+      throw new Error(
+        `[copilot] API ${response.status}: ${text.slice(0, 200)}`,
+      );
     }
 
     const reader = response.body?.getReader();
@@ -106,10 +122,18 @@ export class CopilotAdapter {
           if (!trimmed.startsWith("data: ")) continue;
 
           try {
-            const json = JSON.parse(trimmed.slice(6)) as Record<string, unknown>;
-            const choice = (json.choices as Array<Record<string, unknown>> | undefined)?.[0];
+            const json = JSON.parse(trimmed.slice(6)) as Record<
+              string,
+              unknown
+            >;
+            const choice = (
+              json.choices as Array<Record<string, unknown>> | undefined
+            )?.[0];
             const delta = choice?.delta as Record<string, unknown> | undefined;
-            const finishReason = choice?.finish_reason as string | null | undefined;
+            const finishReason = choice?.finish_reason as
+              | string
+              | null
+              | undefined;
 
             yield {
               delta: (delta?.content as string) ?? "",

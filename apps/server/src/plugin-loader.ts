@@ -4,15 +4,30 @@
  * Responsible for dynamically importing plugin entry points, registering
  * their tools, providers, panels, and hooks with the appropriate registries.
  */
-import type { PluginRecord } from "@agent-workbench/plugin-sdk";
+
+import { join } from "node:path";
 import type {
-  PluginManifest, PluginRegistry, ToolPlugin, ProviderPlugin, HookPlugin,
-  PanelPlugin, PluginModelProvider, PluginModelMessage,
+  ModelMessage,
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelStreamChunk,
+  ModelToolCall,
+  ProviderRegistry,
+} from "@agent-workbench/models";
+import type {
+  HookPlugin,
+  PanelPlugin,
+  PluginManifest,
+  PluginModelMessage,
+  PluginModelProvider,
+  PluginRecord,
+  PluginRegistry,
+  ProviderPlugin,
+  ToolPlugin,
 } from "@agent-workbench/plugin-sdk";
 import type { ToolRegistry } from "@agent-workbench/tools";
-import type { ProviderRegistry, ModelProvider, ModelRequest, ModelResponse, ModelStreamChunk, ModelMessage, ModelToolCall } from "@agent-workbench/models";
 import { createLogger } from "./utils/logger";
-import { join } from "node:path";
 
 const logger = createLogger("plugin-loader");
 
@@ -35,7 +50,9 @@ function resolveMain(manifest: PluginManifest, installPath: string): string {
 }
 
 /** Convert PluginModelMessage[] to ModelMessage[] for the models package. */
-function toModelMessages(pluginMessages: PluginModelMessage[]): ModelMessage[] {
+function _toModelMessages(
+  pluginMessages: PluginModelMessage[],
+): ModelMessage[] {
   return pluginMessages.map((m) => {
     const msg = {
       role: m.role as ModelMessage["role"],
@@ -57,7 +74,11 @@ function toModelMessages(pluginMessages: PluginModelMessage[]): ModelMessage[] {
 
 /** Convert plugin tool calls to model tool calls. */
 function toModelToolCalls(
-  pluginCalls: Array<{ readonly id: string; readonly name: string; readonly arguments: Record<string, unknown> }>,
+  pluginCalls: Array<{
+    readonly id: string;
+    readonly name: string;
+    readonly arguments: Record<string, unknown>;
+  }>,
 ): ModelToolCall[] {
   return pluginCalls.map((tc) => ({
     id: tc.id,
@@ -88,7 +109,9 @@ export async function loadToolPlugin(
 
     for (const tool of plugin.tools) {
       if (!tool.name || typeof tool.execute !== "function") {
-        logger.warn(`Skipping invalid tool in plugin ${manifest.name}: missing name or execute`);
+        logger.warn(
+          `Skipping invalid tool in plugin ${manifest.name}: missing name or execute`,
+        );
         continue;
       }
 
@@ -99,15 +122,20 @@ export async function loadToolPlugin(
           inputSchema: tool.parameters,
         },
         {
-          execute: (input: unknown, _context) => tool.execute(input as Record<string, unknown>),
+          execute: (input: unknown, _context) =>
+            tool.execute(input as Record<string, unknown>),
         },
       );
     }
 
-    logger.info(`Loaded tool plugin: ${manifest.name} (${plugin.tools.length} tools)`);
+    logger.info(
+      `Loaded tool plugin: ${manifest.name} (${plugin.tools.length} tools)`,
+    );
     return true;
   } catch (err) {
-    logger.error(`Failed to load tool plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`);
+    logger.error(
+      `Failed to load tool plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
@@ -122,14 +150,18 @@ function adaptPluginProvider(provider: PluginModelProvider): ModelProvider {
         ({
           role: m.role,
           content: m.content,
-        } as PluginModelMessage),
+        }) as PluginModelMessage,
     );
 
     const result = await provider.call(messages);
     const response: ModelResponse = {
-      kind: result.toolCalls && result.toolCalls.length > 0
-        ? { type: "tool_calls" as const, calls: toModelToolCalls(result.toolCalls) }
-        : { type: "text" as const, content: result.content },
+      kind:
+        result.toolCalls && result.toolCalls.length > 0
+          ? {
+              type: "tool_calls" as const,
+              calls: toModelToolCalls(result.toolCalls),
+            }
+          : { type: "text" as const, content: result.content },
     };
     if (result.usage !== undefined) {
       response.usage = result.usage;
@@ -137,7 +169,7 @@ function adaptPluginProvider(provider: PluginModelProvider): ModelProvider {
     return response;
   };
 
-  let streamFn: ModelProvider["stream"] = undefined;
+  let streamFn: ModelProvider["stream"];
   if (provider.stream) {
     streamFn = async function* (
       request: ModelRequest,
@@ -147,10 +179,10 @@ function adaptPluginProvider(provider: PluginModelProvider): ModelProvider {
           ({
             role: m.role,
             content: m.content,
-          } as PluginModelMessage),
+          }) as PluginModelMessage,
       );
 
-      const stream = provider.stream!(messages);
+      const stream = provider.stream?.(messages);
       for await (const chunk of stream) {
         yield {
           content: chunk.delta,
@@ -187,7 +219,9 @@ export async function loadProviderPlugin(
 
     for (const provider of plugin.providers) {
       if (!provider.id || typeof provider.call !== "function") {
-        logger.warn(`Skipping invalid provider in plugin ${manifest.name}: missing id or call`);
+        logger.warn(
+          `Skipping invalid provider in plugin ${manifest.name}: missing id or call`,
+        );
         continue;
       }
 
@@ -200,17 +234,25 @@ export async function loadProviderPlugin(
       });
     }
 
-    logger.info(`Loaded provider plugin: ${manifest.name} (${plugin.providers.length} providers)`);
+    logger.info(
+      `Loaded provider plugin: ${manifest.name} (${plugin.providers.length} providers)`,
+    );
     return true;
   } catch (err) {
-    logger.error(`Failed to load provider plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`);
+    logger.error(
+      `Failed to load provider plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
 
 // ── Hook plugin loading ─────────────────────────────────────────────────────
 
-type HookHandler = (ctx: Record<string, unknown>) => Promise<{ allow: boolean; reason?: string; data?: Record<string, unknown> }>;
+type HookHandler = (ctx: Record<string, unknown>) => Promise<{
+  allow: boolean;
+  reason?: string;
+  data?: Record<string, unknown>;
+}>;
 
 /** In-memory store of registered hooks (keyed by event -> hook id -> handler). */
 const hookRegistry = new Map<string, Map<string, HookHandler>>();
@@ -234,7 +276,9 @@ export async function loadHookPlugin(
 
     for (const hook of plugin.hooks) {
       if (!hook.id || !hook.event || typeof hook.handler !== "function") {
-        logger.warn(`Skipping invalid hook in plugin ${manifest.name}: missing id, event, or handler`);
+        logger.warn(
+          `Skipping invalid hook in plugin ${manifest.name}: missing id, event, or handler`,
+        );
         continue;
       }
 
@@ -243,20 +287,26 @@ export async function loadHookPlugin(
       }
       // Wrap the typed handler to accept Record<string, unknown>
       const wrappedHandler: HookHandler = async (ctx) => {
-        const result = await hook.handler(ctx as unknown as import("@agent-workbench/plugin-sdk").HookContext);
+        const result = await hook.handler(
+          ctx as unknown as import("@agent-workbench/plugin-sdk").HookContext,
+        );
         return {
           allow: result.allow,
           ...(result.reason !== undefined ? { reason: result.reason } : {}),
           ...(result.data !== undefined ? { data: result.data } : {}),
         };
       };
-      hookRegistry.get(hook.event)!.set(hook.id, wrappedHandler);
+      hookRegistry.get(hook.event)?.set(hook.id, wrappedHandler);
     }
 
-    logger.info(`Loaded hook plugin: ${manifest.name} (${plugin.hooks.length} hooks)`);
+    logger.info(
+      `Loaded hook plugin: ${manifest.name} (${plugin.hooks.length} hooks)`,
+    );
     return true;
   } catch (err) {
-    logger.error(`Failed to load hook plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`);
+    logger.error(
+      `Failed to load hook plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
@@ -291,7 +341,9 @@ export async function executeHooks(
         modifiedData = { ...modifiedData, ...result.data };
       }
     } catch (err) {
-      logger.warn(`Hook ${hookId} threw: ${err instanceof Error ? err.message : String(err)}`);
+      logger.warn(
+        `Hook ${hookId} threw: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -330,32 +382,42 @@ function getPluginPermissions(manifest: PluginManifest): PluginPermissions {
 
 /** Whether the server allows unsafe (unrestricted) plugin execution. */
 const ALLOW_UNSAFE_PLUGINS =
-  process.env["AGENT_WORKBENCH_UNSAFE_PLUGINS"] === "1" ||
-  process.env["AGENT_WORKBENCH_UNSAFE_PLUGINS"] === "true";
+  process.env.AGENT_WORKBENCH_UNSAFE_PLUGINS === "1" ||
+  process.env.AGENT_WORKBENCH_UNSAFE_PLUGINS === "true";
 
 /**
  * Validate a plugin's declared permissions against sandbox policy.
  * Returns a list of warnings; if the list is non-empty, the plugin
  * may be rejected depending on the server's sandbox policy.
  */
-export function validatePluginPermissions(
-  manifest: PluginManifest,
-): { allowed: boolean; warnings: string[] } {
+export function validatePluginPermissions(manifest: PluginManifest): {
+  allowed: boolean;
+  warnings: string[];
+} {
   const perms = getPluginPermissions(manifest);
   const warnings: string[] = [];
 
   if (ALLOW_UNSAFE_PLUGINS) {
-    return { allowed: true, warnings: ["Unsafe plugin mode enabled — all plugins allowed."] };
+    return {
+      allowed: true,
+      warnings: ["Unsafe plugin mode enabled — all plugins allowed."],
+    };
   }
 
   if (perms.filesystemWrite) {
-    warnings.push(`Plugin "${manifest.name}" requests filesystemWrite — this allows file mutations.`);
+    warnings.push(
+      `Plugin "${manifest.name}" requests filesystemWrite — this allows file mutations.`,
+    );
   }
   if (perms.network) {
-    warnings.push(`Plugin "${manifest.name}" requests network access — this allows outbound connections.`);
+    warnings.push(
+      `Plugin "${manifest.name}" requests network access — this allows outbound connections.`,
+    );
   }
   if (perms.subprocess) {
-    warnings.push(`Plugin "${manifest.name}" requests subprocess access — this allows command execution.`);
+    warnings.push(
+      `Plugin "${manifest.name}" requests subprocess access — this allows command execution.`,
+    );
   }
 
   // For Phase 26, we warn but allow. Future phases will block risky plugins.
@@ -373,7 +435,7 @@ export function validatePluginPermissions(
  * permissions before executing. This is a soft sandbox — it warns on
  * risky permissions but does not enforce syscall-level isolation.
  */
-function createSandboxedImport(manifest: PluginManifest, installPath: string) {
+function _createSandboxedImport(manifest: PluginManifest, installPath: string) {
   validatePluginPermissions(manifest); // ensures warnings are logged
 
   return async (): Promise<DynamicModule> => {
@@ -391,11 +453,11 @@ function createSandboxedImport(manifest: PluginManifest, installPath: string) {
 
     logger.info(
       `Plugin ${manifest.name}: declared=[tools:${manifest.provides.tools.length}, ` +
-      `providers:${manifest.provides.providers.length}, ` +
-      `hooks:${manifest.provides.hooks.length}, ` +
-      `panels:${manifest.provides.panels.length}], ` +
-      `actual=[tools:${actual.hasTools}, providers:${actual.hasProviders}, ` +
-      `hooks:${actual.hasHooks}, panels:${actual.hasPanels}]`,
+        `providers:${manifest.provides.providers.length}, ` +
+        `hooks:${manifest.provides.hooks.length}, ` +
+        `panels:${manifest.provides.panels.length}], ` +
+        `actual=[tools:${actual.hasTools}, providers:${actual.hasProviders}, ` +
+        `hooks:${actual.hasHooks}, panels:${actual.hasPanels}]`,
     );
 
     return mod;
@@ -405,13 +467,16 @@ function createSandboxedImport(manifest: PluginManifest, installPath: string) {
 // ── Panel plugin loading ────────────────────────────────────────────────────
 
 /** In-memory store of registered panels (keyed by panel id). */
-const panelRegistry = new Map<string, {
-  id: string;
-  title: string;
-  icon: string;
-  surfaces: string[];
-  requiresAuth: boolean;
-}>();
+const panelRegistry = new Map<
+  string,
+  {
+    id: string;
+    title: string;
+    icon: string;
+    surfaces: string[];
+    requiresAuth: boolean;
+  }
+>();
 
 /**
  * Load a single panel plugin and register its panels.
@@ -432,7 +497,9 @@ export async function loadPanelPlugin(
 
     for (const panel of plugin.panels) {
       if (!panel.id || !panel.title) {
-        logger.warn(`Skipping invalid panel in plugin ${manifest.name}: missing id or title`);
+        logger.warn(
+          `Skipping invalid panel in plugin ${manifest.name}: missing id or title`,
+        );
         continue;
       }
 
@@ -445,10 +512,14 @@ export async function loadPanelPlugin(
       });
     }
 
-    logger.info(`Loaded panel plugin: ${manifest.name} (${plugin.panels.length} panels)`);
+    logger.info(
+      `Loaded panel plugin: ${manifest.name} (${plugin.panels.length} panels)`,
+    );
     return true;
   } catch (err) {
-    logger.error(`Failed to load panel plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`);
+    logger.error(
+      `Failed to load panel plugin ${manifest.name}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
@@ -493,7 +564,9 @@ export async function loadAllPlugins(
       // Phase 26: validate sandbox permissions
       const perms = validatePluginPermissions(manifest);
       if (!perms.allowed) {
-        logger.warn(`Plugin ${manifest.name} blocked by sandbox policy: ${perms.warnings.join("; ")}`);
+        logger.warn(
+          `Plugin ${manifest.name} blocked by sandbox policy: ${perms.warnings.join("; ")}`,
+        );
         failed++;
         continue;
       }
@@ -501,32 +574,58 @@ export async function loadAllPlugins(
       // Load tools
       if (manifest.provides.tools.length > 0) {
         const ok = await loadToolPlugin(manifest, toolRegistry, installPath);
-        if (ok) { pluginLoaded = true; loaded++; } else { failed++; }
+        if (ok) {
+          pluginLoaded = true;
+          loaded++;
+        } else {
+          failed++;
+        }
       }
 
       // Load providers
       if (manifest.provides.providers.length > 0) {
-        const ok = await loadProviderPlugin(manifest, providerRegistry, installPath);
-        if (ok) { pluginLoaded = true; loaded++; } else { failed++; }
+        const ok = await loadProviderPlugin(
+          manifest,
+          providerRegistry,
+          installPath,
+        );
+        if (ok) {
+          pluginLoaded = true;
+          loaded++;
+        } else {
+          failed++;
+        }
       }
 
       // Load hooks
       if (manifest.provides.hooks.length > 0) {
         const ok = await loadHookPlugin(manifest, installPath);
-        if (ok) { pluginLoaded = true; loaded++; } else { failed++; }
+        if (ok) {
+          pluginLoaded = true;
+          loaded++;
+        } else {
+          failed++;
+        }
       }
 
       // Load panels
       if (manifest.provides.panels.length > 0) {
         const ok = await loadPanelPlugin(manifest, installPath);
-        if (ok) { pluginLoaded = true; loaded++; } else { failed++; }
+        if (ok) {
+          pluginLoaded = true;
+          loaded++;
+        } else {
+          failed++;
+        }
       }
 
       if (!pluginLoaded) {
         logger.warn(`Plugin ${manifest.name} has no loadable extension points`);
       }
     } catch (err) {
-      logger.warn(`Skipping plugin ${record.name}: ${err instanceof Error ? err.message : String(err)}`);
+      logger.warn(
+        `Skipping plugin ${record.name}: ${err instanceof Error ? err.message : String(err)}`,
+      );
       failed++;
     }
   }

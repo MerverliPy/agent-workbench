@@ -1,22 +1,17 @@
-import type { Hono } from "hono";
-import {
-  ListPlansRoute,
-  GetPlanRoute,
-  DecidePlanRoute,
-} from "@agent-workbench/protocol";
 import type { Plan } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import {
+  DecidePlanRoute,
+  GetPlanRoute,
+  ListPlansRoute,
+} from "@agent-workbench/protocol";
+import type { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
-type PlanServices = Pick<
-  ServerServices,
-  "planRepository" | "permissionGate"
->;
+type PlanServices = Pick<ServerServices, "planRepository" | "permissionGate">;
 
-function rowToPlan(
-  row: import("@agent-workbench/storage").PlanRow
-): Plan {
+function rowToPlan(row: import("@agent-workbench/storage").PlanRow): Plan {
   return {
     id: row.id,
     sessionId: row.sessionId,
@@ -36,7 +31,7 @@ function rowToPlan(
 
 export function registerPlanRoutes(
   app: Hono<ServerAppBindings>,
-  services: PlanServices
+  services: PlanServices,
 ): void {
   const { planRepository, permissionGate } = services;
 
@@ -46,7 +41,7 @@ export function registerPlanRoutes(
       const { sessionId } = validated.pathParams as { sessionId: string };
       const rows = planRepository.listBySession(sessionId);
       return { items: rows.map(rowToPlan) };
-    })
+    }),
   );
 
   app.get(
@@ -63,7 +58,7 @@ export function registerPlanRoutes(
         });
       }
       return rowToPlan(row);
-    })
+    }),
   );
 
   app.post(
@@ -106,7 +101,7 @@ export function registerPlanRoutes(
       if (permReqId !== null) {
         permissionGate.resolve(
           permReqId,
-          body.decision === "approve" ? "allow" : "deny"
+          body.decision === "approve" ? "allow" : "deny",
         );
       }
 
@@ -120,6 +115,6 @@ export function registerPlanRoutes(
         });
       }
       return rowToPlan(updatedRow);
-    })
+    }),
   );
 }

@@ -1,13 +1,15 @@
+import type { InferRouteResponse } from "@agent-workbench/protocol";
+import {
+  GetMessageRoute,
+  ListMessagesRoute,
+  SubmitMessageRoute,
+} from "@agent-workbench/protocol";
 import type { z } from "zod/v4";
 import type { HttpTransport } from "../transport/http";
-import {
-  SubmitMessageRoute,
-  ListMessagesRoute,
-  GetMessageRoute,
-} from "@agent-workbench/protocol";
-import type { InferRouteResponse } from "@agent-workbench/protocol";
 
-function toParams(record: Record<string, unknown>): Record<string, string | undefined> {
+function toParams(
+  record: Record<string, unknown>,
+): Record<string, string | undefined> {
   const out: Record<string, string | undefined> = {};
   for (const [key, value] of Object.entries(record)) {
     out[key] = value === undefined ? undefined : String(value);
@@ -18,7 +20,11 @@ function toParams(record: Record<string, unknown>): Record<string, string | unde
 export class MessageResource {
   constructor(private transport: HttpTransport) {}
 
-  async submit(sessionId: string, data: z.infer<typeof SubmitMessageRoute.body>, signal?: AbortSignal): Promise<InferRouteResponse<typeof SubmitMessageRoute>> {
+  async submit(
+    sessionId: string,
+    data: z.infer<typeof SubmitMessageRoute.body>,
+    signal?: AbortSignal,
+  ): Promise<InferRouteResponse<typeof SubmitMessageRoute>> {
     return this.transport.request(
       SubmitMessageRoute.method,
       SubmitMessageRoute.path.replace(":sessionId", sessionId),
@@ -36,16 +42,25 @@ export class MessageResource {
       ListMessagesRoute.method,
       ListMessagesRoute.path.replace(":sessionId", sessionId),
       params
-        ? { params: toParams(params as Record<string, unknown>), responseSchema: ListMessagesRoute.response }
+        ? {
+            params: toParams(params as Record<string, unknown>),
+            responseSchema: ListMessagesRoute.response,
+          }
         : { responseSchema: ListMessagesRoute.response },
       signal,
     );
   }
 
-  async get(sessionId: string, messageId: string, signal?: AbortSignal): Promise<InferRouteResponse<typeof GetMessageRoute>> {
+  async get(
+    sessionId: string,
+    messageId: string,
+    signal?: AbortSignal,
+  ): Promise<InferRouteResponse<typeof GetMessageRoute>> {
     return this.transport.request(
       GetMessageRoute.method,
-      GetMessageRoute.path.replace(":sessionId", sessionId).replace(":messageId", messageId),
+      GetMessageRoute.path
+        .replace(":sessionId", sessionId)
+        .replace(":messageId", messageId),
       { responseSchema: GetMessageRoute.response },
       signal,
     );

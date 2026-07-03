@@ -42,7 +42,14 @@ export const EvalScore = z.object({
   /** Score value (0-1 for accuracy, raw values for others) */
   score: z.number(),
   /** Metric type */
-  metric: z.enum(["accuracy", "exact_match", "bleu", "rouge", "pass_at_k", "custom"]),
+  metric: z.enum([
+    "accuracy",
+    "exact_match",
+    "bleu",
+    "rouge",
+    "pass_at_k",
+    "custom",
+  ]),
   /** Number of items evaluated for this score */
   itemCount: z.number(),
 });

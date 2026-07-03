@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { PluginRegistry, type PluginManifest } from "@agent-workbench/plugin-sdk";
+import { join } from "node:path";
+import {
+  type PluginManifest,
+  PluginRegistry,
+} from "@agent-workbench/plugin-sdk";
 
 describe("PluginRegistry", () => {
   let tmpDir: string;
@@ -36,7 +39,11 @@ describe("PluginRegistry", () => {
 
   it("registers a plugin", () => {
     const manifest = makeManifest();
-    const record = registry.register(manifest, "npm:test-plugin", "/tmp/test-plugin");
+    const record = registry.register(
+      manifest,
+      "npm:test-plugin",
+      "/tmp/test-plugin",
+    );
 
     expect(record.name).toBe("test-plugin");
     expect(record.version).toBe("1.0.0");
@@ -54,7 +61,7 @@ describe("PluginRegistry", () => {
     const registry2 = new PluginRegistry(tmpDir);
     const plugins = registry2.list();
     expect(plugins).toHaveLength(1);
-    expect(plugins[0]!.name).toBe("test-plugin");
+    expect(plugins[0]?.name).toBe("test-plugin");
   });
 
   it("throws on duplicate registration", () => {
@@ -65,10 +72,14 @@ describe("PluginRegistry", () => {
   });
 
   it("gets a plugin by name", () => {
-    registry.register(makeManifest({ name: "my-plugin" }), "npm:my-plugin", "/tmp/my");
+    registry.register(
+      makeManifest({ name: "my-plugin" }),
+      "npm:my-plugin",
+      "/tmp/my",
+    );
     const plugin = registry.get("my-plugin");
     expect(plugin).toBeDefined();
-    expect(plugin!.name).toBe("my-plugin");
+    expect(plugin?.name).toBe("my-plugin");
   });
 
   it("returns undefined for unknown plugin", () => {
@@ -76,15 +87,23 @@ describe("PluginRegistry", () => {
   });
 
   it("enables a disabled plugin", () => {
-    registry.register(makeManifest({ name: "toggle-me", enabled: false }), "npm:toggle", "/tmp/toggle");
-    expect(registry.get("toggle-me")!.enabled).toBe(false);
+    registry.register(
+      makeManifest({ name: "toggle-me", enabled: false }),
+      "npm:toggle",
+      "/tmp/toggle",
+    );
+    expect(registry.get("toggle-me")?.enabled).toBe(false);
 
     const enabled = registry.enable("toggle-me");
     expect(enabled.enabled).toBe(true);
   });
 
   it("disables an enabled plugin", () => {
-    registry.register(makeManifest({ name: "toggle-me", enabled: true }), "npm:toggle", "/tmp/toggle");
+    registry.register(
+      makeManifest({ name: "toggle-me", enabled: true }),
+      "npm:toggle",
+      "/tmp/toggle",
+    );
 
     const disabled = registry.disable("toggle-me");
     expect(disabled.enabled).toBe(false);
@@ -99,7 +118,11 @@ describe("PluginRegistry", () => {
   });
 
   it("unregisters a plugin", () => {
-    registry.register(makeManifest({ name: "remove-me" }), "npm:remove", "/tmp/remove");
+    registry.register(
+      makeManifest({ name: "remove-me" }),
+      "npm:remove",
+      "/tmp/remove",
+    );
     expect(registry.list()).toHaveLength(1);
 
     const result = registry.unregister("remove-me");

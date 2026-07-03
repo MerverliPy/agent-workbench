@@ -1,27 +1,27 @@
-import { ulid } from "ulid";
-import type { CoreDependencies, RunOptions, RunResult } from "./types";
-import { modelToolCallToRequest } from "./types";
-import { RunRegistry } from "./run-state";
-import { ContextBuilder } from "./context-builder";
-import { ModelRouter } from "./model-router";
-import { ToolCallDispatcher } from "./tool-dispatcher";
-import { EventPublisher } from "./event-publisher";
-import { RunLedger } from "./run-ledger";
-import { PlanGate, isMutationOrRisky } from "./plan-gate";
+import { extractDiffParams, generateDiffPreview } from "@agent-workbench/diff";
+import type { DiffPreview } from "@agent-workbench/protocol";
+import type { CommandPreview } from "@agent-workbench/shell";
+import { previewCommand } from "@agent-workbench/shell";
 import type { ToolExecutionContext } from "@agent-workbench/tools";
 import { assertSafePath } from "@agent-workbench/tools";
-import { generateDiffPreview, extractDiffParams } from "@agent-workbench/diff";
-import type { DiffPreview } from "@agent-workbench/protocol";
-import { previewCommand } from "@agent-workbench/shell";
-import type { CommandPreview } from "@agent-workbench/shell";
+import { ulid } from "ulid";
 import type { AgentProfile } from "./agent";
+import { ContextBuilder } from "./context-builder";
+import { EventPublisher } from "./event-publisher";
+import { ModelRouter } from "./model-router";
+import { isMutationOrRisky, PlanGate } from "./plan-gate";
+import { RunLedger } from "./run-ledger";
+import { RunRegistry } from "./run-state";
+import { ToolCallDispatcher } from "./tool-dispatcher";
+import type { CoreDependencies, RunOptions, RunResult } from "./types";
+import { modelToolCallToRequest } from "./types";
 
 /** Default maximum model/tool loop iterations per run. */
 const DEFAULT_MAX_ITERATIONS = 20;
 
 function truncateForSummary(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen) + "...";
+  return `${text.slice(0, maxLen)}...`;
 }
 
 /**
@@ -76,13 +76,16 @@ export class SessionRunner {
   constructor(deps: CoreDependencies) {
     this.deps = deps;
     this.runRegistry = new RunRegistry();
-    this.contextBuilder = new ContextBuilder(deps.messageRepository, deps.summaryRepository);
+    this.contextBuilder = new ContextBuilder(
+      deps.messageRepository,
+      deps.summaryRepository,
+    );
     this.modelRouter = new ModelRouter(deps.modelProvider);
     this.toolDispatcher = new ToolCallDispatcher(deps.toolRegistry);
     this.planGate = new PlanGate(
       deps.planRepository,
       deps.permissionEngine,
-      deps.permissionGate
+      deps.permissionGate,
     );
   }
 
@@ -103,7 +106,7 @@ export class SessionRunner {
   async run(
     sessionId: string,
     content: string,
-    options: RunOptions = {}
+    options: RunOptions = {},
   ): Promise<RunResult> {
     // ── Guard: verify session exists ─────────────────────────────────────────
     const session = this.deps.sessionRepository.findById(sessionId);
@@ -113,18 +116,17 @@ export class SessionRunner {
 
     // ── Resolve active agent ─────────────────────────────────────────────────
     // Phase 11: default to "build" when session.activeAgent is null/undefined.
-    const resolvedAgentId =
-      options.agentId ?? session.activeAgent ?? "build";
-    const agentProfile = this.deps.agentRegistry.resolveActiveAgent(resolvedAgentId);
-    const agentSystemPrompt =
-      options.systemPrompt ?? agentProfile.systemPrompt;
+    const resolvedAgentId = options.agentId ?? session.activeAgent ?? "build";
+    const agentProfile =
+      this.deps.agentRegistry.resolveActiveAgent(resolvedAgentId);
+    const agentSystemPrompt = options.systemPrompt ?? agentProfile.systemPrompt;
 
     // ── Concurrency guard ────────────────────────────────────────────────────
     if (this.runRegistry.hasActive(sessionId)) {
       const active = this.runRegistry.get(sessionId)!;
       throw new Error(
         `Session ${sessionId} already has an active run (${active.runId}). ` +
-          "Wait for it to complete or call abort() first."
+          "Wait for it to complete or call abort() first.",
       );
     }
 
@@ -133,9 +135,9 @@ export class SessionRunner {
     const abortController = new AbortController();
 
     // Session max-duration timeout: auto-abort if the run exceeds the limit.
-    const SESSION_TIMEOUT_MS = options.maxDurationMs ?? Number(
-      process.env["AGENT_WORKBENCH_SESSION_TIMEOUT_MS"] || 600_000
-    );
+    const SESSION_TIMEOUT_MS =
+      options.maxDurationMs ??
+      Number(process.env.AGENT_WORKBENCH_SESSION_TIMEOUT_MS || 600_000);
 
     const timeoutId = setTimeout(() => {
       if (!signal.aborted) {
@@ -165,18 +167,17 @@ export class SessionRunner {
     });
 
     const events = new EventPublisher(this.deps.eventBus, sessionId, runId);
-    const ledger = new RunLedger(
-      this.deps.ledgerRepository,
-      sessionId,
-      runId
-    );
+    const ledger = new RunLedger(this.deps.ledgerRepository, sessionId, runId);
 
     events.publishRunStarted();
     ledger.recordRunStarted();
 
     // Phase 11: record the active agent profile for this run.
     events.publishAgentProfileApplied(agentProfile.id);
-    ledger.recordAgentProfileApplied(agentProfile.id, agentProfile.promptVersion);
+    ledger.recordAgentProfileApplied(
+      agentProfile.id,
+      agentProfile.promptVersion,
+    );
 
     try {
       return await this.executeLoop(
@@ -189,7 +190,7 @@ export class SessionRunner {
         signal,
         events,
         ledger,
-        agentProfile
+        agentProfile,
       );
     } finally {
       clearTimeout(timeoutId);
@@ -226,7 +227,8 @@ export class SessionRunner {
     compactionSuggested: boolean;
   } {
     const budget = this.deps.tokenHealthService.computeBudget(sessionId);
-    const compaction = this.deps.tokenHealthService.suggestCompaction(sessionId);
+    const compaction =
+      this.deps.tokenHealthService.suggestCompaction(sessionId);
     return {
       budget: budget.limit,
       used: budget.used,
@@ -256,11 +258,15 @@ export class SessionRunner {
     }
 
     const summaryRunId = ulid();
-    const events = new EventPublisher(this.deps.eventBus, sessionId, summaryRunId);
+    const events = new EventPublisher(
+      this.deps.eventBus,
+      sessionId,
+      summaryRunId,
+    );
     const ledger = new RunLedger(
       this.deps.ledgerRepository,
       sessionId,
-      summaryRunId
+      summaryRunId,
     );
 
     events.publishCompactionStarted();
@@ -271,7 +277,9 @@ export class SessionRunner {
 
     const userMessages = messages.filter((m) => m.role === "user");
     if (userMessages.length > 0) {
-      parts.push(`User goals: ${userMessages.map((m) => truncateForSummary(m.content, 200)).join("; ")}`);
+      parts.push(
+        `User goals: ${userMessages.map((m) => truncateForSummary(m.content, 200)).join("; ")}`,
+      );
     }
 
     const assistantMessages = messages.filter((m) => m.role === "assistant");
@@ -320,10 +328,11 @@ export class SessionRunner {
   private emitTokenHealth(
     sessionId: string,
     events: EventPublisher,
-    ledger: RunLedger
+    ledger: RunLedger,
   ): void {
     const budget = this.deps.tokenHealthService.computeBudget(sessionId);
-    const compaction = this.deps.tokenHealthService.suggestCompaction(sessionId);
+    const compaction =
+      this.deps.tokenHealthService.suggestCompaction(sessionId);
     events.publishTokenHealthUpdated({
       budget: budget.limit,
       used: budget.used,
@@ -338,7 +347,7 @@ export class SessionRunner {
       budget.level,
       budget.used,
       budget.limit,
-      budget.utilizationPercent
+      budget.utilizationPercent,
     );
 
     if (budget.level !== "healthy") {
@@ -356,11 +365,11 @@ export class SessionRunner {
       events.publishCompactionSuggested(
         compaction.currentTokens,
         compaction.estimatedCompactedTokens,
-        compaction.reason
+        compaction.reason,
       );
       ledger.recordCompactionSuggested(
         compaction.currentTokens,
-        compaction.estimatedCompactedTokens
+        compaction.estimatedCompactedTokens,
       );
     }
   }
@@ -375,7 +384,7 @@ export class SessionRunner {
     signal: AbortSignal,
     events: EventPublisher,
     ledger: RunLedger,
-    agentProfile: AgentProfile
+    agentProfile: AgentProfile,
   ): Promise<RunResult> {
     // ── Persist user message ─────────────────────────────────────────────────
     const userMessageId = ulid();
@@ -436,7 +445,7 @@ export class SessionRunner {
           for await (const chunk of this.modelRouter.routeStream(
             context,
             this.deps.toolRegistry.list(),
-            signal
+            signal,
           )) {
             if (chunk.content.length > 0) {
               accumulatedContent += chunk.content;
@@ -464,7 +473,7 @@ export class SessionRunner {
               events.publishStreamComplete(
                 accumulatedContent,
                 modelResponse.usage,
-                modelResponse.stopReason
+                modelResponse.stopReason,
               );
               break; // exit the for-await loop
             }
@@ -474,7 +483,7 @@ export class SessionRunner {
           modelResponse = await this.modelRouter.route(
             context,
             this.deps.toolRegistry.list(),
-            signal
+            signal,
           );
         }
       } catch (err: unknown) {
@@ -482,7 +491,10 @@ export class SessionRunner {
           err instanceof Error ? err.message : "Unknown model error";
 
         // Check if abort is the cause.
-        if (signal.aborted || (err instanceof DOMException && err.name === "AbortError")) {
+        if (
+          signal.aborted ||
+          (err instanceof DOMException && err.name === "AbortError")
+        ) {
           ledger.recordRunAborted("model_call_aborted");
           events.publishRunAborted("model_call_aborted");
           return { runId, assistantMessageId, status: "aborted" };
@@ -547,7 +559,7 @@ export class SessionRunner {
         signal,
         events,
         ledger,
-        agentProfile
+        agentProfile,
       );
 
       // Check for abort after tool dispatch.
@@ -580,9 +592,10 @@ export class SessionRunner {
           sessionId,
           runId,
           role: "tool",
-          content: result.error !== undefined
-            ? JSON.stringify({ error: result.error })
-            : JSON.stringify(result.result),
+          content:
+            result.error !== undefined
+              ? JSON.stringify({ error: result.error })
+              : JSON.stringify(result.result),
           contentFormat: "json",
           parentMessageId: assistantToolMsgId,
           createdAt: new Date().toISOString(),
@@ -615,12 +628,14 @@ export class SessionRunner {
     signal: AbortSignal,
     events: EventPublisher,
     ledger: RunLedger,
-    agentProfile: AgentProfile
+    agentProfile: AgentProfile,
   ): Promise<import("./types").ToolCallResult[]> {
     const results: import("./types").ToolCallResult[] = [];
 
     // ── Phase 13: Plan gate for mutation/risky tools ────────────────────────────
-    const mutationCalls = modelToolCalls.filter((c) => isMutationOrRisky(c.name));
+    const mutationCalls = modelToolCalls.filter((c) =>
+      isMutationOrRisky(c.name),
+    );
     let planBlocked = false;
     const earlyFailedModelCallIds = new Set<string>();
     let planId: string | undefined;
@@ -645,8 +660,10 @@ export class SessionRunner {
 
       for (const call of mutationCalls) {
         const input = call.input as Record<string, unknown>;
-        let rawPath: string | undefined = typeof input?.["path"] === "string" ? input["path"] : undefined;
-        const rawCommand = typeof input?.["command"] === "string" ? input["command"] : undefined;
+        let rawPath: string | undefined =
+          typeof input?.path === "string" ? input.path : undefined;
+        const rawCommand =
+          typeof input?.command === "string" ? input.command : undefined;
 
         if (call.name === "revert_last_change") {
           if (rawPath === undefined || rawPath.trim().length === 0) {
@@ -661,7 +678,8 @@ export class SessionRunner {
           try {
             resolvedPath = assertSafePath(rawPath, projectPath);
           } catch (pathErr: unknown) {
-            const reason = pathErr instanceof Error ? pathErr.message : String(pathErr);
+            const reason =
+              pathErr instanceof Error ? pathErr.message : String(pathErr);
             earlyFailedCalls.push({
               modelCallId: call.id,
               name: call.name,
@@ -669,10 +687,11 @@ export class SessionRunner {
             });
             continue;
           }
-          const existingChange = this.deps.fileChangeRepository.findLatestByPath(
-            sessionId,
-            resolvedPath
-          );
+          const existingChange =
+            this.deps.fileChangeRepository.findLatestByPath(
+              sessionId,
+              resolvedPath,
+            );
           if (existingChange === undefined) {
             earlyFailedCalls.push({
               modelCallId: call.id,
@@ -684,25 +703,38 @@ export class SessionRunner {
           rawPath = resolvedPath;
         }
 
-        if (rawPath !== undefined && rawPath.length > 0) targetFiles.add(rawPath);
+        if (rawPath !== undefined && rawPath.length > 0)
+          targetFiles.add(rawPath);
 
         if (call.name === "bash") {
           const desc = {
             toolName: call.name,
-            description: rawCommand !== undefined
-              ? `Run: ${rawCommand.slice(0, 80)}`
-              : "Run shell command",
-          } as { toolName: string; targetPath?: string; command?: string; description: string };
+            description:
+              rawCommand !== undefined
+                ? `Run: ${rawCommand.slice(0, 80)}`
+                : "Run shell command",
+          } as {
+            toolName: string;
+            targetPath?: string;
+            command?: string;
+            description: string;
+          };
           if (rawCommand !== undefined) desc.command = rawCommand;
           callDescriptions.push(desc);
           callStepOrder.set(call.id, callStepOrder.size);
         } else {
           const desc = {
             toolName: call.name,
-            description: rawPath !== undefined
-              ? `${call.name} ${rawPath}`
-              : `${call.name} file`,
-          } as { toolName: string; targetPath?: string; command?: string; description: string };
+            description:
+              rawPath !== undefined
+                ? `${call.name} ${rawPath}`
+                : `${call.name} file`,
+          } as {
+            toolName: string;
+            targetPath?: string;
+            command?: string;
+            description: string;
+          };
           if (rawPath !== undefined) desc.targetPath = rawPath;
           callDescriptions.push(desc);
           callStepOrder.set(call.id, callStepOrder.size);
@@ -715,7 +747,7 @@ export class SessionRunner {
           runId,
           callDescriptions,
           `Mutation plan: ${callDescriptions.length} step(s) on ${callDescriptions.map((d) => d.description.slice(0, 60)).join(", ")}`,
-          [...targetFiles]
+          [...targetFiles],
         );
         planId = plan.id;
         plannedStepCount = plan.steps.length;
@@ -725,7 +757,7 @@ export class SessionRunner {
           events,
           ledger,
           signal,
-          agentProfile.id
+          agentProfile.id,
         );
 
         if (gateResult === "blocked") {
@@ -738,7 +770,7 @@ export class SessionRunner {
         const storageId = ulid();
         const request = modelToolCallToRequest(
           { id: failed.modelCallId, name: failed.name, input: {} },
-          storageId
+          storageId,
         );
         this.deps.toolCallRepository.create({
           id: storageId,
@@ -766,7 +798,11 @@ export class SessionRunner {
       }
     }
 
-    const emitPlanStepFailedForCall = (modelCallId: string, toolName: string, error: string) => {
+    const emitPlanStepFailedForCall = (
+      modelCallId: string,
+      _toolName: string,
+      error: string,
+    ) => {
       if (planId === undefined) return;
       const stepOrder = callStepOrder.get(modelCallId);
       if (stepOrder === undefined) return;
@@ -830,7 +866,9 @@ export class SessionRunner {
       // ── Phase 11: Tool availability enforcement by agent ──────────────────
       // Plan agent must not execute mutation tools. Block early with a deny
       // so no unnecessary previews are generated.
-      if (!this.deps.agentRegistry.isToolAvailable(agentProfile.id, request.name)) {
+      if (
+        !this.deps.agentRegistry.isToolAvailable(agentProfile.id, request.name)
+      ) {
         const reason = `Tool "${request.name}" is not available in ${agentProfile.mode} mode`;
         this.deps.toolCallRepository.update(storageId, {
           status: "denied",
@@ -859,7 +897,11 @@ export class SessionRunner {
         ledger.recordPermissionDeniedByPolicy(permReqId, request.name, reason);
         ledger.recordToolCallDenied(storageId, request.name, reason);
         events.publishPermissionDenied(permReqId, request.name, reason);
-        events.publishToolCallFailed(storageId, request.name, `Permission denied: ${reason}`);
+        events.publishToolCallFailed(
+          storageId,
+          request.name,
+          `Permission denied: ${reason}`,
+        );
         results.push({
           id: storageId,
           modelCallId: request.modelCallId,
@@ -915,12 +957,12 @@ export class SessionRunner {
         ledger.recordShellRiskClassified(
           storageId,
           commandPreview.riskLevel,
-          commandPreview.matchedRules
+          commandPreview.matchedRules,
         );
         events.publishShellRiskClassified(
           storageId,
           commandPreview.riskLevel,
-          commandPreview.matchedRules
+          commandPreview.matchedRules,
         );
       }
 
@@ -967,7 +1009,8 @@ export class SessionRunner {
         try {
           safePath = assertSafePath(params.path, projectPath);
         } catch (pathErr: unknown) {
-          const reason = pathErr instanceof Error ? pathErr.message : String(pathErr);
+          const reason =
+            pathErr instanceof Error ? pathErr.message : String(pathErr);
           this.deps.toolCallRepository.update(storageId, {
             status: "failed",
             completedAt: new Date().toISOString(),
@@ -1003,12 +1046,18 @@ export class SessionRunner {
             storageId,
             request.name,
             diffPreview.path,
-            diffPreview.id
+            diffPreview.id,
           );
-          events.publishDiffPreviewCreated(storageId, request.name, diffPreview);
+          events.publishDiffPreviewCreated(
+            storageId,
+            request.name,
+            diffPreview,
+          );
         } catch (previewErr: unknown) {
           const reason = `${request.name}: diff preview failed: ${
-            previewErr instanceof Error ? previewErr.message : String(previewErr)
+            previewErr instanceof Error
+              ? previewErr.message
+              : String(previewErr)
           }`;
           this.deps.toolCallRepository.update(storageId, {
             status: "failed",
@@ -1057,7 +1106,8 @@ export class SessionRunner {
           toolName: request.name,
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
-          targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
+          targetPathsJson:
+            targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
           command: command ?? null,
           diffSummaryJson,
           dryRunSummaryJson,
@@ -1068,12 +1118,28 @@ export class SessionRunner {
         });
 
         // Ledger the policy-level denial.
-        ledger.recordPermissionDeniedByPolicy(permReqId, request.name, evalResult.reason);
-        ledger.recordPermissionDecidedByPolicy(permReqId, "deny", evalResult.reason);
+        ledger.recordPermissionDeniedByPolicy(
+          permReqId,
+          request.name,
+          evalResult.reason,
+        );
+        ledger.recordPermissionDecidedByPolicy(
+          permReqId,
+          "deny",
+          evalResult.reason,
+        );
         ledger.recordToolCallDenied(storageId, request.name, evalResult.reason);
 
-        events.publishPermissionDenied(permReqId, request.name, evalResult.reason);
-        events.publishToolCallFailed(storageId, request.name, `Permission denied: ${evalResult.reason}`);
+        events.publishPermissionDenied(
+          permReqId,
+          request.name,
+          evalResult.reason,
+        );
+        events.publishToolCallFailed(
+          storageId,
+          request.name,
+          `Permission denied: ${evalResult.reason}`,
+        );
 
         results.push({
           id: storageId,
@@ -1082,7 +1148,11 @@ export class SessionRunner {
           result: null,
           error: `Permission denied: ${evalResult.reason}`,
         });
-        emitPlanStepFailedForCall(request.modelCallId, request.name, evalResult.reason);
+        emitPlanStepFailedForCall(
+          request.modelCallId,
+          request.name,
+          evalResult.reason,
+        );
         continue;
       }
 
@@ -1120,7 +1190,8 @@ export class SessionRunner {
           toolName: request.name,
           riskLevel: evalResult.riskLevel,
           reason: evalResult.reason,
-          targetPathsJson: targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
+          targetPathsJson:
+            targetPaths !== undefined ? JSON.stringify(targetPaths) : null,
           command: command ?? null,
           diffSummaryJson,
           dryRunSummaryJson,
@@ -1131,29 +1202,37 @@ export class SessionRunner {
         });
 
         // Update tool call status to permission_pending.
-        this.deps.toolCallRepository.update(storageId, { status: "permission_pending" });
+        this.deps.toolCallRepository.update(storageId, {
+          status: "permission_pending",
+        });
 
         // Ledger and emit.
-        ledger.recordPermissionRequested(permReqId, request.name, evalResult.riskLevel);
+        ledger.recordPermissionRequested(
+          permReqId,
+          request.name,
+          evalResult.riskLevel,
+        );
         events.publishPermissionRequested(
           permReqId,
           request.name,
           evalResult.riskLevel,
           evalResult.reason,
-          permissionRequestPayload
+          permissionRequestPayload,
         );
 
         // ── Pause: wait for the user's decision via PermissionGate ────────
         const decision = await this.deps.permissionGate.waitForDecision(
           permReqId,
-          signal
+          signal,
         );
 
         if (decision === "deny") {
           // User denied (or run was aborted while waiting).
           const deniedBy = signal.aborted ? "system" : "user";
 
-          this.deps.permissionRepository.updateRequest(permReqId, { status: "denied" });
+          this.deps.permissionRepository.updateRequest(permReqId, {
+            status: "denied",
+          });
           this.deps.toolCallRepository.update(storageId, {
             status: "denied",
             completedAt: new Date().toISOString(),
@@ -1163,9 +1242,21 @@ export class SessionRunner {
           // NOTE: The server decision route already recorded permission.decided
           // and the ledger entry for user-submitted decisions. SessionRunner only
           // records the tool-level outcome here (not a duplicate permission.decided).
-          ledger.recordToolCallDenied(storageId, request.name, "Permission denied by user.");
-          events.publishPermissionDenied(permReqId, request.name, "Denied by user.");
-          events.publishToolCallFailed(storageId, request.name, "Permission denied.");
+          ledger.recordToolCallDenied(
+            storageId,
+            request.name,
+            "Permission denied by user.",
+          );
+          events.publishPermissionDenied(
+            permReqId,
+            request.name,
+            "Denied by user.",
+          );
+          events.publishToolCallFailed(
+            storageId,
+            request.name,
+            "Permission denied.",
+          );
 
           results.push({
             id: storageId,
@@ -1175,7 +1266,11 @@ export class SessionRunner {
             error: `Permission denied by ${deniedBy}.`,
           });
 
-          emitPlanStepFailedForCall(request.modelCallId, request.name, `Permission denied by ${deniedBy}`);
+          emitPlanStepFailedForCall(
+            request.modelCallId,
+            request.name,
+            `Permission denied by ${deniedBy}`,
+          );
 
           if (signal.aborted) {
             break;
@@ -1185,7 +1280,9 @@ export class SessionRunner {
 
         // User approved — update request status, fall through to execution.
         // (Server decision route already persisted the decision and emitted events.)
-        this.deps.permissionRepository.updateRequest(permReqId, { status: "approved" });
+        this.deps.permissionRepository.updateRequest(permReqId, {
+          status: "approved",
+        });
       }
 
       // ── Dispatch ────────────────────────────────────────────────────────
@@ -1228,11 +1325,19 @@ export class SessionRunner {
         ...(request.name === "bash"
           ? {
               onStdout: (chunk: string) => {
-                ledger.recordShellOutputChunk(storageId, "stdout", Buffer.byteLength(chunk, "utf8"));
+                ledger.recordShellOutputChunk(
+                  storageId,
+                  "stdout",
+                  Buffer.byteLength(chunk, "utf8"),
+                );
                 events.publishShellOutputChunk(storageId, "stdout", chunk);
               },
               onStderr: (chunk: string) => {
-                ledger.recordShellOutputChunk(storageId, "stderr", Buffer.byteLength(chunk, "utf8"));
+                ledger.recordShellOutputChunk(
+                  storageId,
+                  "stderr",
+                  Buffer.byteLength(chunk, "utf8"),
+                );
                 events.publishShellOutputChunk(storageId, "stderr", chunk);
               },
             }
@@ -1283,8 +1388,18 @@ export class SessionRunner {
             ledger.recordRevertFailed(storageId, targetPath, result.error);
             events.publishFileRevertFailed(storageId, targetPath, result.error);
           } else {
-            ledger.recordMutationFailed(storageId, request.name, targetPath, result.error);
-            events.publishFileChangeFailed(storageId, request.name, targetPath, result.error);
+            ledger.recordMutationFailed(
+              storageId,
+              request.name,
+              targetPath,
+              result.error,
+            );
+            events.publishFileChangeFailed(
+              storageId,
+              request.name,
+              targetPath,
+              result.error,
+            );
           }
         }
 
@@ -1300,28 +1415,28 @@ export class SessionRunner {
       } else {
         // Phase 12: truncate large tool results before persisting.
         const rawResultStr = JSON.stringify(result.result);
-        const truncated = this.deps.tokenHealthService.truncateOutput(rawResultStr);
+        const truncated =
+          this.deps.tokenHealthService.truncateOutput(rawResultStr);
         if (truncated.meta.truncated) {
           ledger.recordToolResultTruncated(
             storageId,
             rawResultStr.length,
-            truncated.content.length
+            truncated.content.length,
           );
           events.publishToolResultTruncated(
             storageId,
             rawResultStr.length,
             truncated.content.length,
-            truncated.meta.reason
+            truncated.meta.reason,
           );
         }
-        truncatedResult =
-          truncated.meta.truncated
-            ? {
-                truncated: true,
-                content: truncated.content,
-                metadata: truncated.meta,
-              }
-            : result.result;
+        truncatedResult = truncated.meta.truncated
+          ? {
+              truncated: true,
+              content: truncated.content,
+              metadata: truncated.meta,
+            }
+          : result.result;
 
         this.deps.toolCallRepository.update(storageId, {
           status: "completed",
@@ -1345,22 +1460,22 @@ export class SessionRunner {
               ? (result.result as Record<string, unknown>)
               : {};
           const exitCode =
-            typeof shellResult["exitCode"] === "number"
-              ? shellResult["exitCode"]
+            typeof shellResult.exitCode === "number"
+              ? shellResult.exitCode
               : null;
-          const timedOut = shellResult["timedOut"] === true;
-          const truncated = shellResult["truncated"] === true;
+          const timedOut = shellResult.timedOut === true;
+          const truncated = shellResult.truncated === true;
           ledger.recordShellCommandCompleted(
             storageId,
             exitCode,
             timedOut,
-            truncated
+            truncated,
           );
           events.publishShellCommandCompleted(
             storageId,
             exitCode,
             timedOut,
-            truncated
+            truncated,
           );
         }
 
@@ -1371,24 +1486,42 @@ export class SessionRunner {
               ? (result.result as Record<string, unknown>)
               : {};
           const targetPath =
-            typeof resultObj["path"] === "string"
-              ? resultObj["path"]
+            typeof resultObj.path === "string"
+              ? resultObj.path
               : (targetPaths?.[0] ?? "unknown");
           const changeId =
-            typeof resultObj["changeId"] === "string"
-              ? resultObj["changeId"]
+            typeof resultObj.changeId === "string"
+              ? resultObj.changeId
               : undefined;
 
           if (request.name === "revert_last_change") {
             const revertedChangeId =
-              typeof resultObj["revertedChangeId"] === "string"
-                ? resultObj["revertedChangeId"]
+              typeof resultObj.revertedChangeId === "string"
+                ? resultObj.revertedChangeId
                 : "";
-            ledger.recordRevertCompleted(storageId, targetPath, revertedChangeId);
-            events.publishFileRevertCompleted(storageId, targetPath, revertedChangeId);
+            ledger.recordRevertCompleted(
+              storageId,
+              targetPath,
+              revertedChangeId,
+            );
+            events.publishFileRevertCompleted(
+              storageId,
+              targetPath,
+              revertedChangeId,
+            );
           } else {
-            ledger.recordMutationApplied(storageId, request.name, targetPath, changeId);
-            events.publishFileChangeApplied(storageId, request.name, targetPath, changeId);
+            ledger.recordMutationApplied(
+              storageId,
+              request.name,
+              targetPath,
+              changeId,
+            );
+            events.publishFileChangeApplied(
+              storageId,
+              request.name,
+              targetPath,
+              changeId,
+            );
           }
         }
 
@@ -1405,7 +1538,11 @@ export class SessionRunner {
 
       // Phase 12: apply truncated result to the return value so
       // the caller persists truncated content in tool result messages.
-      if (result.error === undefined && truncatedResult !== null && truncatedResult !== undefined) {
+      if (
+        result.error === undefined &&
+        truncatedResult !== null &&
+        truncatedResult !== undefined
+      ) {
         results.push({
           ...result,
           result: truncatedResult,
@@ -1428,8 +1565,14 @@ export class SessionRunner {
             completedAt: new Date().toISOString(),
           });
         } else if (planHadFailure) {
-          ledger.recordPlanFailed(planId, "One or more plan steps failed during execution.");
-          events.publishPlanFailed(planId, "One or more plan steps failed during execution.");
+          ledger.recordPlanFailed(
+            planId,
+            "One or more plan steps failed during execution.",
+          );
+          events.publishPlanFailed(
+            planId,
+            "One or more plan steps failed during execution.",
+          );
           this.deps.planRepository.update(planId, {
             status: "failed",
             completedAt: new Date().toISOString(),
@@ -1465,11 +1608,7 @@ export class SessionRunner {
  * revert_last_change is excluded because its path is looked up from storage,
  * not from raw model input; path safety is enforced in its own executor.
  */
-const DIFF_PREVIEW_REQUIRED = new Set([
-  "write",
-  "edit",
-  "apply_patch",
-]);
+const DIFF_PREVIEW_REQUIRED = new Set(["write", "edit", "apply_patch"]);
 
 /**
  * Full set of mutation tools — used for file-change event emission after dispatch.
@@ -1495,22 +1634,22 @@ function extractTargetPaths(input: unknown): string[] | undefined {
   const obj = input as Record<string, unknown>;
 
   // "path" field (read, grep tools)
-  if (typeof obj["path"] === "string") {
-    return [obj["path"]];
+  if (typeof obj.path === "string") {
+    return [obj.path];
   }
 
   // "paths" field (hypothetical multi-path tool)
-  if (Array.isArray(obj["paths"])) {
-    const strs = (obj["paths"] as unknown[]).filter(
-      (p): p is string => typeof p === "string"
+  if (Array.isArray(obj.paths)) {
+    const strs = (obj.paths as unknown[]).filter(
+      (p): p is string => typeof p === "string",
     );
     if (strs.length > 0) return strs;
   }
 
   // "pattern" field (glob tool) — pattern is not a literal path;
   // extract any leading directory portion for path-rule checking.
-  if (typeof obj["pattern"] === "string") {
-    const pattern = obj["pattern"] as string;
+  if (typeof obj.pattern === "string") {
+    const pattern = obj.pattern as string;
     // Extract directory prefix before any glob characters.
     const globChars = /[*?[\]{}!]/;
     if (!globChars.test(pattern)) {
@@ -1534,8 +1673,8 @@ function extractTargetPaths(input: unknown): string[] | undefined {
 function extractBashCommand(input: unknown): string | undefined {
   if (input === null || typeof input !== "object") return undefined;
   const obj = input as Record<string, unknown>;
-  if (typeof obj["command"] === "string" && obj["command"].trim().length > 0) {
-    return obj["command"];
+  if (typeof obj.command === "string" && obj.command.trim().length > 0) {
+    return obj.command;
   }
   return undefined;
 }

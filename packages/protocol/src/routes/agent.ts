@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
+import { AgentDefinition, AgentId, AgentListItem } from "../schemas/agent";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { AgentDefinition, AgentListItem, AgentId } from "../schemas/agent";
 
 export const ListAgentsRoute = {
   method: "GET" as const,

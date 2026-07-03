@@ -16,9 +16,9 @@
  * ```
  */
 
-import type { MiddlewareHandler } from "hono";
-import { hasScope, Scope } from "@agent-workbench/auth";
 import type { AuthContext } from "@agent-workbench/auth";
+import { hasScope, Scope } from "@agent-workbench/auth";
+import type { MiddlewareHandler } from "hono";
 
 /**
  * Create a middleware that checks if the authenticated user has the

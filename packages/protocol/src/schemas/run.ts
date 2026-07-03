@@ -1,7 +1,13 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
+import { Timestamp, Ulid } from "./common";
 
-export const RunStatus = z.enum(["pending", "running", "completed", "failed", "aborted"]);
+export const RunStatus = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "aborted",
+]);
 export type RunStatus = z.infer<typeof RunStatus>;
 
 export const Run = z.object({

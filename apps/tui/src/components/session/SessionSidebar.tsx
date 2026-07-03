@@ -1,17 +1,16 @@
 import type { JSX } from "@opentui/solid";
-import { createSignal, onMount, For, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
+import { sdk } from "../../lib/sdk";
 import {
+  activeSessionId,
+  appendSystemNotice,
+  getSessionMessageCount,
+  type SessionListItem,
+  serverStatus,
   sessions,
   setSessions,
-  activeSessionId,
   switchSession,
-  getSessionMessageCount,
-  appendSystemNotice,
-  serverStatus,
-  type SessionListItem,
 } from "../../state/app";
-import { sdk } from "../../lib/sdk";
-import { PLACEHOLDER_SESSION_ID } from "../../state/app";
 
 /**
  * Multi-session sidebar — Phase 22.
@@ -43,7 +42,7 @@ export function SessionSidebar(): JSX.Element {
 
       // Auto-select first session if none active
       if (!activeSessionId() && items.length > 0) {
-        switchSession(items[0]!.id);
+        switchSession(items[0]?.id);
       }
     } catch {
       // Server session APIs may be unavailable — fall back to placeholder
@@ -68,7 +67,7 @@ export function SessionSidebar(): JSX.Element {
     }
   }
 
-  async function deleteSession(id: string): Promise<void> {
+  async function _deleteSession(id: string): Promise<void> {
     try {
       await sdk.sessions.delete(id);
       appendSystemNotice(`Deleted session: ${id}`);
@@ -100,12 +99,16 @@ export function SessionSidebar(): JSX.Element {
       <box height={1} flexDirection="row" flexShrink={0} paddingX={1}>
         <text
           content="[+ New]"
-          onMouseDown={() => { void createSession(); }}
+          onMouseDown={() => {
+            void createSession();
+          }}
         />
         <text content="  " />
         <text
           content="[↻ Refresh]"
-          onMouseDown={() => { void loadSessions(); }}
+          onMouseDown={() => {
+            void loadSessions();
+          }}
         />
       </box>
       <text content="" />

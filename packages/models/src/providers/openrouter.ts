@@ -1,6 +1,6 @@
-import { OpenAICompatibleProvider } from "./openai-compatible";
 import type { ProviderConfig } from "../provider-config";
 import type { ModelProvider } from "../types";
+import { OpenAICompatibleProvider } from "./openai-compatible";
 
 /**
  * Create an OpenRouter provider adapter.

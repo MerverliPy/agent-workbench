@@ -18,9 +18,9 @@
  *   - Tool dispatch overhead
  */
 
-import { spawnSync, spawn } from "bun";
-import { readdirSync, existsSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { spawnSync } from "bun";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -47,13 +47,26 @@ function measure(
   for (let i = 0; i < iterations; i++) {
     const ms = fn();
     if (ms === null) {
-      RESULTS.push({ name, durationMs: -1, iterations, unit: "ms", pass: false, note: "failed" });
+      RESULTS.push({
+        name,
+        durationMs: -1,
+        iterations,
+        unit: "ms",
+        pass: false,
+        note: "failed",
+      });
       return;
     }
     durations.push(ms);
   }
   const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
-  RESULTS.push({ name, durationMs: Math.round(avg), iterations, unit: "ms", pass: true });
+  RESULTS.push({
+    name,
+    durationMs: Math.round(avg),
+    iterations,
+    unit: "ms",
+    pass: true,
+  });
 }
 
 function timeCommand(cmd: string, args: string[], cwd?: string): number | null {
@@ -78,12 +91,20 @@ function benchmarkTypecheck(): void {
     const scripts = (pkgJson as any)?.scripts ?? {};
     if (!scripts.typecheck) continue;
 
-    measure(`typecheck: ${pkg}`, () => timeCommand("bun", ["run", "typecheck"], pkgPath), 2);
+    measure(
+      `typecheck: ${pkg}`,
+      () => timeCommand("bun", ["run", "typecheck"], pkgPath),
+      2,
+    );
   }
 }
 
 function benchmarkBuild(): void {
-  measure("build:all (cold)", () => timeCommand("bash", [join(ROOT, "scripts", "build-all.sh")]), 1);
+  measure(
+    "build:all (cold)",
+    () => timeCommand("bash", [join(ROOT, "scripts", "build-all.sh")]),
+    1,
+  );
 }
 
 function benchmarkBundleSizes(): void {
@@ -91,11 +112,25 @@ function benchmarkBundleSizes(): void {
   for (const app of apps) {
     const distPath = join(ROOT, "apps", app, "dist");
     if (!existsSync(distPath)) {
-      RESULTS.push({ name: `bundle: apps/${app}`, durationMs: 0, iterations: 1, unit: "KB", pass: false, note: "no dist/" });
+      RESULTS.push({
+        name: `bundle: apps/${app}`,
+        durationMs: 0,
+        iterations: 1,
+        unit: "KB",
+        pass: false,
+        note: "no dist/",
+      });
       continue;
     }
     const sizeKB = Math.round(calculateDirSize(distPath) / 1024);
-    RESULTS.push({ name: `bundle: apps/${app}`, durationMs: sizeKB, iterations: 1, unit: "KB", pass: sizeKB < 5000, note: sizeKB >= 5000 ? "large bundle" : undefined });
+    RESULTS.push({
+      name: `bundle: apps/${app}`,
+      durationMs: sizeKB,
+      iterations: 1,
+      unit: "KB",
+      pass: sizeKB < 5000,
+      note: sizeKB >= 5000 ? "large bundle" : undefined,
+    });
   }
 
   const packages = readdirSync(join(ROOT, "packages"));
@@ -103,7 +138,14 @@ function benchmarkBundleSizes(): void {
     const distPath = join(ROOT, "packages", pkg, "dist");
     if (!existsSync(distPath)) continue;
     const sizeKB = Math.round(calculateDirSize(distPath) / 1024);
-    RESULTS.push({ name: `bundle: ${pkg}`, durationMs: sizeKB, iterations: 1, unit: "KB", pass: sizeKB < 2000, note: sizeKB >= 2000 ? "large bundle" : undefined });
+    RESULTS.push({
+      name: `bundle: ${pkg}`,
+      durationMs: sizeKB,
+      iterations: 1,
+      unit: "KB",
+      pass: sizeKB < 2000,
+      note: sizeKB >= 2000 ? "large bundle" : undefined,
+    });
   }
 }
 
@@ -140,11 +182,17 @@ benchmarkTypecheck();
 
 console.log("\n\n═══ RESULTS ═══\n");
 let allPassed = true;
-for (const r of RESULTS.sort((a, b) => (a.pass === b.pass ? 0 : a.pass ? 1 : -1))) {
+for (const r of RESULTS.sort((a, b) =>
+  a.pass === b.pass ? 0 : a.pass ? 1 : -1,
+)) {
   const icon = r.pass ? "✅" : "❌";
   if (!r.pass) allPassed = false;
-  console.log(`  ${icon}  ${r.name.padEnd(40)} ${r.durationMs} ${r.unit}${r.note ? `  (${r.note})` : ""}`);
+  console.log(
+    `  ${icon}  ${r.name.padEnd(40)} ${r.durationMs} ${r.unit}${r.note ? `  (${r.note})` : ""}`,
+  );
 }
 
-console.log(`\n${allPassed ? "✅ All benchmarks passed." : "❌ Some benchmarks failed — review above."}`);
+console.log(
+  `\n${allPassed ? "✅ All benchmarks passed." : "❌ Some benchmarks failed — review above."}`,
+);
 process.exit(allPassed ? 0 : 1);

@@ -6,8 +6,8 @@
  */
 
 import { SessionToken } from "./session-tokens";
-import { InMemoryTokenStore } from "./token-store";
 import type { TokenRecord } from "./token-store";
+import { InMemoryTokenStore } from "./token-store";
 
 // ── Defaults ───────────────────────────────────────────────────────────────
 
@@ -44,7 +44,10 @@ export class AuthManager {
 
   /** Whether TLS is enabled (read from env). */
   get isTlsEnabled(): boolean {
-    return process.env[ENV_TLS_ENABLED] === "true" || process.env[ENV_TLS_ENABLED] === "1";
+    return (
+      process.env[ENV_TLS_ENABLED] === "true" ||
+      process.env[ENV_TLS_ENABLED] === "1"
+    );
   }
 
   /** Get the shared secret for HMAC signing. */
@@ -53,7 +56,10 @@ export class AuthManager {
   }
 
   /** Generate a new bearer token for the given label. */
-  generateToken(label: string, scopes?: string[]): { token: string; expiresAt: string } | null {
+  generateToken(
+    label: string,
+    scopes?: string[],
+  ): { token: string; expiresAt: string } | null {
     if (!this.sessionToken) return null;
     const result = this.sessionToken.generate(label, scopes);
     this.store.set({
@@ -67,13 +73,19 @@ export class AuthManager {
   }
 
   /** Validate a bearer token. Returns the token label if valid, null otherwise. */
-  validateToken(token: string): { label: string; expiresAt: string; scopes: readonly string[] } | null {
+  validateToken(
+    token: string,
+  ): { label: string; expiresAt: string; scopes: readonly string[] } | null {
     if (!this.sessionToken) return null;
 
     // Check the store first (fast path)
     const record = this.store.get(token);
     if (record) {
-      return { label: record.label, expiresAt: record.expiresAt, scopes: record.scopes };
+      return {
+        label: record.label,
+        expiresAt: record.expiresAt,
+        scopes: record.scopes,
+      };
     }
 
     // Validate cryptographically (handles tokens from other instances)
@@ -89,7 +101,11 @@ export class AuthManager {
       scopes: payload.scopes,
     });
 
-    return { label: payload.sub, expiresAt: new Date(payload.exp).toISOString(), scopes: payload.scopes };
+    return {
+      label: payload.sub,
+      expiresAt: new Date(payload.exp).toISOString(),
+      scopes: payload.scopes,
+    };
   }
 
   /** Revoke a token. */
@@ -108,11 +124,21 @@ export class AuthManager {
   }
 
   /** Check the health of the auth system. */
-  health(): { enabled: boolean; activeTokens: number; tlsEnabled: boolean; hint: string | undefined } {
+  health(): {
+    enabled: boolean;
+    activeTokens: number;
+    tlsEnabled: boolean;
+    hint: string | undefined;
+  } {
     const hint: string | undefined = this.enabled
       ? undefined
       : `Auth is disabled. Set ${ENV_SECRET} and ${ENV_ENABLED}=true to enable.`;
-    return { enabled: this.enabled, activeTokens: this.store.list().length, tlsEnabled: this.isTlsEnabled, hint };
+    return {
+      enabled: this.enabled,
+      activeTokens: this.store.list().length,
+      tlsEnabled: this.isTlsEnabled,
+      hint,
+    };
   }
 
   // ── Env helpers ─────────────────────────────────────────────────────────
@@ -129,7 +155,7 @@ export class AuthManager {
       // should refuse to start if auth is enabled but secret is too short.
       console.warn(
         `[auth] ${ENV_SECRET} is missing or too short (< 16 chars). ` +
-        `Generate one with: openssl rand -base64 32`
+          `Generate one with: openssl rand -base64 32`,
       );
       return "CHANGE-ME-in-production-use-a-64-char-secret!"; // 52 chars
     }
@@ -141,7 +167,9 @@ export class AuthManager {
     if (!raw) return 3_600_000; // 1 hour default
     const ms = Number(raw);
     if (!Number.isFinite(ms) || ms < 60_000 || ms > 86_400_000) {
-      console.warn(`[auth] Invalid ${ENV_TOKEN_TTL}: ${raw}. Using default (1 hour).`);
+      console.warn(
+        `[auth] Invalid ${ENV_TOKEN_TTL}: ${raw}. Using default (1 hour).`,
+      );
       return 3_600_000;
     }
     return ms;

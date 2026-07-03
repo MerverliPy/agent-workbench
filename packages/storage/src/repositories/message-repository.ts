@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { asc, eq } from "drizzle-orm";
 import { messages } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type MessageRow = typeof messages.$inferSelect;
 export type MessageInsert = typeof messages.$inferInsert;

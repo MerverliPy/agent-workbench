@@ -1,14 +1,17 @@
-import type { MessageRepository, SummaryRepository } from "@agent-workbench/storage";
+import type {
+  MessageRepository,
+  SummaryRepository,
+} from "@agent-workbench/storage";
+import type {
+  CompactionSuggestion,
+  TokenBudget,
+  TruncatedResult,
+  TruncationOptions,
+} from "@agent-workbench/tokens";
 import {
   calculateBudget,
   suggestCompaction,
   truncateToolOutput,
-} from "@agent-workbench/tokens";
-import type {
-  TokenBudget,
-  CompactionSuggestion,
-  TruncatedResult,
-  TruncationOptions,
 } from "@agent-workbench/tokens";
 
 /**
@@ -21,7 +24,7 @@ import type {
 export class TokenHealthService {
   constructor(
     private readonly messageRepository: MessageRepository,
-    private readonly summaryRepository: SummaryRepository
+    private readonly summaryRepository: SummaryRepository,
   ) {}
 
   /**
@@ -31,7 +34,7 @@ export class TokenHealthService {
   computeBudget(
     sessionId: string,
     modelContextLimit?: number,
-    systemPromptContent?: string
+    systemPromptContent?: string,
   ): TokenBudget {
     const messages = this.messageRepository.listBySession(sessionId);
 
@@ -42,9 +45,7 @@ export class TokenHealthService {
     }));
 
     const summaries = this.summaryRepository.listBySession(sessionId);
-    const summaryContent = summaries
-      .map((s) => s.content)
-      .join("\n");
+    const summaryContent = summaries.map((s) => s.content).join("\n");
 
     return calculateBudget({
       modelContextLimit,
@@ -60,7 +61,7 @@ export class TokenHealthService {
   suggestCompaction(
     sessionId: string,
     modelContextLimit?: number,
-    systemPromptContent?: string
+    systemPromptContent?: string,
   ): CompactionSuggestion {
     const messages = this.messageRepository.listBySession(sessionId);
 

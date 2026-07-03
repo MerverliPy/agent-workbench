@@ -9,13 +9,13 @@
  *  - AbortSignal from the run
  */
 
-import { z } from "zod";
-import * as fs from "fs";
-import type { RegisteredTool, ToolExecutionContext } from "../types";
-import type { ToolDefinition } from "@agent-workbench/protocol";
-import { assertSafePath, toRelativePath, PathGuardError } from "../path-guard";
-import { READ_MAX_LINES, truncateLines } from "../compress";
+import * as fs from "node:fs";
 import type { ToolCache } from "@agent-workbench/cache";
+import type { ToolDefinition } from "@agent-workbench/protocol";
+import { z } from "zod";
+import { READ_MAX_LINES, truncateLines } from "../compress";
+import { assertSafePath, PathGuardError, toRelativePath } from "../path-guard";
+import type { RegisteredTool, ToolExecutionContext } from "../types";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -83,14 +83,12 @@ export function createReadTool(options: ReadToolOptions = {}): RegisteredTool {
     executor: {
       async execute(
         input: unknown,
-        context: ToolExecutionContext
+        context: ToolExecutionContext,
       ): Promise<ReadResult> {
         // 1. Validate input schema.
         const parsed = ReadInput.safeParse(input);
         if (!parsed.success) {
-          throw new Error(
-            `Invalid read input: ${parsed.error.message}`
-          );
+          throw new Error(`Invalid read input: ${parsed.error.message}`);
         }
         const { path: filePath, offset, limit } = parsed.data;
 
@@ -101,7 +99,7 @@ export function createReadTool(options: ReadToolOptions = {}): RegisteredTool {
         } catch (err: unknown) {
           if (err instanceof PathGuardError) throw err;
           throw new Error(
-            `Path validation failed for "${filePath}": ${String(err)}`
+            `Path validation failed for "${filePath}": ${String(err)}`,
           );
         }
 
@@ -117,7 +115,7 @@ export function createReadTool(options: ReadToolOptions = {}): RegisteredTool {
           context.sessionId,
           context.projectRoot,
           "tool:read",
-          cacheKey
+          cacheKey,
         );
         if (cached !== undefined) {
           return cached as ReadResult;
@@ -150,7 +148,7 @@ export function createReadTool(options: ReadToolOptions = {}): RegisteredTool {
         const { content, meta } = truncateLines(
           allLines,
           effectiveLimit,
-          zeroOffset
+          zeroOffset,
         );
 
         const fromLine = zeroOffset + 1;
@@ -173,7 +171,7 @@ export function createReadTool(options: ReadToolOptions = {}): RegisteredTool {
           "tool:read",
           cacheKey,
           result,
-          sourceHash
+          sourceHash,
         );
 
         return result;

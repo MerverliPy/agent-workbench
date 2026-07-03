@@ -1,16 +1,16 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "bun:test";
+import {
+  CreateProviderProfileRoute,
+  DeleteProviderProfileRoute,
+  GetProviderProfileRoute,
+  ListProviderProfilesRoute,
+  TestProviderConnectionRoute,
+  UpdateProviderProfileRoute,
+} from "@agent-workbench/protocol";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import type { TestDb } from "../../helpers/test-db";
-import {
-  ListProviderProfilesRoute,
-  GetProviderProfileRoute,
-  CreateProviderProfileRoute,
-  UpdateProviderProfileRoute,
-  DeleteProviderProfileRoute,
-  TestProviderConnectionRoute,
-} from "@agent-workbench/protocol";
 
 let testDb: TestDb;
 
@@ -29,7 +29,9 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       storage: testDb.connection,
       modelTurns: [],
     });
-    const profiles = server.services.providerMarketplace.list({ enabledOnly: false });
+    const profiles = server.services.providerMarketplace.list({
+      enabledOnly: false,
+    });
     for (const p of profiles) {
       server.services.providerMarketplace.deleteApiKey(p.id);
       server.services.providerMarketplace.delete(p.id);
@@ -131,12 +133,20 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
     await server.app.request(CreateProviderProfileRoute.path, {
       method: CreateProviderProfileRoute.method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "First", providerType: "openai", model: "gpt-4o" }),
+      body: JSON.stringify({
+        name: "First",
+        providerType: "openai",
+        model: "gpt-4o",
+      }),
     });
     await server.app.request(CreateProviderProfileRoute.path, {
       method: CreateProviderProfileRoute.method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Second", providerType: "anthropic", model: "claude-sonnet-4-20250514" }),
+      body: JSON.stringify({
+        name: "Second",
+        providerType: "anthropic",
+        model: "claude-sonnet-4-20250514",
+      }),
     });
 
     const res = await server.app.request(ListProviderProfilesRoute.path, {
@@ -161,11 +171,18 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       modelTurns: [],
     });
 
-    const createRes = await server.app.request(CreateProviderProfileRoute.path, {
-      method: CreateProviderProfileRoute.method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Single", providerType: "openai", model: "gpt-4o" }),
-    });
+    const createRes = await server.app.request(
+      CreateProviderProfileRoute.path,
+      {
+        method: CreateProviderProfileRoute.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Single",
+          providerType: "openai",
+          model: "gpt-4o",
+        }),
+      },
+    );
     const created = (await createRes.json()) as { id: string };
 
     const res = await server.app.request(
@@ -205,16 +222,19 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       modelTurns: [],
     });
 
-    const createRes = await server.app.request(CreateProviderProfileRoute.path, {
-      method: CreateProviderProfileRoute.method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "Before Update",
-        providerType: "openai",
-        model: "gpt-4o",
-        tier: "fallback",
-      }),
-    });
+    const createRes = await server.app.request(
+      CreateProviderProfileRoute.path,
+      {
+        method: CreateProviderProfileRoute.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Before Update",
+          providerType: "openai",
+          model: "gpt-4o",
+          tier: "fallback",
+        }),
+      },
+    );
     const created = (await createRes.json()) as { id: string };
 
     const updateRes = await server.app.request(
@@ -222,7 +242,11 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       {
         method: UpdateProviderProfileRoute.method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "After Update", tier: "preferred", enabled: false }),
+        body: JSON.stringify({
+          name: "After Update",
+          tier: "preferred",
+          enabled: false,
+        }),
       },
     );
     expect(updateRes.status).toBe(200);
@@ -244,11 +268,18 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       modelTurns: [],
     });
 
-    const createRes = await server.app.request(CreateProviderProfileRoute.path, {
-      method: CreateProviderProfileRoute.method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "To Delete", providerType: "openai", model: "gpt-4o" }),
-    });
+    const createRes = await server.app.request(
+      CreateProviderProfileRoute.path,
+      {
+        method: CreateProviderProfileRoute.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "To Delete",
+          providerType: "openai",
+          model: "gpt-4o",
+        }),
+      },
+    );
     const created = (await createRes.json()) as { id: string };
 
     const deleteRes = await server.app.request(
@@ -291,16 +322,19 @@ describe("Marketplace CRUD — /marketplace/providers", () => {
       modelTurns: [],
     });
 
-    const createRes = await server.app.request(CreateProviderProfileRoute.path, {
-      method: CreateProviderProfileRoute.method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "Test Me",
-        providerType: "custom",
-        model: "unknown-model",
-        baseUrl: "http://localhost:9999",
-      }),
-    });
+    const createRes = await server.app.request(
+      CreateProviderProfileRoute.path,
+      {
+        method: CreateProviderProfileRoute.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Test Me",
+          providerType: "custom",
+          model: "unknown-model",
+          baseUrl: "http://localhost:9999",
+        }),
+      },
+    );
     const created = (await createRes.json()) as { id: string };
 
     const testRes = await server.app.request(

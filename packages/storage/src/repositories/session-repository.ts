@@ -1,6 +1,6 @@
-import { eq, and, lt, desc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { sessions } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type SessionRow = typeof sessions.$inferSelect;
 export type SessionInsert = typeof sessions.$inferInsert;
@@ -19,11 +19,7 @@ export class SessionRepository {
   }
 
   list(): SessionRow[] {
-    return this.db
-      .select()
-      .from(sessions)
-      .orderBy(sessions.updatedAt)
-      .all();
+    return this.db.select().from(sessions).orderBy(sessions.updatedAt).all();
   }
 
   listPaginated(params?: {
@@ -63,7 +59,7 @@ export class SessionRepository {
 
   update(
     id: string,
-    data: Partial<Omit<SessionInsert, "id">>
+    data: Partial<Omit<SessionInsert, "id">>,
   ): SessionRow | undefined {
     this.db.update(sessions).set(data).where(eq(sessions.id, id)).run();
     return this.findById(id);

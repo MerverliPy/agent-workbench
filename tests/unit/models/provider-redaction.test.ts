@@ -1,11 +1,11 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
   redactApiKey,
   redactAuthorizationHeader,
-  redactString,
-  redactHeaders,
   redactError,
+  redactHeaders,
+  redactString,
 } from "@agent-workbench/models";
 
 describe("redactApiKey", () => {
@@ -23,13 +23,15 @@ describe("redactApiKey", () => {
 
 describe("redactAuthorizationHeader", () => {
   it("redacts Bearer token", () => {
-    expect(redactAuthorizationHeader("Bearer sk-secret-token-value"))
-      .toBe("Bearer ***");
+    expect(redactAuthorizationHeader("Bearer sk-secret-token-value")).toBe(
+      "Bearer ***",
+    );
   });
 
   it("handles multiple Bearer tokens", () => {
-    expect(redactAuthorizationHeader("Bearer abc123 Bearer def456"))
-      .toBe("Bearer *** Bearer ***");
+    expect(redactAuthorizationHeader("Bearer abc123 Bearer def456")).toBe(
+      "Bearer *** Bearer ***",
+    );
   });
 
   it("returns empty string unchanged", () => {
@@ -57,21 +59,21 @@ describe("redactHeaders", () => {
   it("redacts Authorization header values", () => {
     const headers = {
       "Content-Type": "application/json",
-      "Authorization": "Bearer secret-token-here",
+      Authorization: "Bearer secret-token-here",
       "X-Request-Id": "abc-123",
     };
     const result = redactHeaders(headers);
-    expect(result["Authorization"]).toBe("Bearer ***");
+    expect(result.Authorization).toBe("Bearer ***");
     expect(result["Content-Type"]).toBe("application/json");
     expect(result["X-Request-Id"]).toBe("abc-123");
   });
 
   it("handles case-insensitive auth header key", () => {
     const headers = {
-      "authorization": "Bearer my-token",
+      authorization: "Bearer my-token",
     };
     const result = redactHeaders(headers);
-    expect(result["authorization"]).toBe("Bearer ***");
+    expect(result.authorization).toBe("Bearer ***");
   });
 });
 

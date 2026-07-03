@@ -1,18 +1,21 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import {
+  type ApiError,
+  HttpTransport,
+  type SdkError,
+} from "@agent-workbench/sdk";
 import { Hono } from "hono";
-import { HttpTransport, ApiError, SdkError } from "@agent-workbench/sdk";
-import { ErrorEnvelope } from "@agent-workbench/protocol";
 import { z } from "zod/v4";
 
 function createTestApp() {
   const app = new Hono();
 
   app.get("/health", (c) =>
-    c.json({ status: "ok", uptime: 1, version: "test" })
+    c.json({ status: "ok", uptime: 1, version: "test" }),
   );
 
-  app.get("/health-malformed", (c) => {
+  app.get("/health-malformed", (_c) => {
     // Return invalid JSON to test parse failure.
     return new Response("not json", {
       status: 200,
@@ -31,8 +34,8 @@ function createTestApp() {
           details: { field: "query" },
         },
       },
-      400
-    )
+      400,
+    ),
   );
 
   app.get("/error-500", (c) =>
@@ -45,8 +48,8 @@ function createTestApp() {
           recoverable: false,
         },
       },
-      500
-    )
+      500,
+    ),
   );
 
   app.get("/error-raw", (c) => c.json({ raw: "error" }, 400));
@@ -88,8 +91,8 @@ describe("HttpTransport", () => {
         caught = err as ApiError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.code).toBe("BAD_REQUEST");
-      expect(caught!.status).toBe(400);
+      expect(caught?.code).toBe("BAD_REQUEST");
+      expect(caught?.status).toBe(400);
     } finally {
       server.stop(true);
     }
@@ -107,8 +110,8 @@ describe("HttpTransport", () => {
         caught = err as ApiError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.code).toBe("INTERNAL_ERROR");
-      expect(caught!.status).toBe(500);
+      expect(caught?.code).toBe("INTERNAL_ERROR");
+      expect(caught?.status).toBe(500);
     } finally {
       server.stop(true);
     }
@@ -119,7 +122,11 @@ describe("HttpTransport", () => {
 
     try {
       const transport = new HttpTransport({ baseUrl });
-      const StrictSchema = z.object({ status: z.literal("ok"), uptime: z.number(), version: z.string() });
+      const StrictSchema = z.object({
+        status: z.literal("ok"),
+        uptime: z.number(),
+        version: z.string(),
+      });
       const result = await transport.request("GET", "/health", {
         responseSchema: StrictSchema,
       });
@@ -142,7 +149,7 @@ describe("HttpTransport", () => {
       }
       expect(caught).toBeDefined();
       // Should still be an ApiError with some code
-      expect(typeof caught!.code).toBe("string");
+      expect(typeof caught?.code).toBe("string");
     } finally {
       server.stop(true);
     }
@@ -162,7 +169,7 @@ describe("HttpTransport contract — invalid response handling", () => {
         caught = err as SdkError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.name).toBe("SdkError");
+      expect(caught?.name).toBe("SdkError");
     } finally {
       server.stop(true);
     }
@@ -188,7 +195,7 @@ describe("HttpTransport contract — invalid response handling", () => {
         caught = err as SdkError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.message).toContain("Response validation failed");
+      expect(caught?.message).toContain("Response validation failed");
     } finally {
       server.stop(true);
     }
@@ -206,7 +213,7 @@ describe("HttpTransport contract — invalid response handling", () => {
         caught = err as ApiError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.recoverable).toBe(true);
+      expect(caught?.recoverable).toBe(true);
     } finally {
       server.stop(true);
     }
@@ -224,8 +231,8 @@ describe("HttpTransport contract — invalid response handling", () => {
         caught = err as ApiError;
       }
       expect(caught).toBeDefined();
-      expect(caught!.details).toBeDefined();
-      expect(caught!.details).toEqual({ field: "query" });
+      expect(caught?.details).toBeDefined();
+      expect(caught?.details).toEqual({ field: "query" });
     } finally {
       server.stop(true);
     }
@@ -243,10 +250,10 @@ describe("HttpTransport contract — invalid response handling", () => {
         caught = err as ApiError;
       }
       expect(caught).toBeDefined();
-      expect(typeof caught!.code).toBe("string");
-      expect(caught!.code).toBe("unknown");
-      expect(caught!.status).toBe(400);
-      expect(caught!.requestId).toBeUndefined();
+      expect(typeof caught?.code).toBe("string");
+      expect(caught?.code).toBe("unknown");
+      expect(caught?.status).toBe(400);
+      expect(caught?.requestId).toBeUndefined();
     } finally {
       server.stop(true);
     }
@@ -262,7 +269,7 @@ describe("HttpTransport contract — invalid response handling", () => {
       caught = err as SdkError;
     }
     expect(caught).toBeDefined();
-    expect(caught!.name).toBe("SdkError");
+    expect(caught?.name).toBe("SdkError");
   });
 
   it("abort signal aborts request", async () => {

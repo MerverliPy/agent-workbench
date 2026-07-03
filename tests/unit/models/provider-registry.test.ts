@@ -1,9 +1,6 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import {
-  ProviderRegistry,
-  ProviderConfigError,
-} from "@agent-workbench/models";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { ProviderConfigError, ProviderRegistry } from "@agent-workbench/models";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -52,12 +49,12 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
 
     const meta = registry.getMetadata("openai");
     expect(meta).toBeDefined();
-    expect(meta!.status).toBe("error");
+    expect(meta?.status).toBe("error");
 
     const list = registry.listMetadata();
     const openaiEntry = list.find((e) => e.id === "openai");
     expect(openaiEntry).toBeDefined();
-    expect(openaiEntry!.status).toBe("error");
+    expect(openaiEntry?.status).toBe("error");
   });
 
   it("lists openai with status error for openai-compatible provider", () => {
@@ -66,7 +63,7 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
 
     const meta = registry.getMetadata("openai");
     expect(meta).toBeDefined();
-    expect(meta!.status).toBe("error");
+    expect(meta?.status).toBe("error");
   });
 
   it("default provider call fails with ProviderConfigError when OPENAI_API_KEY is missing", async () => {
@@ -76,11 +73,11 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
     const provider = registry.getDefaultProvider();
 
     await expect(
-      provider.call({ messages: [{ role: "user", content: "Hello" }] })
+      provider.call({ messages: [{ role: "user", content: "Hello" }] }),
     ).rejects.toThrow(ProviderConfigError);
 
     await expect(
-      provider.call({ messages: [{ role: "user", content: "Hello" }] })
+      provider.call({ messages: [{ role: "user", content: "Hello" }] }),
     ).rejects.toThrow("API key is not set");
   });
 
@@ -114,7 +111,7 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
 
     const stubMeta = registry.getMetadata("stub");
     expect(stubMeta).toBeDefined();
-    expect(stubMeta!.status).toBe("connected");
+    expect(stubMeta?.status).toBe("connected");
   });
 
   it("does NOT fall back to stub when openai is explicitly requested but misconfigured", async () => {
@@ -160,6 +157,6 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
 
     const meta = registry.getMetadata("openai");
     expect(meta).toBeDefined();
-    expect(meta!.status).toBe("connected");
+    expect(meta?.status).toBe("connected");
   });
 });

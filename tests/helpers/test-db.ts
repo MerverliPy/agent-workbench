@@ -1,11 +1,11 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { StorageConnection } from "@agent-workbench/storage";
 import {
   createStorageConnection,
   runMigrations,
 } from "@agent-workbench/storage";
-import type { StorageConnection } from "@agent-workbench/storage";
 
 export interface TestDb {
   connection: StorageConnection;

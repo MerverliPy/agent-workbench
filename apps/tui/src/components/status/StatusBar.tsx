@@ -1,6 +1,12 @@
 import type { JSX } from "@opentui/solid";
-import { serverStatus, serverError, runStatus, pendingPermissions, tokenHealth } from "../../state/app";
 import { SERVER_BASE_URL } from "../../lib/sdk";
+import {
+  pendingPermissions,
+  runStatus,
+  serverError,
+  serverStatus,
+  tokenHealth,
+} from "../../state/app";
 
 export function StatusBar(): JSX.Element {
   function statusLine(): string {

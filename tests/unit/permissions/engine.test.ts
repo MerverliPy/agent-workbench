@@ -1,7 +1,7 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
-import { PermissionEngine, defaultPolicy } from "@agent-workbench/permissions";
-import type { PermissionPolicy, PermissionEvalInput } from "@agent-workbench/permissions";
+import { describe, expect, it } from "bun:test";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { PermissionEngine } from "@agent-workbench/permissions";
 
 function engine(policy?: PermissionPolicy): PermissionEngine {
   return new PermissionEngine(policy);
@@ -335,7 +335,13 @@ describe("PermissionEngine", () => {
     it("returns most restrictive outcome across steps", () => {
       const result = engine().evaluatePlan([
         { type: "read", order: 1, description: "Read file", isRisky: false },
-        { type: "write", order: 2, description: "Write file", isRisky: true, riskLevel: "high" },
+        {
+          type: "write",
+          order: 2,
+          description: "Write file",
+          isRisky: true,
+          riskLevel: "high",
+        },
       ] as import("@agent-workbench/protocol").PlanStep[]);
       expect(result.outcome).toBe("ask");
     });
@@ -352,7 +358,7 @@ describe("PermissionEngine", () => {
             riskLevel: "critical",
           },
         ] as import("@agent-workbench/protocol").PlanStep[],
-        "build"
+        "build",
       );
       expect(result.outcome).toBe("deny");
     });

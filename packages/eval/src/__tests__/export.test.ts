@@ -2,9 +2,8 @@
 //
 // Tests CSV and JSON export formats with mock data.
 
-import { describe, it, expect, beforeAll } from "bun:test";
+import { beforeAll, describe, expect, it } from "bun:test";
 import { ResultsExporter } from "../export";
-import { type DrizzleBunSqliteDatabase } from "@agent-workbench/storage";
 
 // We mock the EvalRepository at a high level since we don't
 // have a real SQLite database in these unit tests.
@@ -124,7 +123,11 @@ describe("ResultsExporter", () => {
     });
 
     it("includes rawOutput when requested", () => {
-      const result = exporter.exportToString({ format: "json", maxRuns: 10, includeRawOutput: true });
+      const result = exporter.exportToString({
+        format: "json",
+        maxRuns: 10,
+        includeRawOutput: true,
+      });
       const parsed = JSON.parse(result);
       const run1 = parsed.runs.find((r: any) => r.id === "run-1");
       expect(run1.rawOutput).toBe('{"results": []}');

@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
+import { Timestamp, Ulid } from "./common";
 
 export const EventEnvelope = z.object({
   id: Ulid,

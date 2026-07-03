@@ -1,18 +1,18 @@
 // Public API for packages/diff
 
+export { applyMutation, canApplyPatch } from "./apply";
+
+export { extractDiffParams, generateDiffPreview } from "./preview";
+export { contentHash, revertMutation } from "./revert";
 export type {
-  DiffParams,
-  WriteDiffParams,
-  EditDiffParams,
+  ApplyError,
   ApplyPatchDiffParams,
   ApplyResult,
-  ApplyError,
-  RevertResult,
+  CanApplyResult,
+  DiffParams,
+  EditDiffParams,
   RevertError,
   RevertInput,
-  CanApplyResult,
+  RevertResult,
+  WriteDiffParams,
 } from "./types";
-
-export { generateDiffPreview, extractDiffParams } from "./preview";
-export { applyMutation, canApplyPatch } from "./apply";
-export { revertMutation, contentHash } from "./revert";

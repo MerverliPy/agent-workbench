@@ -4,7 +4,9 @@
  */
 
 /** Default histogram buckets in milliseconds. */
-const DEFAULT_BUCKETS_MS = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+const DEFAULT_BUCKETS_MS = [
+  1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000,
+];
 
 interface HistogramStore {
   buckets: number[];
@@ -28,7 +30,11 @@ export class MetricsExporter {
 
   // ── Counters ─────────────────────────────────────────────────────────────
 
-  incrementCounter(name: string, labels?: Record<string, string>, by = 1): void {
+  incrementCounter(
+    name: string,
+    labels?: Record<string, string>,
+    by = 1,
+  ): void {
     const key = this.mkKey(name, labels);
     this.counters.set(key, (this.counters.get(key) ?? 0) + by);
   }
@@ -49,7 +55,11 @@ export class MetricsExporter {
 
   // ── Histograms ────────────────────────────────────────────────────────────
 
-  observeLatency(name: string, durationMs: number, labels?: Record<string, string>): void {
+  observeLatency(
+    name: string,
+    durationMs: number,
+    labels?: Record<string, string>,
+  ): void {
     const key = this.mkKey(name, labels);
     let h = this.histograms.get(key);
     if (h === undefined) {
@@ -76,9 +86,18 @@ export class MetricsExporter {
   // ── Span recording ───────────────────────────────────────────────────────
 
   /** Record a completed span as latency + counter metrics. */
-  recordSpan(span: { name: string; status: string; startTime: number; endTime?: number }): void {
-    const duration = span.endTime !== undefined ? span.endTime - span.startTime : 0;
-    this.incrementCounter("spans_total", { span: span.name, status: span.status });
+  recordSpan(span: {
+    name: string;
+    status: string;
+    startTime: number;
+    endTime?: number;
+  }): void {
+    const duration =
+      span.endTime !== undefined ? span.endTime - span.startTime : 0;
+    this.incrementCounter("spans_total", {
+      span: span.name,
+      status: span.status,
+    });
     this.observeLatency("span_duration_ms", duration, { span: span.name });
 
     if (span.status === "error") {
@@ -117,14 +136,22 @@ export class MetricsExporter {
       for (let i = 0; i < h.buckets.length; i++) {
         cumulative += h.counts[i]!;
         const le = h.buckets[i] === Infinity ? "+Inf" : String(h.buckets[i]);
-        lines.push(`${baseName}_duration_ms_bucket${this.fmtLabels(labels)}{le="${le}"} ${cumulative}`);
+        lines.push(
+          `${baseName}_duration_ms_bucket${this.fmtLabels(labels)}{le="${le}"} ${cumulative}`,
+        );
       }
-      lines.push(`${baseName}_duration_ms_bucket${this.fmtLabels(labels)}{le="+Inf"} ${h.totalCount}`);
-      lines.push(`${baseName}_duration_ms_sum${this.fmtLabels(labels)} ${h.totalSum}`);
-      lines.push(`${baseName}_duration_ms_count${this.fmtLabels(labels)} ${h.totalCount}`);
+      lines.push(
+        `${baseName}_duration_ms_bucket${this.fmtLabels(labels)}{le="+Inf"} ${h.totalCount}`,
+      );
+      lines.push(
+        `${baseName}_duration_ms_sum${this.fmtLabels(labels)} ${h.totalSum}`,
+      );
+      lines.push(
+        `${baseName}_duration_ms_count${this.fmtLabels(labels)} ${h.totalCount}`,
+      );
     }
 
-    return lines.join("\n") + "\n";
+    return `${lines.join("\n")}\n`;
   }
 
   // ── Internal helpers ─────────────────────────────────────────────────────
@@ -134,7 +161,10 @@ export class MetricsExporter {
     return `${name}|${JSON.stringify(labels)}`;
   }
 
-  private parseKey(key: string): { name: string; labels?: Record<string, string> } {
+  private parseKey(key: string): {
+    name: string;
+    labels?: Record<string, string>;
+  } {
     const pipeIdx = key.indexOf("|");
     if (pipeIdx === -1) return { name: key };
     return {

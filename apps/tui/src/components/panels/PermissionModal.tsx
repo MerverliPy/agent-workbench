@@ -2,9 +2,9 @@ import type { JSX } from "@opentui/solid";
 import { Show } from "solid-js";
 import { sdk } from "../../lib/sdk";
 import {
+  currentDiffPreview,
   pendingPermissionRequests,
   setPermissionModalOpen,
-  currentDiffPreview,
 } from "../../state/app";
 
 /**
@@ -46,7 +46,9 @@ export function PermissionModal(): JSX.Element {
 
   const riskLabel = () => {
     const req = firstRequest();
-    return req !== undefined ? `[${(req.riskLevel ?? "unknown").toUpperCase()}]` : "";
+    return req !== undefined
+      ? `[${(req.riskLevel ?? "unknown").toUpperCase()}]`
+      : "";
   };
 
   const toolName = () => firstRequest()?.toolName ?? "";
@@ -56,17 +58,21 @@ export function PermissionModal(): JSX.Element {
   // Phase 10: shell command preview data from the permission request payload.
   const command = () => firstRequest()?.command ?? "";
   const normalizedCommand = () => {
-    const preview = firstRequest()?.commandPreview as Record<string, unknown> | undefined;
-    if (preview !== undefined && typeof preview["normalized"] === "string") {
-      return preview["normalized"];
+    const preview = firstRequest()?.commandPreview as
+      | Record<string, unknown>
+      | undefined;
+    if (preview !== undefined && typeof preview.normalized === "string") {
+      return preview.normalized;
     }
     return command();
   };
   const isBash = () => toolName() === "bash";
   const matchedRules = () => {
-    const preview = firstRequest()?.commandPreview as Record<string, unknown> | undefined;
-    if (preview !== undefined && Array.isArray(preview["matchedRules"])) {
-      return preview["matchedRules"] as string[];
+    const preview = firstRequest()?.commandPreview as
+      | Record<string, unknown>
+      | undefined;
+    if (preview !== undefined && Array.isArray(preview.matchedRules)) {
+      return preview.matchedRules as string[];
     }
     return [];
   };

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { ErrorReporter } from "@agent-workbench/telemetry";
 
 describe("ErrorReporter", () => {
@@ -58,8 +58,8 @@ describe("ErrorReporter", () => {
 
     const recent = reporter.getRecentErrors();
     expect(recent).toHaveLength(2);
-    expect(recent[0]!.message).toBe("new");
-    expect(recent[1]!.message).toBe("old");
+    expect(recent[0]?.message).toBe("new");
+    expect(recent[1]?.message).toBe("old");
   });
 
   it("getRecentErrors limits results", () => {
@@ -68,7 +68,7 @@ describe("ErrorReporter", () => {
     }
     const recent = reporter.getRecentErrors(3);
     expect(recent).toHaveLength(3);
-    expect(recent[0]!.message).toBe("err-9");
+    expect(recent[0]?.message).toBe("err-9");
   });
 
   it("getSessionErrors filters by session ID", () => {
@@ -84,7 +84,7 @@ describe("ErrorReporter", () => {
 
     const sessB = reporter.getSessionErrors("sess-b");
     expect(sessB).toHaveLength(1);
-    expect(sessB[0]!.message).toBe("b1");
+    expect(sessB[0]?.message).toBe("b1");
   });
 
   it("returns empty array for unknown session", () => {
@@ -107,8 +107,8 @@ describe("ErrorReporter", () => {
     }
     const all = small.getReports();
     expect(all).toHaveLength(3);
-    expect(all[0]!.message).toBe("e-2");
-    expect(all[2]!.message).toBe("e-4");
+    expect(all[0]?.message).toBe("e-2");
+    expect(all[2]?.message).toBe("e-4");
   });
 
   it("defaults level to error when not specified", () => {
@@ -120,7 +120,7 @@ describe("ErrorReporter", () => {
     const err = new Error("with stack");
     const report = reporter.report(err);
     expect(report.stack).toBeDefined();
-    expect(report.stack!.length).toBeGreaterThan(0);
+    expect(report.stack?.length).toBeGreaterThan(0);
   });
 
   it("omits stack when error has no stack", () => {

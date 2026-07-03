@@ -8,13 +8,17 @@
  * Ownership:   packages/tools, packages/diff, packages/storage
  */
 
-import { z } from "zod/v4";
-import { ulid } from "ulid";
 import { applyMutation } from "@agent-workbench/diff";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { RegisteredTool, ToolExecutor, ToolExecutionContext } from "../types";
-import { assertSafePath } from "../path-guard";
+import { ulid } from "ulid";
+import { z } from "zod/v4";
 import type { MutationToolOptions } from "../mutation-context";
+import { assertSafePath } from "../path-guard";
+import type {
+  RegisteredTool,
+  ToolExecutionContext,
+  ToolExecutor,
+} from "../types";
 
 // ── Input / Result schemas ────────────────────────────────────────────────────
 
@@ -47,8 +51,14 @@ const definition: ToolDefinition = {
   inputSchema: {
     type: "object",
     properties: {
-      path: { type: "string", description: "File path to edit (relative to project root)." },
-      oldString: { type: "string", description: "Exact string to replace (first occurrence)." },
+      path: {
+        type: "string",
+        description: "File path to edit (relative to project root).",
+      },
+      oldString: {
+        type: "string",
+        description: "Exact string to replace (first occurrence).",
+      },
       newString: { type: "string", description: "Replacement string." },
     },
     required: ["path", "oldString", "newString"],
@@ -59,7 +69,10 @@ const definition: ToolDefinition = {
 
 export function createEditTool(options: MutationToolOptions): RegisteredTool {
   const executor: ToolExecutor = {
-    async execute(input: unknown, context: ToolExecutionContext): Promise<unknown> {
+    async execute(
+      input: unknown,
+      context: ToolExecutionContext,
+    ): Promise<unknown> {
       const parsed = EditInput.safeParse(input);
       if (!parsed.success) {
         throw new Error(`edit: invalid input: ${parsed.error.message}`);
@@ -71,7 +84,7 @@ export function createEditTool(options: MutationToolOptions): RegisteredTool {
 
       const result = await applyMutation(
         { type: "edit", path: resolvedPath, oldString, newString },
-        context.projectRoot
+        context.projectRoot,
       );
 
       if (!result.success) {
@@ -98,7 +111,7 @@ export function createEditTool(options: MutationToolOptions): RegisteredTool {
       options.toolCache?.invalidateAffectedByPath(
         context.sessionId,
         context.projectRoot,
-        resolvedPath
+        resolvedPath,
       );
 
       const linesChanged = result.linesAdded + result.linesRemoved;

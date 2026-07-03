@@ -1,12 +1,19 @@
-import type { ModelProvider, ModelRequest, ModelResponse, ModelStreamChunk, ModelToolCall, ModelUsage } from "../types";
-import type { ProviderConfig } from "../provider-config";
 import {
   ProviderAuthError,
   ProviderRateLimitError,
-  ProviderServerError,
   ProviderResponseError,
+  ProviderServerError,
 } from "../errors";
+import type { ProviderConfig } from "../provider-config";
 import { redactApiKey, redactString } from "../redact";
+import type {
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelStreamChunk,
+  ModelToolCall,
+  ModelUsage,
+} from "../types";
 
 interface OpenAICompletionRequest {
   model: string;
@@ -84,7 +91,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
       ...this.extraHeaders,
     };
     if (!this.skipAuth && this.apiKey.length > 0) {
-      headers["Authorization"] = `Bearer ${this.apiKey}`;
+      headers.Authorization = `Bearer ${this.apiKey}`;
     }
     return headers;
   }
@@ -114,7 +121,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
         throw err;
       }
       throw new ProviderResponseError(
-        safeErrorMessage("Provider request failed", err, this.apiKey)
+        safeErrorMessage("Provider request failed", err, this.apiKey),
       );
     }
 
@@ -126,7 +133,9 @@ export class OpenAICompatibleProvider implements ModelProvider {
     try {
       raw = await response.json();
     } catch {
-      throw new ProviderResponseError("Provider returned invalid JSON response");
+      throw new ProviderResponseError(
+        "Provider returned invalid JSON response",
+      );
     }
 
     return this.normalizeResponse(raw);
@@ -168,7 +177,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
         throw err;
       }
       throw new ProviderResponseError(
-        safeErrorMessage("Provider request failed", err, this.apiKey)
+        safeErrorMessage("Provider request failed", err, this.apiKey),
       );
     }
 
@@ -234,29 +243,33 @@ export class OpenAICompatibleProvider implements ModelProvider {
           finalUsage = usage;
         }
 
-        const choices = data["choices"];
+        const choices = data.choices;
         if (!Array.isArray(choices) || choices.length === 0) continue;
 
         const choice = choices[0] as Record<string, unknown>;
 
         // Capture finish reason
-        if (typeof choice["finish_reason"] === "string" && choice["finish_reason"] !== "null") {
-          finalFinishReason = choice["finish_reason"];
+        if (
+          typeof choice.finish_reason === "string" &&
+          choice.finish_reason !== "null"
+        ) {
+          finalFinishReason = choice.finish_reason;
         }
 
-        const delta = choice["delta"] as Record<string, unknown> | undefined;
+        const delta = choice.delta as Record<string, unknown> | undefined;
         if (!delta || typeof delta !== "object") continue;
 
         // Extract text content delta
-        const contentDelta = typeof delta["content"] === "string" ? delta["content"] : "";
+        const contentDelta =
+          typeof delta.content === "string" ? delta.content : "";
 
         // Extract tool call deltas (accumulate for terminal chunk)
-        const tcDelta = delta["tool_calls"];
+        const tcDelta = delta.tool_calls;
         if (Array.isArray(tcDelta)) {
           for (const tc of tcDelta) {
             const entry = tc as Record<string, unknown>;
-            const idx = typeof entry["index"] === "number" ? entry["index"] : 0;
-            const fn = entry["function"] as Record<string, unknown> | undefined;
+            const idx = typeof entry.index === "number" ? entry.index : 0;
+            const fn = entry.function as Record<string, unknown> | undefined;
 
             if (!fn) continue;
 
@@ -273,15 +286,16 @@ export class OpenAICompatibleProvider implements ModelProvider {
             }
             // Merge delta into the accumulated slot
             const slot = accumulatedToolCalls[idx]!;
-            if (typeof entry["id"] === "string") {
-              slot.id += entry["id"];
+            if (typeof entry.id === "string") {
+              slot.id += entry.id;
             }
-            if (fn && typeof fn["name"] === "string") {
-              slot.name += fn["name"];
+            if (fn && typeof fn.name === "string") {
+              slot.name += fn.name;
             }
-            if (fn && typeof fn["arguments"] === "string") {
-              const prevInput = typeof slot.input === "string" ? slot.input : "";
-              slot.input = prevInput + fn["arguments"];
+            if (fn && typeof fn.arguments === "string") {
+              const prevInput =
+                typeof slot.input === "string" ? slot.input : "";
+              slot.input = prevInput + fn.arguments;
             }
           }
           // Don't yield text for tool-call chunks
@@ -328,27 +342,36 @@ export class OpenAICompatibleProvider implements ModelProvider {
   }
 
   private buildRequestBody(request: ModelRequest): OpenAICompletionRequest {
-    const messages: OpenAICompletionRequest["messages"] = request.messages.map((m) => {
-      const wire: OpenAICompletionRequest["messages"][0] = {
-        role: m.role,
-        content: m.content,
-      };
-      if (m.toolCallId !== undefined) {
-        wire.tool_call_id = m.toolCallId;
-      }
-      if (m.role === "assistant" && m.toolCalls !== undefined && m.toolCalls.length > 0) {
-        wire.tool_calls = m.toolCalls.map((tc) => ({
-          id: tc.id,
-          type: "function" as const,
-          function: {
-            name: tc.name,
-            arguments: typeof tc.input === "string" ? tc.input : JSON.stringify(tc.input),
-          },
-        }));
-        wire.content = "";
-      }
-      return wire;
-    });
+    const messages: OpenAICompletionRequest["messages"] = request.messages.map(
+      (m) => {
+        const wire: OpenAICompletionRequest["messages"][0] = {
+          role: m.role,
+          content: m.content,
+        };
+        if (m.toolCallId !== undefined) {
+          wire.tool_call_id = m.toolCallId;
+        }
+        if (
+          m.role === "assistant" &&
+          m.toolCalls !== undefined &&
+          m.toolCalls.length > 0
+        ) {
+          wire.tool_calls = m.toolCalls.map((tc) => ({
+            id: tc.id,
+            type: "function" as const,
+            function: {
+              name: tc.name,
+              arguments:
+                typeof tc.input === "string"
+                  ? tc.input
+                  : JSON.stringify(tc.input),
+            },
+          }));
+          wire.content = "";
+        }
+        return wire;
+      },
+    );
 
     const req: OpenAICompletionRequest = {
       model: this.model,
@@ -383,55 +406,63 @@ export class OpenAICompatibleProvider implements ModelProvider {
 
     let redactedBody = redactString(bodyText);
     if (this.apiKey.length > 0) {
-      redactedBody = redactedBody.replaceAll(this.apiKey, redactApiKey(this.apiKey));
+      redactedBody = redactedBody.replaceAll(
+        this.apiKey,
+        redactApiKey(this.apiKey),
+      );
     }
 
     switch (response.status) {
       case 401:
       case 403:
         throw new ProviderAuthError(
-          `Provider authentication error (${response.status}): ${safeTruncate(redactedBody)}`
+          `Provider authentication error (${response.status}): ${safeTruncate(redactedBody)}`,
         );
       case 429:
         throw new ProviderRateLimitError(
-          `Provider rate limit exceeded (${response.status}): ${safeTruncate(redactedBody)}`
+          `Provider rate limit exceeded (${response.status}): ${safeTruncate(redactedBody)}`,
         );
       case 500:
       case 502:
       case 503:
       case 504:
         throw new ProviderServerError(
-          `Provider server error (${response.status}): ${safeTruncate(redactedBody)}`
+          `Provider server error (${response.status}): ${safeTruncate(redactedBody)}`,
         );
       default:
         throw new ProviderResponseError(
-          `Provider HTTP error (${response.status}): ${safeTruncate(redactedBody)}`
+          `Provider HTTP error (${response.status}): ${safeTruncate(redactedBody)}`,
         );
     }
   }
 
   private normalizeResponse(raw: unknown): ModelResponse {
     if (typeof raw !== "object" || raw === null) {
-      throw new ProviderResponseError("Provider response was not a JSON object");
+      throw new ProviderResponseError(
+        "Provider response was not a JSON object",
+      );
     }
 
     const data = raw as Record<string, unknown>;
 
-    const choices = data["choices"];
+    const choices = data.choices;
     if (!Array.isArray(choices) || choices.length === 0) {
-      throw new ProviderResponseError("Provider response missing choices array");
+      throw new ProviderResponseError(
+        "Provider response missing choices array",
+      );
     }
 
     const choice = choices[0] as Record<string, unknown>;
-    const message = choice["message"] as Record<string, unknown> | undefined;
+    const message = choice.message as Record<string, unknown> | undefined;
 
     if (message === undefined || typeof message !== "object") {
-      throw new ProviderResponseError("Provider response missing message object");
+      throw new ProviderResponseError(
+        "Provider response missing message object",
+      );
     }
 
-    const finishReason = typeof choice["finish_reason"] === "string"
-      ? choice["finish_reason"]
-      : "stop";
+    const finishReason =
+      typeof choice.finish_reason === "string" ? choice.finish_reason : "stop";
 
     const usage: ModelUsage | undefined = this.extractUsage(data);
 
@@ -445,9 +476,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
       return result;
     }
 
-    const content = typeof message["content"] === "string"
-      ? message["content"]
-      : "";
+    const content = typeof message.content === "string" ? message.content : "";
 
     const result: ModelResponse = {
       kind: { type: "text", content: content ?? "" },
@@ -458,60 +487,67 @@ export class OpenAICompatibleProvider implements ModelProvider {
   }
 
   private normalizeToolCalls(
-    message: Record<string, unknown>
+    message: Record<string, unknown>,
   ): ModelToolCall[] | undefined {
-    const rawCalls = message["tool_calls"];
+    const rawCalls = message.tool_calls;
     if (!Array.isArray(rawCalls) || rawCalls.length === 0) {
       return undefined;
     }
 
     return rawCalls.map((tc: unknown) => {
       const call = tc as Record<string, unknown>;
-      const fn = call["function"] as Record<string, unknown> | undefined;
-      let input: unknown = undefined;
+      const fn = call.function as Record<string, unknown> | undefined;
+      let input: unknown;
 
-      if (fn !== undefined && typeof fn["arguments"] === "string") {
+      if (fn !== undefined && typeof fn.arguments === "string") {
         try {
-          input = JSON.parse(fn["arguments"]);
+          input = JSON.parse(fn.arguments);
         } catch {
-          input = fn["arguments"];
+          input = fn.arguments;
         }
       }
 
       return {
-        id: typeof call["id"] === "string" ? call["id"] : "",
-        name: fn !== undefined && typeof fn["name"] === "string"
-          ? fn["name"]
-          : "unknown",
+        id: typeof call.id === "string" ? call.id : "",
+        name:
+          fn !== undefined && typeof fn.name === "string" ? fn.name : "unknown",
         input,
       };
     });
   }
 
   private extractUsage(data: Record<string, unknown>): ModelUsage | undefined {
-    const usage = data["usage"];
+    const usage = data.usage;
     if (usage === undefined || typeof usage !== "object" || usage === null) {
       return undefined;
     }
     const u = usage as Record<string, unknown>;
-    const promptTokens = typeof u["prompt_tokens"] === "number" ? u["prompt_tokens"] : undefined;
-    const completionTokens = typeof u["completion_tokens"] === "number" ? u["completion_tokens"] : undefined;
+    const promptTokens =
+      typeof u.prompt_tokens === "number" ? u.prompt_tokens : undefined;
+    const completionTokens =
+      typeof u.completion_tokens === "number" ? u.completion_tokens : undefined;
     if (promptTokens === undefined && completionTokens === undefined) {
       return undefined;
     }
     return {
       ...(promptTokens !== undefined ? { inputTokens: promptTokens } : {}),
-      ...(completionTokens !== undefined ? { outputTokens: completionTokens } : {}),
+      ...(completionTokens !== undefined
+        ? { outputTokens: completionTokens }
+        : {}),
     };
   }
 }
 
 function safeTruncate(text: string, maxLen = 500): string {
   if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen) + "...";
+  return `${text.slice(0, maxLen)}...`;
 }
 
-function safeErrorMessage(prefix: string, err: unknown, apiKey: string): string {
+function safeErrorMessage(
+  prefix: string,
+  err: unknown,
+  apiKey: string,
+): string {
   let message = err instanceof Error ? err.message : String(err);
   message = redactString(message);
   if (apiKey.length > 0) {

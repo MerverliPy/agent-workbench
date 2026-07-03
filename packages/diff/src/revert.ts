@@ -13,7 +13,7 @@
  */
 
 import { applyPatch, parsePatch, reversePatch } from "diff";
-import type { RevertInput, RevertResult, RevertError } from "./types";
+import type { RevertError, RevertInput, RevertResult } from "./types";
 
 /**
  * Revert a previously applied file mutation.
@@ -24,7 +24,7 @@ import type { RevertInput, RevertResult, RevertError } from "./types";
  */
 export async function revertMutation(
   input: RevertInput,
-  projectRoot: string
+  projectRoot: string,
 ): Promise<RevertResult | RevertError> {
   void projectRoot; // callers must validate the path before calling this fn
 
@@ -75,7 +75,11 @@ export async function revertMutation(
 
     await Bun.write(input.path, reverted);
 
-    return { success: true, path: input.path, afterHash: contentHash(reverted) };
+    return {
+      success: true,
+      path: input.path,
+      afterHash: contentHash(reverted),
+    };
   } catch (err: unknown) {
     return {
       success: false,

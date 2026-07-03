@@ -9,7 +9,7 @@
 // without exposing promptfoo types to the rest of the codebase.
 
 import { ulid } from "ulid";
-import type { EvalRunOptions, EvalResult } from "../runner";
+import type { EvalResult, EvalRunOptions } from "../runner";
 
 // NOTE: promptfoo is an optional dependency. In the Phase 29.6 integration
 // flow, we use dynamic import() so it's only loaded when actually needed
@@ -45,7 +45,10 @@ export async function runPromptfooEval(
 ): Promise<EvalResult> {
   const promptfoo = await tryImportPromptfoo();
   if (!promptfoo) {
-    return createFallbackResult(options, "promptfoo not installed. Run: bun add promptfoo");
+    return createFallbackResult(
+      options,
+      "promptfoo not installed. Run: bun add promptfoo",
+    );
   }
 
   const runId = ulid();
@@ -93,7 +96,8 @@ export async function runPromptfooEval(
     const durationMs = performance.now() - startTime;
 
     // Extract scores, token usage, and latencies from promptfoo results
-    const { scores, tokenUsage, latencies } = extractPromptfooMetrics(evalResult);
+    const { scores, tokenUsage, latencies } =
+      extractPromptfooMetrics(evalResult);
 
     const totalInput = tokenUsage.reduce((s, t) => s + t.input, 0);
     const totalOutput = tokenUsage.reduce((s, t) => s + t.output, 0);
@@ -111,12 +115,19 @@ export async function runPromptfooEval(
       options,
       scores,
       summary: {
-        accuracy: scores.length > 0 ? scores.reduce((a, s) => a + s.score, 0) / scores.length : 0,
+        accuracy:
+          scores.length > 0
+            ? scores.reduce((a, s) => a + s.score, 0) / scores.length
+            : 0,
         totalItems: scores.reduce((sum, s) => sum + s.itemCount, 0),
         itemsPassed: scores.filter((s) => s.score >= 0.5).length,
         durationMs,
         costUsd: computeCostEstimate(options.model, totalInput, totalOutput),
-        tokensUsed: { input: totalInput, output: totalOutput, total: totalInput + totalOutput },
+        tokensUsed: {
+          input: totalInput,
+          output: totalOutput,
+          total: totalInput + totalOutput,
+        },
         latencyMs: {
           p50: computeP(50),
           p95: computeP(95),
@@ -128,14 +139,19 @@ export async function runPromptfooEval(
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
-    return createFallbackResult(options, `promptfoo evaluation failed: ${errorMessage}`);
+    return createFallbackResult(
+      options,
+      `promptfoo evaluation failed: ${errorMessage}`,
+    );
   }
 }
 
 /** Extract scores, token usage, and per-item latencies from a promptfoo Eval result */
-function extractPromptfooMetrics(
-  evalResult: any,
-): { scores: EvalResult["scores"]; tokenUsage: Array<{ input: number; output: number }>; latencies: number[] } {
+function extractPromptfooMetrics(evalResult: any): {
+  scores: EvalResult["scores"];
+  tokenUsage: Array<{ input: number; output: number }>;
+  latencies: number[];
+} {
   const scores: EvalResult["scores"] = [];
   const tokenUsage: Array<{ input: number; output: number }> = [];
   const latencies: number[] = [];
@@ -169,7 +185,8 @@ function extractPromptfooMetrics(
   if (scores.length === 0) {
     scores.push({
       task: "aggregate",
-      score: evalResult?.summary?.passRate ?? evalResult?.results?.passRate ?? 0,
+      score:
+        evalResult?.summary?.passRate ?? evalResult?.results?.passRate ?? 0,
       metric: "pass@1",
       itemCount: 1,
     });
@@ -191,7 +208,11 @@ function extractPromptfooMetrics(
 }
 
 /** Estimate cost for a model based on token usage */
-function computeCostEstimate(model: string, inputTokens: number, outputTokens: number): number {
+function computeCostEstimate(
+  model: string,
+  inputTokens: number,
+  outputTokens: number,
+): number {
   // Known pricing per 1K tokens (USD)
   const pricing: Record<string, { in: number; out: number }> = {
     "gpt-4o": { in: 0.0025, out: 0.01 },
@@ -206,9 +227,11 @@ function computeCostEstimate(model: string, inputTokens: number, outputTokens: n
   };
 
   // Try exact match, then prefix match, then fallback to GPT-4o pricing
-  const p = pricing[model]
-    ?? Object.entries(pricing).find(([k]) => model.startsWith(k))?.[1]
-    ?? { in: 0.0025, out: 0.01 };
+  const p = pricing[model] ??
+    Object.entries(pricing).find(([k]) => model.startsWith(k))?.[1] ?? {
+      in: 0.0025,
+      out: 0.01,
+    };
 
   return (inputTokens / 1000) * p.in + (outputTokens / 1000) * p.out;
 }
@@ -217,7 +240,9 @@ function computeCostEstimate(model: string, inputTokens: number, outputTokens: n
  * Try to dynamically import promptfoo.
  * Returns null if the package is not installed, so callers can fall back gracefully.
  */
-async function tryImportPromptfoo(): Promise<typeof import("promptfoo") | null> {
+async function tryImportPromptfoo(): Promise<
+  typeof import("promptfoo") | null
+> {
   try {
     return await import("promptfoo");
   } catch {
@@ -226,7 +251,10 @@ async function tryImportPromptfoo(): Promise<typeof import("promptfoo") | null> 
 }
 
 /** Create a fallback result when promptfoo is unavailable */
-function createFallbackResult(options: EvalRunOptions, reason: string): EvalResult {
+function createFallbackResult(
+  options: EvalRunOptions,
+  reason: string,
+): EvalResult {
   return {
     id: ulid(),
     timestamp: new Date().toISOString(),

@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { asc, eq } from "drizzle-orm";
 import { configSnapshots } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type ConfigSnapshotRow = typeof configSnapshots.$inferSelect;
 export type ConfigSnapshotInsert = typeof configSnapshots.$inferInsert;

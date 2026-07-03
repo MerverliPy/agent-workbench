@@ -6,7 +6,7 @@
  * PluginModelProvider instances.
  */
 
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -68,7 +68,10 @@ export function readHermesConfig(): HermesConfig | null {
     const auth = readAuthFile();
     return parseConfig(raw, auth);
   } catch (err) {
-    console.warn("[hermes-bridge] Failed to read Hermes config:", err instanceof Error ? err.message : String(err));
+    console.warn(
+      "[hermes-bridge] Failed to read Hermes config:",
+      err instanceof Error ? err.message : String(err),
+    );
     return null;
   }
 }
@@ -93,7 +96,11 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
     if (trimmed === "" || trimmed.startsWith("#")) continue;
 
     // Detect top-level sections
-    if (!line.startsWith(" ") && !line.startsWith("-") && trimmed.endsWith(":")) {
+    if (
+      !line.startsWith(" ") &&
+      !line.startsWith("-") &&
+      trimmed.endsWith(":")
+    ) {
       currentSection = trimmed.slice(0, -1);
       continue;
     }
@@ -105,7 +112,9 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
 
       // Next line should be "  model: ..." (2-space indent)
       const nextLine = lines[i + 1];
-      const model = nextLine ? extractValue(nextLine.trim(), "model") : undefined;
+      const model = nextLine
+        ? extractValue(nextLine.trim(), "model")
+        : undefined;
 
       if (provider && model) {
         addEntry(entries, provider, model, false, auth);
@@ -116,7 +125,7 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
     // Parse model.default and model.provider under "model" section
     if (currentSection === "model") {
       if (trimmed.startsWith("default:")) {
-        const model = trimmed.slice("default:".length).trim();
+        const _model = trimmed.slice("default:".length).trim();
         // We need to find the associated provider — it's on a different line
         // Store it for now and pair when we find provider:
         continue;
@@ -125,7 +134,7 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
         const provider = trimmed.slice("provider:".length).trim();
         // Look backwards for the default model
         for (let j = i - 1; j >= 0 && j > i - 10; j--) {
-          const prev = lines[j]!.trim();
+          const prev = lines[j]?.trim();
           if (prev.startsWith("default:")) {
             const model = prev.slice("default:".length).trim();
             if (model) {
@@ -134,13 +143,16 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
             break;
           }
         }
-        continue;
       }
     }
   }
 
   return {
-    default: entries[0] ?? { provider: "unknown", model: "unknown", isPrimary: false },
+    default: entries[0] ?? {
+      provider: "unknown",
+      model: "unknown",
+      isPrimary: false,
+    },
     fallbacks: entries.slice(1),
     all: entries,
   };
@@ -179,11 +191,14 @@ function readAuthFile(): AuthFile | null {
   }
 }
 
-function getCredential(auth: AuthFile | null, providerName: string): AuthCredential | undefined {
+function getCredential(
+  auth: AuthFile | null,
+  providerName: string,
+): AuthCredential | undefined {
   if (!auth) return undefined;
   const pool = auth.credential_pool;
-  if (pool[providerName] && pool[providerName]!.length > 0) {
-    return pool[providerName]![0];
+  if (pool[providerName] && pool[providerName]?.length > 0) {
+    return pool[providerName]?.[0];
   }
   return undefined;
 }

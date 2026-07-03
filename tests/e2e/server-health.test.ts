@@ -1,9 +1,8 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { Hono } from "hono";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import type { TestDb } from "../helpers/test-db";
 import { createTestDb } from "../helpers/test-db";
 import { createTestServer } from "../helpers/test-server";
-import type { TestDb } from "../helpers/test-db";
 
 let testDb: TestDb;
 let server: ReturnType<typeof createTestServer>;

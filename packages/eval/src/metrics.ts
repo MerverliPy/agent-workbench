@@ -35,7 +35,10 @@ export interface EvalMetrics {
 }
 
 /** Per-token cost estimates for common models (USD per 1K tokens) */
-const MODEL_COST_MAP: Record<string, { inputPer1K: number; outputPer1K: number }> = {
+const MODEL_COST_MAP: Record<
+  string,
+  { inputPer1K: number; outputPer1K: number }
+> = {
   // GPT-4o family
   "gpt-4o": { inputPer1K: 0.0025, outputPer1K: 0.01 },
   "gpt-4o-mini": { inputPer1K: 0.00015, outputPer1K: 0.0006 },
@@ -59,7 +62,12 @@ const MODEL_COST_MAP: Record<string, { inputPer1K: number; outputPer1K: number }
  * to SQLite for comparison across runs and models.
  */
 export class MetricsCollector {
-  constructor(private readonly repo: { upsertMetrics: EvalRepository["upsertMetrics"]; findMetricsByRun: EvalRepository["findMetricsByRun"] }) {}
+  constructor(
+    private readonly repo: {
+      upsertMetrics: EvalRepository["upsertMetrics"];
+      findMetricsByRun: EvalRepository["findMetricsByRun"];
+    },
+  ) {}
 
   /** Record metrics for a run (persists to SQLite) */
   record(runId: string, metrics: EvalMetrics): void {
@@ -104,11 +112,16 @@ export class MetricsCollector {
   }
 
   /** Compute cost-per-eval for a given model */
-  computeCostPerEval(model: string, promptTokens: number, completionTokens: number): number {
+  computeCostPerEval(
+    model: string,
+    promptTokens: number,
+    completionTokens: number,
+  ): number {
     // Find by exact match, then prefix match, then default to GPT-4o pricing
-    const pricing = MODEL_COST_MAP[model]
-      ?? Object.entries(MODEL_COST_MAP).find(([key]) => model.startsWith(key))?.[1]
-      ?? { inputPer1K: 0.0025, outputPer1K: 0.01 };
+    const pricing = MODEL_COST_MAP[model] ??
+      Object.entries(MODEL_COST_MAP).find(([key]) =>
+        model.startsWith(key),
+      )?.[1] ?? { inputPer1K: 0.0025, outputPer1K: 0.01 };
 
     const inputCost = (promptTokens / 1000) * pricing.inputPer1K;
     const outputCost = (completionTokens / 1000) * pricing.outputPer1K;

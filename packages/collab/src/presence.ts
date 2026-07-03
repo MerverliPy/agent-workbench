@@ -28,8 +28,11 @@
  * ```
  */
 
-import { SharedSessionManager } from "./shared-session";
-import type { SharedSessionUser, SharedSessionRole } from "./shared-session";
+import type {
+  SharedSessionManager,
+  SharedSessionRole,
+  SharedSessionUser,
+} from "./shared-session";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -73,7 +76,10 @@ export class PresenceManager {
    *
    * Emits `collab.user_joined` via the SharedSessionManager.
    */
-  enterSession(sessionId: string, options: EnterSessionOptions): SharedSessionUser {
+  enterSession(
+    sessionId: string,
+    options: EnterSessionOptions,
+  ): SharedSessionUser {
     const user = this.sessionManager.join(sessionId, {
       label: options.label,
       role: options.role ?? "viewer",

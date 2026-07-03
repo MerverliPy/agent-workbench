@@ -8,10 +8,14 @@
  * No TUI dependency. No permission logic. Does not call the permission engine.
  */
 
-import { createTwoFilesPatch, applyPatch } from "diff";
+import { applyPatch, createTwoFilesPatch } from "diff";
 import { contentHash } from "./revert";
-import type { DiffParams, ApplyResult, ApplyError, CanApplyResult } from "./types";
-
+import type {
+  ApplyError,
+  ApplyResult,
+  CanApplyResult,
+  DiffParams,
+} from "./types";
 
 /**
  * Apply a file mutation described by DiffParams.
@@ -24,7 +28,7 @@ import type { DiffParams, ApplyResult, ApplyError, CanApplyResult } from "./type
  */
 export async function applyMutation(
   params: DiffParams,
-  projectRoot: string
+  projectRoot: string,
 ): Promise<ApplyResult | ApplyError> {
   const relPath = toRelPath(params.path, projectRoot);
 
@@ -37,7 +41,7 @@ export async function applyMutation(
           params.path,
           params.oldString,
           params.newString,
-          relPath
+          relPath,
         );
       case "apply_patch":
         return await applyUnifiedPatch(params.path, params.patch, relPath);
@@ -59,7 +63,7 @@ export async function applyMutation(
  */
 export async function canApplyPatch(
   filePath: string,
-  patch: string
+  patch: string,
 ): Promise<CanApplyResult> {
   const file = Bun.file(filePath);
   const exists = await file.exists();
@@ -82,7 +86,7 @@ export async function canApplyPatch(
 async function applyWrite(
   filePath: string,
   content: string,
-  relPath: string
+  relPath: string,
 ): Promise<ApplyResult> {
   const file = Bun.file(filePath);
   const exists = await file.exists();
@@ -98,7 +102,7 @@ async function applyWrite(
     beforeContent,
     content,
     "(before)",
-    "(after)"
+    "(after)",
   );
   const { linesAdded, linesRemoved } = countDiffLines(patch);
 
@@ -117,7 +121,7 @@ async function applyEdit(
   filePath: string,
   oldString: string,
   newString: string,
-  relPath: string
+  relPath: string,
 ): Promise<ApplyResult> {
   const file = Bun.file(filePath);
   const exists = await file.exists();
@@ -141,7 +145,7 @@ async function applyEdit(
     beforeContent,
     afterContent,
     "(before)",
-    "(after)"
+    "(after)",
   );
   const { linesAdded, linesRemoved } = countDiffLines(patch);
 
@@ -159,7 +163,7 @@ async function applyEdit(
 async function applyUnifiedPatch(
   filePath: string,
   patch: string,
-  relPath: string
+  relPath: string,
 ): Promise<ApplyResult> {
   const file = Bun.file(filePath);
   const exists = await file.exists();
@@ -168,9 +172,7 @@ async function applyUnifiedPatch(
 
   const afterContent = applyPatch(beforeContent, patch);
   if (afterContent === false) {
-    throw new Error(
-      `apply_patch: patch does not apply cleanly to ${relPath}`
-    );
+    throw new Error(`apply_patch: patch does not apply cleanly to ${relPath}`);
   }
 
   await Bun.write(filePath, afterContent);

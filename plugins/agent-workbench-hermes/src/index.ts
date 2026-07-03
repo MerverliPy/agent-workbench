@@ -29,9 +29,9 @@
  * - Plugin requires "filesystemRead: true" to read config files
  */
 
-import { readHermesConfig, hermesAvailable } from "./hermes-config";
-import { OpenAIAdapter } from "./openai-adapter";
 import { CopilotAdapter } from "./copilot-adapter";
+import { hermesAvailable, readHermesConfig } from "./hermes-config";
+import { OpenAIAdapter } from "./openai-adapter";
 
 // ── Provider factory ───────────────────────────────────────────────────────
 
@@ -43,13 +43,17 @@ import { CopilotAdapter } from "./copilot-adapter";
  */
 function buildProviders(): Array<OpenAIAdapter | CopilotAdapter> {
   if (!hermesAvailable()) {
-    console.warn("[hermes-bridge] ~/.hermes/config.yaml not found — no providers loaded");
+    console.warn(
+      "[hermes-bridge] ~/.hermes/config.yaml not found — no providers loaded",
+    );
     return [];
   }
 
   const config = readHermesConfig();
   if (!config || config.all.length === 0) {
-    console.warn("[hermes-bridge] Hermes config is empty or unparseable — no providers loaded");
+    console.warn(
+      "[hermes-bridge] Hermes config is empty or unparseable — no providers loaded",
+    );
     return [];
   }
 
@@ -57,7 +61,9 @@ function buildProviders(): Array<OpenAIAdapter | CopilotAdapter> {
 
   for (const entry of config.all) {
     if (!entry.apiKey) {
-      console.warn(`[hermes-bridge] No API key found for ${entry.provider} — skipping`);
+      console.warn(
+        `[hermes-bridge] No API key found for ${entry.provider} — skipping`,
+      );
       continue;
     }
 
@@ -68,28 +74,37 @@ function buildProviders(): Array<OpenAIAdapter | CopilotAdapter> {
     try {
       switch (entry.provider) {
         case "copilot":
-          providers.push(new CopilotAdapter({
-            model: entry.model,
-            apiKey: entry.apiKey,
-            baseUrl,
-          }));
+          providers.push(
+            new CopilotAdapter({
+              model: entry.model,
+              apiKey: entry.apiKey,
+              baseUrl,
+            }),
+          );
           break;
 
         default:
           // DeepSeek, opencode-go, and any other OpenAI-compatible provider
-          providers.push(new OpenAIAdapter({
-            providerId,
-            displayName,
-            model: entry.model,
-            baseUrl,
-            apiKey: entry.apiKey,
-          }));
+          providers.push(
+            new OpenAIAdapter({
+              providerId,
+              displayName,
+              model: entry.model,
+              baseUrl,
+              apiKey: entry.apiKey,
+            }),
+          );
           break;
       }
 
-      console.log(`[hermes-bridge] Loaded provider: ${providerId} (${displayName})`);
+      console.log(
+        `[hermes-bridge] Loaded provider: ${providerId} (${displayName})`,
+      );
     } catch (err) {
-      console.warn(`[hermes-bridge] Failed to initialize ${providerId}:`, err instanceof Error ? err.message : String(err));
+      console.warn(
+        `[hermes-bridge] Failed to initialize ${providerId}:`,
+        err instanceof Error ? err.message : String(err),
+      );
     }
   }
 

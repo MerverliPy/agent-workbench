@@ -35,8 +35,16 @@ export interface PluginModelResponse {
 export interface PluginModelProvider {
   readonly id: string;
   readonly name: string;
-  call(messages: PluginModelMessage[], tools?: PluginToolDefinition[], signal?: AbortSignal): Promise<PluginModelResponse>;
-  stream?(messages: PluginModelMessage[], tools?: PluginToolDefinition[], signal?: AbortSignal): AsyncGenerator<PluginStreamChunk>;
+  call(
+    messages: PluginModelMessage[],
+    tools?: PluginToolDefinition[],
+    signal?: AbortSignal,
+  ): Promise<PluginModelResponse>;
+  stream?(
+    messages: PluginModelMessage[],
+    tools?: PluginToolDefinition[],
+    signal?: AbortSignal,
+  ): AsyncGenerator<PluginStreamChunk>;
 }
 
 /** Tool definition passed to the model provider. */
@@ -49,7 +57,11 @@ export interface PluginToolDefinition {
 /** Streaming chunk from a model provider. */
 export interface PluginStreamChunk {
   readonly delta: string;
-  readonly toolCallDelta?: { readonly id: string; readonly name?: string; readonly arguments?: string };
+  readonly toolCallDelta?: {
+    readonly id: string;
+    readonly name?: string;
+    readonly arguments?: string;
+  };
   readonly done: boolean;
 }
 

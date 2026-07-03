@@ -23,8 +23,8 @@
  * ```
  */
 
-import { EventName } from "@agent-workbench/events";
 import type { EventBus } from "@agent-workbench/events";
+import { EventName } from "@agent-workbench/events";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -120,7 +120,11 @@ export class ShareManager {
    * Returns the share token, URL, and expiry time.
    * Emits `collab.session_shared` on the event bus.
    */
-  create(sessionId: string, createdBy: string, options?: CreateShareOptions): ShareResult {
+  create(
+    sessionId: string,
+    createdBy: string,
+    options?: CreateShareOptions,
+  ): ShareResult {
     const label = options?.label ?? `Share ${new Date().toLocaleDateString()}`;
     const ttl = Math.min(options?.expiresInMs ?? DEFAULT_TTL_MS, MAX_TTL_MS);
     const now = new Date();
@@ -167,7 +171,9 @@ export class ShareManager {
    *
    * Returns null if the token is invalid, expired, or revoked.
    */
-  validate(token: string): { sessionId: string; label: string; expiresAt: string } | null {
+  validate(
+    token: string,
+  ): { sessionId: string; label: string; expiresAt: string } | null {
     const record = this.shares.get(token);
     if (!record) return null;
     if (record.revoked) return null;
@@ -176,7 +182,11 @@ export class ShareManager {
       this.removeFromIndex(token, record.sessionId);
       return null;
     }
-    return { sessionId: record.sessionId, label: record.label, expiresAt: record.expiresAt };
+    return {
+      sessionId: record.sessionId,
+      label: record.label,
+      expiresAt: record.expiresAt,
+    };
   }
 
   /**
@@ -216,7 +226,11 @@ export class ShareManager {
     const results: ShareRecord[] = [];
     for (const token of tokens) {
       const record = this.shares.get(token);
-      if (record && !record.revoked && now < new Date(record.expiresAt).getTime()) {
+      if (
+        record &&
+        !record.revoked &&
+        now < new Date(record.expiresAt).getTime()
+      ) {
         results.push(record);
       }
     }
@@ -286,7 +300,9 @@ export class ShareManager {
   /** Generate a unique share token. */
   private generateToken(): string {
     const entropy = crypto.randomUUID().replace(/-/g, "");
-    const suffix = Buffer.from(entropy, "hex").toString("base64url").slice(0, 22);
+    const suffix = Buffer.from(entropy, "hex")
+      .toString("base64url")
+      .slice(0, 22);
     const candidate = `${TOKEN_PREFIX}${suffix}`;
     if (this.shares.has(candidate)) {
       return this.generateToken(); // Collision — extremely unlikely but handle it

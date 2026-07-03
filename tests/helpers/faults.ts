@@ -1,4 +1,9 @@
-import type { ModelProvider, ModelRequest, ModelResponse, ModelToolCall } from "@agent-workbench/models";
+import type {
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelToolCall,
+} from "@agent-workbench/models";
 
 export interface MockModelTurn {
   toolCalls?: ModelToolCall[];
@@ -71,7 +76,10 @@ export class FaultModelProvider implements ModelProvider {
         };
 
       case "normal": {
-        if (action.turn.toolCalls !== undefined && action.turn.toolCalls.length > 0) {
+        if (
+          action.turn.toolCalls !== undefined &&
+          action.turn.toolCalls.length > 0
+        ) {
           return {
             kind: { type: "tool_calls", calls: action.turn.toolCalls },
             stopReason: "tool_use",

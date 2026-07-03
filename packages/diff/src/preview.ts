@@ -8,11 +8,11 @@
  * Ownership: packages/diff — see docs/03 §11 and decisions/0008.
  */
 
-import { ulid } from "ulid";
-import { createTwoFilesPatch, applyPatch } from "diff";
 import type { DiffPreview } from "@agent-workbench/protocol";
-import type { DiffParams } from "./types";
+import { applyPatch, createTwoFilesPatch } from "diff";
+import { ulid } from "ulid";
 import { contentHash } from "./revert";
+import type { DiffParams } from "./types";
 
 /**
  * Generate a DiffPreview for the given mutation without applying it.
@@ -31,7 +31,7 @@ import { contentHash } from "./revert";
  */
 export async function generateDiffPreview(
   params: DiffParams,
-  projectRoot: string
+  projectRoot: string,
 ): Promise<DiffPreview> {
   const now = new Date().toISOString();
   const relPath = toRelPath(params.path, projectRoot);
@@ -46,7 +46,7 @@ export async function generateDiffPreview(
         beforeContent,
         after,
         "(before)",
-        "(after)"
+        "(after)",
       );
       const { linesAdded, linesRemoved } = countDiffLines(patch);
       const afterHash = contentHash(after);
@@ -65,9 +65,7 @@ export async function generateDiffPreview(
     case "edit": {
       const { beforeContent, beforeHash } = await readExisting(params.path);
       if (!beforeContent.includes(params.oldString)) {
-        throw new Error(
-          `edit: oldString not found in ${relPath}`
-        );
+        throw new Error(`edit: oldString not found in ${relPath}`);
       }
       const after = beforeContent.replace(params.oldString, params.newString);
       const patch = createTwoFilesPatch(
@@ -76,7 +74,7 @@ export async function generateDiffPreview(
         beforeContent,
         after,
         "(before)",
-        "(after)"
+        "(after)",
       );
       const { linesAdded, linesRemoved } = countDiffLines(patch);
       const afterHash = contentHash(after);
@@ -98,7 +96,7 @@ export async function generateDiffPreview(
       const applied = applyPatch(beforeContent, params.patch);
       if (applied === false) {
         throw new Error(
-          `apply_patch: patch does not apply cleanly to ${relPath}`
+          `apply_patch: patch does not apply cleanly to ${relPath}`,
         );
       }
       const { linesAdded, linesRemoved } = countDiffLines(params.patch);
@@ -128,36 +126,36 @@ export async function generateDiffPreview(
  */
 export function extractDiffParams(
   toolName: string,
-  input: unknown
+  input: unknown,
 ): DiffParams | undefined {
   if (input === null || typeof input !== "object") return undefined;
   const obj = input as Record<string, unknown>;
 
   switch (toolName) {
     case "write": {
-      if (typeof obj["path"] === "string" && typeof obj["content"] === "string") {
-        return { type: "write", path: obj["path"], content: obj["content"] };
+      if (typeof obj.path === "string" && typeof obj.content === "string") {
+        return { type: "write", path: obj.path, content: obj.content };
       }
       return undefined;
     }
     case "edit": {
       if (
-        typeof obj["path"] === "string" &&
-        typeof obj["oldString"] === "string" &&
-        typeof obj["newString"] === "string"
+        typeof obj.path === "string" &&
+        typeof obj.oldString === "string" &&
+        typeof obj.newString === "string"
       ) {
         return {
           type: "edit",
-          path: obj["path"],
-          oldString: obj["oldString"],
-          newString: obj["newString"],
+          path: obj.path,
+          oldString: obj.oldString,
+          newString: obj.newString,
         };
       }
       return undefined;
     }
     case "apply_patch": {
-      if (typeof obj["path"] === "string" && typeof obj["patch"] === "string") {
-        return { type: "apply_patch", path: obj["path"], patch: obj["patch"] };
+      if (typeof obj.path === "string" && typeof obj.patch === "string") {
+        return { type: "apply_patch", path: obj.path, patch: obj.patch };
       }
       return undefined;
     }
@@ -169,7 +167,7 @@ export function extractDiffParams(
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function readExisting(
-  path: string
+  path: string,
 ): Promise<{ beforeContent: string; beforeHash: string | undefined }> {
   const file = Bun.file(path);
   const exists = await file.exists();

@@ -11,18 +11,18 @@
  * Default ignore list: .git, node_modules, dist
  */
 
-import { z } from "zod";
-import * as path from "path";
-import type { RegisteredTool, ToolExecutionContext } from "../types";
+import * as path from "node:path";
+import type { ToolCache } from "@agent-workbench/cache";
 import type { ToolDefinition } from "@agent-workbench/protocol";
+import { z } from "zod";
+import { GLOB_MAX_PATHS, truncateItems } from "../compress";
 import {
   assertSafePath,
-  toRelativePath,
   isSensitivePath,
   PathGuardError,
+  toRelativePath,
 } from "../path-guard";
-import { GLOB_MAX_PATHS, truncateItems } from "../compress";
-import type { ToolCache } from "@agent-workbench/cache";
+import type { RegisteredTool, ToolExecutionContext } from "../types";
 
 // ---------------------------------------------------------------------------
 // Default ignore segments
@@ -90,14 +90,12 @@ export function createGlobTool(options: GlobToolOptions = {}): RegisteredTool {
     executor: {
       async execute(
         input: unknown,
-        context: ToolExecutionContext
+        context: ToolExecutionContext,
       ): Promise<GlobResult> {
         // 1. Validate input.
         const parsed = GlobInput.safeParse(input);
         if (!parsed.success) {
-          throw new Error(
-            `Invalid glob input: ${parsed.error.message}`
-          );
+          throw new Error(`Invalid glob input: ${parsed.error.message}`);
         }
         const { pattern, path: searchPath, maxResults } = parsed.data;
 
@@ -110,7 +108,7 @@ export function createGlobTool(options: GlobToolOptions = {}): RegisteredTool {
         } catch (err: unknown) {
           if (err instanceof PathGuardError) throw err;
           throw new Error(
-            `Path validation failed for "${searchPath ?? "."}": ${String(err)}`
+            `Path validation failed for "${searchPath ?? "."}": ${String(err)}`,
           );
         }
 
@@ -124,7 +122,7 @@ export function createGlobTool(options: GlobToolOptions = {}): RegisteredTool {
           context.sessionId,
           context.projectRoot,
           "tool:glob",
-          cacheKey
+          cacheKey,
         );
         if (cached !== undefined) {
           return cached as GlobResult;
@@ -178,7 +176,7 @@ export function createGlobTool(options: GlobToolOptions = {}): RegisteredTool {
           context.projectRoot,
           "tool:glob",
           cacheKey,
-          result
+          result,
         );
 
         return result;

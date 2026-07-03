@@ -1,15 +1,15 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { SessionRunner } from "@agent-workbench/core";
+import type { PermissionPolicy } from "@agent-workbench/permissions";
+import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
 import { ulid } from "ulid";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import { SessionRunner } from "@agent-workbench/core";
-import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
-import type { TestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 let projectDir: string;
@@ -19,7 +19,12 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "write", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "edit", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "apply_patch", outcome: "allow", riskLevel: "low", reason: "test" },
+    {
+      toolName: "apply_patch",
+      outcome: "allow",
+      riskLevel: "low",
+      reason: "test",
+    },
     { toolName: "grep", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "glob", outcome: "allow", riskLevel: "low", reason: "test" },
     { toolName: "bash", outcome: "allow", riskLevel: "low", reason: "test" },
@@ -32,10 +37,30 @@ const ALLOW_ALL_POLICY: PermissionPolicy = {
 const DENY_MUTATION_POLICY: PermissionPolicy = {
   toolRules: [
     { toolName: "read", outcome: "allow", riskLevel: "low", reason: "test" },
-    { toolName: "write", outcome: "deny", riskLevel: "critical", reason: "mutation denied by test policy" },
-    { toolName: "edit", outcome: "deny", riskLevel: "critical", reason: "mutation denied by test policy" },
-    { toolName: "apply_patch", outcome: "deny", riskLevel: "critical", reason: "mutation denied by test policy" },
-    { toolName: "revert_last_change", outcome: "deny", riskLevel: "critical", reason: "mutation denied by test policy" },
+    {
+      toolName: "write",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "mutation denied by test policy",
+    },
+    {
+      toolName: "edit",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "mutation denied by test policy",
+    },
+    {
+      toolName: "apply_patch",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "mutation denied by test policy",
+    },
+    {
+      toolName: "revert_last_change",
+      outcome: "deny",
+      riskLevel: "critical",
+      reason: "mutation denied by test policy",
+    },
   ],
   pathRules: [],
   commandRules: [],
@@ -44,7 +69,7 @@ const DENY_MUTATION_POLICY: PermissionPolicy = {
 
 function buildRunner(
   base: ReturnType<typeof createTestServer>,
-  permPolicy: PermissionPolicy
+  permPolicy: PermissionPolicy,
 ): { runner: SessionRunner; gate: PermissionGate } {
   const engine = new PermissionEngine(permPolicy);
   const gate = new PermissionGate();
@@ -79,7 +104,9 @@ beforeAll(() => {
 
 afterAll(() => {
   testDb.cleanup();
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
 describe("SessionRunner — plan gate (deny)", () => {
@@ -89,7 +116,11 @@ describe("SessionRunner — plan gate (deny)", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "call-1", name: "write", input: { path: "target.txt", content: "new content" } },
+            {
+              id: "call-1",
+              name: "write",
+              input: { path: "target.txt", content: "new content" },
+            },
           ],
         },
         { text: "Done." },
@@ -119,7 +150,7 @@ describe("SessionRunner — plan gate (deny)", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     expect(plans.length).toBeGreaterThanOrEqual(1);
     const lastPlan = plans[plans.length - 1];
-    expect(lastPlan!.status).toBe("denied");
+    expect(lastPlan?.status).toBe("denied");
 
     // Write tool should be denied (not completed)
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
@@ -137,7 +168,11 @@ describe("SessionRunner — plan gate (allow)", () => {
       modelTurns: [
         {
           toolCalls: [
-            { id: "call-1", name: "write", input: { path: "target.txt", content: "new content" } },
+            {
+              id: "call-1",
+              name: "write",
+              input: { path: "target.txt", content: "new content" },
+            },
           ],
         },
         { text: "File written." },
@@ -167,12 +202,12 @@ describe("SessionRunner — plan gate (allow)", () => {
     const plans = server.services.planRepository.listBySession(sessionId);
     expect(plans.length).toBeGreaterThanOrEqual(1);
     const lastPlan = plans[plans.length - 1];
-    expect(lastPlan!.status).toBeOneOf(["approved", "completed"]);
+    expect(lastPlan?.status).toBeOneOf(["approved", "completed"]);
 
     // Write tool should be completed
     const toolCalls = server.toolCallRepository.listBySession(sessionId);
     const writeCall = toolCalls.find((t) => t.toolName === "write");
     expect(writeCall).toBeDefined();
-    expect(writeCall!.status).toBe("completed");
+    expect(writeCall?.status).toBe("completed");
   });
 });

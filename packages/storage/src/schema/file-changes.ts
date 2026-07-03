@@ -1,4 +1,4 @@
-import { sqliteTable, text, index } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const fileChanges = sqliteTable(
   "file_changes",
@@ -22,5 +22,5 @@ export const fileChanges = sqliteTable(
     index("file_changes_run_id_idx").on(table.runId),
     index("file_changes_path_idx").on(table.path),
     index("file_changes_change_type_idx").on(table.changeType),
-  ]
+  ],
 );

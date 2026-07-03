@@ -42,7 +42,7 @@ export class PermissionGate {
    */
   waitForDecision(
     requestId: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): Promise<PermissionDecisionValue> {
     return new Promise<PermissionDecisionValue>((resolve) => {
       // If already aborted, resolve immediately.
@@ -83,7 +83,7 @@ export class PermissionGate {
       // The request was aborted or already resolved — log but do not throw.
       console.warn(
         `[PermissionGate] resolve() called for unknown requestId: ${requestId}. ` +
-          "The request may have been aborted or already decided."
+          "The request may have been aborted or already decided.",
       );
       return false;
     }

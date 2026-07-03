@@ -1,6 +1,6 @@
-import { eq, and, asc, isNull } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { cacheEntries } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type CacheEntryRow = typeof cacheEntries.$inferSelect;
 export type CacheEntryInsert = typeof cacheEntries.$inferInsert;
@@ -21,7 +21,7 @@ export class CacheRepository {
   findByKey(
     sessionId: string,
     cacheType: string,
-    cacheKey: string
+    cacheKey: string,
   ): CacheEntryRow | undefined {
     const rows = this.db
       .select()
@@ -31,8 +31,8 @@ export class CacheRepository {
           eq(cacheEntries.sessionId, sessionId),
           eq(cacheEntries.cacheType, cacheType),
           eq(cacheEntries.cacheKey, cacheKey),
-          isNull(cacheEntries.invalidatedAt)
-        )
+          isNull(cacheEntries.invalidatedAt),
+        ),
       )
       .limit(1)
       .all();
@@ -74,8 +74,8 @@ export class CacheRepository {
       .where(
         and(
           eq(cacheEntries.sessionId, sessionId),
-          isNull(cacheEntries.invalidatedAt)
-        )
+          isNull(cacheEntries.invalidatedAt),
+        ),
       )
       .orderBy(asc(cacheEntries.createdAt))
       .all();

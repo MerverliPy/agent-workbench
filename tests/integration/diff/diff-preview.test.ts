@@ -1,10 +1,10 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { generateDiffPreview } from "@agent-workbench/diff";
+import { join } from "node:path";
 import type { DiffParams } from "@agent-workbench/diff";
+import { generateDiffPreview } from "@agent-workbench/diff";
 
 let projectDir: string;
 let filePath: string;
@@ -15,7 +15,9 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(projectDir, { recursive: true, force: true });
+  } catch {}
 });
 
 describe("generateDiffPreview", () => {
@@ -65,7 +67,8 @@ describe("generateDiffPreview", () => {
     const params: DiffParams = {
       type: "apply_patch",
       path: filePath,
-      patch: "--- test.txt\n+++ test.txt\n@@ -1,1 +1,1 @@\n-original\n+patched\n",
+      patch:
+        "--- test.txt\n+++ test.txt\n@@ -1,1 +1,1 @@\n-original\n+patched\n",
     };
 
     return generateDiffPreview(params, projectDir).then((preview) => {

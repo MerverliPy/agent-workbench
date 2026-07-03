@@ -22,7 +22,7 @@ function formatValidationDetails(error: ZodError) {
 function parseWithSchema<T extends z.ZodType>(
   schema: T,
   value: unknown,
-  target: "pathParams" | "query" | "body"
+  target: "pathParams" | "query" | "body",
 ): z.infer<T> {
   try {
     return schema.parse(value);
@@ -92,17 +92,29 @@ async function parseBodyIfPresent(request: HonoRequest): Promise<unknown> {
   }
 }
 
-export async function validateRequest(contract: RouteContract, request: HonoRequest): Promise<ValidatedRequest> {
+export async function validateRequest(
+  contract: RouteContract,
+  request: HonoRequest,
+): Promise<ValidatedRequest> {
   const pathParams = contract.pathParams
-    ? (parseWithSchema(contract.pathParams, request.param(), "pathParams") as Record<string, string>)
+    ? (parseWithSchema(
+        contract.pathParams,
+        request.param(),
+        "pathParams",
+      ) as Record<string, string>)
     : {};
 
   const query = contract.query
-    ? (parseWithSchema(contract.query, parseQuery(request), "query") as Record<string, string | string[] | undefined>)
+    ? (parseWithSchema(contract.query, parseQuery(request), "query") as Record<
+        string,
+        string | string[] | undefined
+      >)
     : {};
 
   const rawBody = await parseBodyIfPresent(request);
-  const body = contract.body ? parseWithSchema(contract.body, rawBody, "body") : undefined;
+  const body = contract.body
+    ? parseWithSchema(contract.body, rawBody, "body")
+    : undefined;
 
   return {
     pathParams,

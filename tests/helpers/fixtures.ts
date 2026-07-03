@@ -1,6 +1,14 @@
-import { mkdirSync, readdirSync, statSync, copyFileSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 export interface FixtureProject {
   /** Absolute path to the copied fixture project directory. */
@@ -16,8 +24,13 @@ export interface FixtureProject {
  * The source fixture lives at `tests/fixtures/sample-project/`. The copy
  * preserves nested files and leaves the source fixture untouched.
  */
-export function copyFixtureProject(prefix = "agent-wb-fixture-"): FixtureProject {
-  const fixturesDir = resolve(import.meta.dirname, "../fixtures/sample-project");
+export function copyFixtureProject(
+  prefix = "agent-wb-fixture-",
+): FixtureProject {
+  const fixturesDir = resolve(
+    import.meta.dirname,
+    "../fixtures/sample-project",
+  );
   const destDir = mkdtempSync(join(tmpdir(), prefix));
 
   copyDirRecursive(fixturesDir, destDir);
@@ -89,8 +102,12 @@ export function createSymlinkEscapeFixture(prefix = "agent-wb-sym-") {
     symlinkPath: symlinked ? symlinkPath : null,
     symlinked,
     cleanup: () => {
-      try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
-      try { rmSync(externalDir, { recursive: true, force: true }); } catch {}
+      try {
+        rmSync(projectDir, { recursive: true, force: true });
+      } catch {}
+      try {
+        rmSync(externalDir, { recursive: true, force: true });
+      } catch {}
     },
   };
 }

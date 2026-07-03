@@ -3,7 +3,7 @@ import type { ServerAppBindings } from "../context";
 
 /**
  * Rate-limit middleware for agent-workbench server.
- * 
+ *
  * Uses a simple per-IP token bucket with configurable limits.
  * When a user is authenticated (bearer token), rate limits by user ID
  * instead of IP, with a higher default limit.
@@ -12,8 +12,8 @@ import type { ServerAppBindings } from "../context";
  * Override via AGENT_WORKBENCH_RATE_LIMIT (applies to both).
  */
 export function rateLimitMiddleware() {
-  const LIMIT = Number(process.env["AGENT_WORKBENCH_RATE_LIMIT"]) || 60;
-  const USER_LIMIT = Number(process.env["AGENT_WORKBENCH_USER_RATE_LIMIT"]) || 300;
+  const LIMIT = Number(process.env.AGENT_WORKBENCH_RATE_LIMIT) || 60;
+  const USER_LIMIT = Number(process.env.AGENT_WORKBENCH_USER_RATE_LIMIT) || 300;
   const WINDOW_MS = 60_000;
   const buckets = new Map<string, { tokens: number; resetAt: number }>();
 
@@ -32,9 +32,11 @@ export function rateLimitMiddleware() {
       "127.0.0.1";
 
     // Use authenticated user key when available (higher limit), else IP
-    const auth = ctx.get("auth" as never) as { authenticated: boolean; subject?: string } | undefined;
+    const auth = ctx.get("auth" as never) as
+      | { authenticated: boolean; subject?: string }
+      | undefined;
     const isAuthenticated = auth?.authenticated === true && auth.subject;
-    const key = isAuthenticated ? `user:${auth!.subject}` : `ip:${ip}`;
+    const key = isAuthenticated ? `user:${auth?.subject}` : `ip:${ip}`;
     const limit = isAuthenticated ? USER_LIMIT : LIMIT;
 
     const now = Date.now();
@@ -46,9 +48,16 @@ export function rateLimitMiddleware() {
     }
 
     if (bucket.tokens <= 0) {
-      ctx.header("Retry-After", String(Math.ceil((bucket.resetAt - now) / 1000)));
+      ctx.header(
+        "Retry-After",
+        String(Math.ceil((bucket.resetAt - now) / 1000)),
+      );
       return ctx.json(
-        { code: "RATE_LIMITED", message: "Too many requests. Please try again later.", recoverable: true },
+        {
+          code: "RATE_LIMITED",
+          message: "Too many requests. Please try again later.",
+          recoverable: true,
+        },
         429,
       );
     }

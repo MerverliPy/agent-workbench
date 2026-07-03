@@ -1,9 +1,17 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "bun:test";
+import { SmartRouter } from "@agent-workbench/models";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import type { TestDb } from "../../helpers/test-db";
-import { SmartRouter } from "@agent-workbench/models";
 
 let testDb: TestDb;
 
@@ -16,30 +24,53 @@ afterAll(() => {
 });
 
 describe("SmartRouter — classification", () => {
-  const router = new SmartRouter({} as unknown as import("@agent-workbench/models").ProviderMarketplace);
+  const router = new SmartRouter(
+    {} as unknown as import("@agent-workbench/models").ProviderMarketplace,
+  );
 
   it("classifies read prompts", () => {
     expect(router.classify("read the file src/app.ts").category).toBe("read");
-    expect(router.classify("show me the contents of package.json").category).toBe("read");
-    expect(router.classify("what files are in this directory").category).toBe("read");
+    expect(
+      router.classify("show me the contents of package.json").category,
+    ).toBe("read");
+    expect(router.classify("what files are in this directory").category).toBe(
+      "read",
+    );
   });
 
   it("classifies code generation prompts", () => {
-    expect(router.classify("write a function that sorts an array").category).toBe("code_generation");
-    expect(router.classify("implement a REST API endpoint for users").category).toBe("code_generation");
-    expect(router.classify("create a React component for a login form").category).toBe("code_generation");
+    expect(
+      router.classify("write a function that sorts an array").category,
+    ).toBe("code_generation");
+    expect(
+      router.classify("implement a REST API endpoint for users").category,
+    ).toBe("code_generation");
+    expect(
+      router.classify("create a React component for a login form").category,
+    ).toBe("code_generation");
   });
 
   it("classifies architecture review prompts", () => {
     // Keywords: design, review, architecture, analyze, security, refactor
-    expect(router.classify("review the architecture of this system").category).toBe("architecture_review");
-    expect(router.classify("analyze the security implications of this design").category).toBe("architecture_review");
-    expect(router.classify("review this code for security vulnerabilities").category).toBe("architecture_review");
+    expect(
+      router.classify("review the architecture of this system").category,
+    ).toBe("architecture_review");
+    expect(
+      router.classify("analyze the security implications of this design")
+        .category,
+    ).toBe("architecture_review");
+    expect(
+      router.classify("review this code for security vulnerabilities").category,
+    ).toBe("architecture_review");
   });
 
   it("classifies summarization prompts", () => {
-    expect(router.classify("summarize this codebase").category).toBe("summarization");
-    expect(router.classify("give me a brief summary of what this does").category).toBe("summarization");
+    expect(router.classify("summarize this codebase").category).toBe(
+      "summarization",
+    );
+    expect(
+      router.classify("give me a brief summary of what this does").category,
+    ).toBe("summarization");
   });
 
   it("defaults to read for ambiguous prompts", () => {
@@ -62,7 +93,9 @@ describe("SmartRouter — routing", () => {
       storage: testDb.connection,
       modelTurns: [],
     });
-    const profiles = server.services.providerMarketplace.list({ enabledOnly: false });
+    const profiles = server.services.providerMarketplace.list({
+      enabledOnly: false,
+    });
     for (const p of profiles) {
       server.services.providerMarketplace.deleteApiKey(p.id);
       server.services.providerMarketplace.delete(p.id);
@@ -74,7 +107,9 @@ describe("SmartRouter — routing", () => {
       storage: testDb.connection,
       modelTurns: [],
     });
-    const profiles = server.services.providerMarketplace.list({ enabledOnly: false });
+    const profiles = server.services.providerMarketplace.list({
+      enabledOnly: false,
+    });
     for (const p of profiles) {
       server.services.providerMarketplace.deleteApiKey(p.id);
       server.services.providerMarketplace.delete(p.id);

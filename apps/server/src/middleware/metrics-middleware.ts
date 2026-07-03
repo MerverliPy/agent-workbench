@@ -1,5 +1,5 @@
-import type { MiddlewareHandler } from "hono";
 import type { MetricsExporter } from "@agent-workbench/telemetry";
+import type { MiddlewareHandler } from "hono";
 import type { ServerAppBindings } from "../context";
 
 /**

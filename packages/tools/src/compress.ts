@@ -41,7 +41,7 @@ export interface LineTruncationMeta {
 export function truncateLines(
   lines: string[],
   maxLines: number,
-  offset: number = 0
+  offset: number = 0,
 ): { content: string; meta: LineTruncationMeta } {
   const total = lines.length;
   const available = Math.max(0, total - offset);
@@ -76,7 +76,7 @@ export interface ItemTruncationMeta {
  */
 export function truncateItems<T>(
   items: T[],
-  max: number
+  max: number,
 ): { items: T[]; meta: ItemTruncationMeta } {
   const total = items.length;
   const slice = items.slice(0, max);

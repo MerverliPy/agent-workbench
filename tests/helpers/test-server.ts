@@ -1,36 +1,61 @@
-import { createApp } from "@agent-workbench/server/public";
-import type { ServerConfig, ServerServices, ServerAppBindings } from "@agent-workbench/server/public";
-import type { Hono } from "hono";
-import { SessionRunner, AgentRegistry, TokenHealthService } from "@agent-workbench/core";
-import { EventBus } from "@agent-workbench/events";
-import { MockModelProvider } from "./mock-model";
-import type { MockModelTurn } from "./mock-model";
-import { ProviderRegistry, ProviderMarketplace, SmartRouter, CostTracker, ProviderHealthMonitor } from "@agent-workbench/models";
-import { Tracer, MetricsExporter, ErrorReporter, RequestLogger } from "@agent-workbench/telemetry";
-import { PluginRegistry } from "@agent-workbench/plugin-sdk";
-import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
-import type { PermissionPolicy } from "@agent-workbench/permissions";
-import { ToolRegistry, registerReadOnlyTools, registerMutationTools, registerShellTool } from "@agent-workbench/tools";
-import { ToolCache } from "@agent-workbench/cache";
-import { SimpleCommandRunner } from "@agent-workbench/shell";
 import type { AuthManager } from "@agent-workbench/auth";
-import type { SharedSessionManager } from "@agent-workbench/collab";
-import type { PresenceManager } from "@agent-workbench/collab";
-import type { ReviewQueue } from "@agent-workbench/collab";
-import type { ShareManager } from "@agent-workbench/collab";
+import { ToolCache } from "@agent-workbench/cache";
+import type {
+  PresenceManager,
+  ReviewQueue,
+  SharedSessionManager,
+  ShareManager,
+} from "@agent-workbench/collab";
 import {
-  SessionRepository,
-  MessageRepository,
-  ToolCallRepository,
-  LedgerRepository,
+  AgentRegistry,
+  SessionRunner,
+  TokenHealthService,
+} from "@agent-workbench/core";
+import { EventBus } from "@agent-workbench/events";
+import {
+  CostTracker,
+  ProviderHealthMonitor,
+  ProviderMarketplace,
+  ProviderRegistry,
+  SmartRouter,
+} from "@agent-workbench/models";
+import { PermissionEngine, PermissionGate } from "@agent-workbench/permissions";
+import { PluginRegistry } from "@agent-workbench/plugin-sdk";
+import type {
+  ServerAppBindings,
+  ServerConfig,
+  ServerServices,
+} from "@agent-workbench/server/public";
+import { createApp } from "@agent-workbench/server/public";
+import { SimpleCommandRunner } from "@agent-workbench/shell";
+import type { StorageConnection } from "@agent-workbench/storage";
+import {
   CacheRepository,
   FileChangeRepository,
+  LedgerRepository,
+  MessageRepository,
   PermissionRepository,
-  SummaryRepository,
   PlanRepository,
+  SessionRepository,
+  SummaryRepository,
+  ToolCallRepository,
   WorkspaceRepository,
 } from "@agent-workbench/storage";
-import type { StorageConnection } from "@agent-workbench/storage";
+import {
+  ErrorReporter,
+  MetricsExporter,
+  RequestLogger,
+  Tracer,
+} from "@agent-workbench/telemetry";
+import {
+  registerMutationTools,
+  registerReadOnlyTools,
+  registerShellTool,
+  ToolRegistry,
+} from "@agent-workbench/tools";
+import type { Hono } from "hono";
+import type { MockModelTurn } from "./mock-model";
+import { MockModelProvider } from "./mock-model";
 
 export interface TestServerOptions {
   storage: StorageConnection;
@@ -85,11 +110,17 @@ export function createTestServer(options: TestServerOptions): TestServer {
   registerMutationTools(toolRegistry, { fileChangeRepository, toolCache });
   registerShellTool(toolRegistry, { shellRunner });
 
-  const modelProvider = options.modelProvider ?? new MockModelProvider(options.modelTurns ?? []);
+  const modelProvider =
+    options.modelProvider ?? new MockModelProvider(options.modelTurns ?? []);
   const agentRegistry = new AgentRegistry();
-  const tokenHealthService = new TokenHealthService(messageRepository, summaryRepository);
+  const tokenHealthService = new TokenHealthService(
+    messageRepository,
+    summaryRepository,
+  );
 
-  const providerRegistry = new ProviderRegistry({ defaultProvider: modelProvider });
+  const providerRegistry = new ProviderRegistry({
+    defaultProvider: modelProvider,
+  });
 
   const sessionRunner = new SessionRunner({
     sessionRepository,
@@ -155,7 +186,12 @@ export function createTestServer(options: TestServerOptions): TestServer {
       validateToken: () => null,
       revokeToken: () => false,
       listTokens: () => [],
-      health: () => ({ enabled: false, activeTokens: 0, tlsEnabled: false, hint: "Auth disabled in tests" }),
+      health: () => ({
+        enabled: false,
+        activeTokens: 0,
+        tlsEnabled: false,
+        hint: "Auth disabled in tests",
+      }),
     } as unknown as AuthManager,
     // Phase 27: shared session presence disabled in tests
     sharedSessionManager: {
@@ -168,14 +204,24 @@ export function createTestServer(options: TestServerOptions): TestServer {
       removeSession: () => undefined,
       getActiveSessionIds: () => [],
       getSnapshot: () => ({}),
-      get totalActiveSessions() { return 0; },
-      get totalActiveUsers() { return 0; },
+      get totalActiveSessions() {
+        return 0;
+      },
+      get totalActiveUsers() {
+        return 0;
+      },
       startCleanup: () => undefined,
       stopCleanup: () => undefined,
     } as unknown as SharedSessionManager,
     // Phase 27: presence disabled in tests
     presenceManager: {
-      enterSession: () => ({ userId: "test", label: "test", role: "viewer" as const, joinedAt: new Date().toISOString(), lastActivityAt: new Date().toISOString() }),
+      enterSession: () => ({
+        userId: "test",
+        label: "test",
+        role: "viewer" as const,
+        joinedAt: new Date().toISOString(),
+        lastActivityAt: new Date().toISOString(),
+      }),
       leaveSession: () => false,
       heartbeat: () => false,
       leaveAllSessions: () => 0,
@@ -185,35 +231,65 @@ export function createTestServer(options: TestServerOptions): TestServer {
       isUserPresent: () => false,
       getUserSessions: () => [],
       getAllPresence: () => ({}),
-      get totalActiveSessions() { return 0; },
-      get totalActiveUsers() { return 0; },
-      get totalUniqueUsers() { return 0; },
+      get totalActiveSessions() {
+        return 0;
+      },
+      get totalActiveUsers() {
+        return 0;
+      },
+      get totalUniqueUsers() {
+        return 0;
+      },
     } as unknown as PresenceManager,
     // Phase 27: review queue disabled in tests
     reviewQueue: {
-      submit: () => ({ id: "rev_test", sessionId: "test", title: "test", description: "", diffContent: "", filePath: "", status: "pending" as const, submittedBy: "test", submittedAt: new Date().toISOString() }),
+      submit: () => ({
+        id: "rev_test",
+        sessionId: "test",
+        title: "test",
+        description: "",
+        diffContent: "",
+        filePath: "",
+        status: "pending" as const,
+        submittedBy: "test",
+        submittedAt: new Date().toISOString(),
+      }),
       approve: () => null,
       reject: () => null,
-      requestChanges: () => { throw new Error("test"); },
+      requestChanges: () => {
+        throw new Error("test");
+      },
       get: () => undefined,
       listBySession: () => [],
       listPending: () => [],
       listAll: () => [],
-      get pendingCount() { return 0; },
-      get totalSubmitted() { return 0; },
+      get pendingCount() {
+        return 0;
+      },
+      get totalSubmitted() {
+        return 0;
+      },
       startCleanup: () => undefined,
       stopCleanup: () => undefined,
     } as unknown as ReviewQueue,
     // Phase 27: session sharing disabled in tests
     shareManager: {
-      create: () => ({ token: "shr_test", sessionId: "test", url: "http://localhost/share/shr_test", expiresAt: new Date(Date.now() + 86400000).toISOString(), label: "test" }),
+      create: () => ({
+        token: "shr_test",
+        sessionId: "test",
+        url: "http://localhost/share/shr_test",
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        label: "test",
+      }),
       validate: () => null,
       revoke: () => false,
       revokeAllForSession: () => 0,
       listBySession: () => [],
       get: () => undefined,
       listAll: () => [],
-      get totalActiveShares() { return 0; },
+      get totalActiveShares() {
+        return 0;
+      },
       getBaseUrl: () => "http://localhost",
       setBaseUrl: () => undefined,
       startCleanup: () => undefined,

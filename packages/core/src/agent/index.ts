@@ -1,3 +1,3 @@
+export { ALL_AGENTS, BUILD_AGENT, PLAN_AGENT } from "./definitions";
 export { AgentRegistry } from "./registry";
-export { BUILD_AGENT, PLAN_AGENT, ALL_AGENTS } from "./definitions";
 export type { AgentProfile } from "./types";

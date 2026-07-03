@@ -20,7 +20,7 @@
 //     --num_fewshot 5
 
 import { ulid } from "ulid";
-import type { EvalRunOptions, EvalResult } from "../runner";
+import type { EvalResult, EvalRunOptions } from "../runner";
 
 export interface LmEvalAdapterOptions {
   /** Python executable path. Default: auto-detect from ~/.agent-workbench/.venv or system */
@@ -75,19 +75,28 @@ export async function runLmEvalHarnessBenchmark(
   // 1. Detect Python environment
   const pythonPath = await detectPython();
   if (!pythonPath) {
-    return createFallbackResult(runId, options,
-      "Python/lm-eval not available. Install: pip install lm-eval or use a custom eval script.");
+    return createFallbackResult(
+      runId,
+      options,
+      "Python/lm-eval not available. Install: pip install lm-eval or use a custom eval script.",
+    );
   }
 
   // 2. Verify lm-eval is installed
   const lmEvalVersion = await checkLmEvalInstalled(pythonPath);
   if (!lmEvalVersion) {
-    return createFallbackResult(runId, options,
-      "lm-evaluation-harness not installed. Run: pip install lm-eval");
+    return createFallbackResult(
+      runId,
+      options,
+      "lm-evaluation-harness not installed. Run: pip install lm-eval",
+    );
   }
 
   const taskName = BENCHMARK_TASK_MAP[options.benchmark] ?? options.benchmark;
-  const fewshot = options.params?.fewshot as number ?? BENCHMARK_FEWSHOT[options.benchmark] ?? 0;
+  const fewshot =
+    (options.params?.fewshot as number) ??
+    BENCHMARK_FEWSHOT[options.benchmark] ??
+    0;
 
   try {
     // 3. Build model args for provider routing
@@ -97,19 +106,30 @@ export async function runLmEvalHarnessBenchmark(
     const tmpDir = `/tmp/lm-eval-${runId}`;
     const cmd = [
       pythonPath,
-      "-m", "lm_eval",
-      "--model", getLmEvalModel(options.provider),
-      "--model_args", modelArgs,
-      "--tasks", taskName,
-      "--num_fewshot", String(fewshot),
-      "--output_path", tmpDir,
+      "-m",
+      "lm_eval",
+      "--model",
+      getLmEvalModel(options.provider),
+      "--model_args",
+      modelArgs,
+      "--tasks",
+      taskName,
+      "--num_fewshot",
+      String(fewshot),
+      "--output_path",
+      tmpDir,
       "--log_samples",
       "--write_out",
     ];
 
     // Use Bun.spawn for non-blocking execution
     const proc = Bun.spawn(cmd, {
-      env: { ...process.env, ...(adapterOptions.apiKey ? { OPENAI_API_KEY: adapterOptions.apiKey } : {}) },
+      env: {
+        ...process.env,
+        ...(adapterOptions.apiKey
+          ? { OPENAI_API_KEY: adapterOptions.apiKey }
+          : {}),
+      },
       stderr: "pipe",
       stdout: "pipe",
     });
@@ -119,7 +139,9 @@ export async function runLmEvalHarnessBenchmark(
 
     const exitCode = await proc.exited;
     if (exitCode !== 0) {
-      throw new Error(`lm-eval exited with code ${exitCode}\nstderr: ${stderr}`);
+      throw new Error(
+        `lm-eval exited with code ${exitCode}\nstderr: ${stderr}`,
+      );
     }
 
     const durationMs = performance.now() - startTime;
@@ -146,7 +168,11 @@ export async function runLmEvalHarnessBenchmark(
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
-    return createFallbackResult(runId, options, `Evaluation failed: ${errorMessage}`);
+    return createFallbackResult(
+      runId,
+      options,
+      `Evaluation failed: ${errorMessage}`,
+    );
   }
 }
 
@@ -168,24 +194,30 @@ async function detectPython(): Promise<string | null> {
   for (const pyPath of paths) {
     try {
       const result = await new Promise<number>((resolve) => {
-        const proc = Bun.spawn([pyPath, "--version"], { stderr: "pipe", stdout: "pipe" });
+        const proc = Bun.spawn([pyPath, "--version"], {
+          stderr: "pipe",
+          stdout: "pipe",
+        });
         proc.exited.then(resolve);
       });
       if (result === 0) return pyPath;
-    } catch {
-      continue;
-    }
+    } catch {}
   }
   return null;
 }
 
 /** Check if lm_eval is installed and return its version string */
-async function checkLmEvalInstalled(pythonPath: string): Promise<string | null> {
+async function checkLmEvalInstalled(
+  pythonPath: string,
+): Promise<string | null> {
   try {
-    const proc = Bun.spawn([pythonPath, "-c", "import lm_eval; print(lm_eval.__version__)"], {
-      stdout: "pipe",
-      stderr: "pipe",
-    });
+    const proc = Bun.spawn(
+      [pythonPath, "-c", "import lm_eval; print(lm_eval.__version__)"],
+      {
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
     const output = await new Response(proc.stdout).text();
     const exitCode = await proc.exited;
     return exitCode === 0 ? output.trim() : null;
@@ -202,7 +234,10 @@ async function checkLmEvalInstalled(pythonPath: string): Promise<string | null> 
  *
  * For direct API (openai): model=<model_name>
  */
-function buildModelArgs(options: EvalRunOptions, adapterOptions: LmEvalAdapterOptions): string {
+function buildModelArgs(
+  options: EvalRunOptions,
+  adapterOptions: LmEvalAdapterOptions,
+): string {
   const args: string[] = [`model=${options.model}`];
 
   if (adapterOptions.apiBaseUrl) {
@@ -221,7 +256,13 @@ function buildModelArgs(options: EvalRunOptions, adapterOptions: LmEvalAdapterOp
  * openai-completions handles OpenAI-compatible API endpoints.
  */
 function getLmEvalModel(provider: string): string {
-  const openaiCompatible = ["openai", "openrouter", "anthropic", "custom", "deepseek"];
+  const openaiCompatible = [
+    "openai",
+    "openrouter",
+    "anthropic",
+    "custom",
+    "deepseek",
+  ];
   if (openaiCompatible.includes(provider)) {
     return "openai-completions";
   }
@@ -233,7 +274,12 @@ function getLmEvalModel(provider: string): string {
 async function parseLmEvalResults(
   tmpDir: string,
   taskName: string,
-): Promise<{ scores: EvalResult["scores"]; accuracy: number; totalItems: number; itemsPassed: number }> {
+): Promise<{
+  scores: EvalResult["scores"];
+  accuracy: number;
+  totalItems: number;
+  itemsPassed: number;
+}> {
   // lm-eval outputs a results.json file with per-task scores
   const resultsPath = `${tmpDir}/results.json`;
   try {
@@ -249,13 +295,13 @@ async function parseLmEvalResults(
 
     for (const [task, metrics] of Object.entries(results)) {
       const m = metrics as Record<string, number>;
-      const accuracy = m["acc"] ?? m["exact_match"] ?? 0;
-      const count = m["samples"] ?? m["num_fewshot_samples"] ?? 1;
+      const accuracy = m.acc ?? m.exact_match ?? 0;
+      const count = m.samples ?? m.num_fewshot_samples ?? 1;
 
       scores.push({
         task,
         score: accuracy,
-        metric: m["acc"] !== undefined ? "accuracy" : "exact_match",
+        metric: m.acc !== undefined ? "accuracy" : "exact_match",
         itemCount: Math.round(count),
       });
 
@@ -264,10 +310,17 @@ async function parseLmEvalResults(
     }
 
     // Clean up temp dir
-    try { Bun.spawnSync(["rm", "-rf", tmpDir]); } catch { /* ignore */ }
+    try {
+      Bun.spawnSync(["rm", "-rf", tmpDir]);
+    } catch {
+      /* ignore */
+    }
 
     return {
-      scores: scores.length > 0 ? scores : [{ task: taskName, score: 0, metric: "accuracy", itemCount: 0 }],
+      scores:
+        scores.length > 0
+          ? scores
+          : [{ task: taskName, score: 0, metric: "accuracy", itemCount: 0 }],
       accuracy: totalItems > 0 ? totalPassed / totalItems : 0,
       totalItems,
       itemsPassed: totalPassed,

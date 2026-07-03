@@ -20,10 +20,7 @@
     "Routing Metadata",
     "Failure Flags"
   ],
-  "new_v3_3_metadata_checked": [
-    "Provider Registry Match",
-    "Forbidden Routes"
-  ],
+  "new_v3_3_metadata_checked": ["Provider Registry Match", "Forbidden Routes"],
   "router_file_structural_check": {
     "model-router-fixed-v3.3.md_exists": true,
     "provider_model_selection_section_present": true,

@@ -19,9 +19,8 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { homedir } from "node:os";
-import { randomBytes } from "node:crypto";
+import { join, resolve } from "node:path";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -52,7 +51,9 @@ export class TlsConfig {
   private readonly validityDays: number;
 
   constructor(options: TlsConfigOptions = {}) {
-    this.certDir = resolve(options.certDir ?? join(homedir(), ".agent-workbench", "certs"));
+    this.certDir = resolve(
+      options.certDir ?? join(homedir(), ".agent-workbench", "certs"),
+    );
     this.commonName = options.commonName ?? "agent-workbench.local";
     this.altNames = options.altNames ?? ["localhost", "127.0.0.1", "::1"];
     this.validityDays = options.validityDays ?? 365;
@@ -92,7 +93,10 @@ export class TlsConfig {
    * Generate a self-signed certificate using openssl (preferred) or
    * Bun native crypto as fallback.
    */
-  private async generateSelfSigned(keyPath: string, certPath: string): Promise<TlsCertificate> {
+  private async generateSelfSigned(
+    keyPath: string,
+    certPath: string,
+  ): Promise<TlsCertificate> {
     // Ensure the cert directory exists
     if (!existsSync(this.certDir)) {
       mkdirSync(this.certDir, { recursive: true });
@@ -108,21 +112,35 @@ export class TlsConfig {
 
   private tryOpenSsl(keyPath: string, certPath: string): TlsCertificate | null {
     try {
-      const { spawnSync } = require("node:child_process") as typeof import("node:child_process");
+      const { spawnSync } =
+        require("node:child_process") as typeof import("node:child_process");
 
-      const sans = this.altNames.map((name) => `DNS:${name}`).concat(["IP:127.0.0.1"]).join(",");
+      const sans = this.altNames
+        .map((name) => `DNS:${name}`)
+        .concat(["IP:127.0.0.1"])
+        .join(",");
 
-      const result = spawnSync("openssl", [
-        "req",
-        "-x509",
-        "-nodes",
-        "-days", String(this.validityDays),
-        "-newkey", "rsa:2048",
-        "-keyout", keyPath,
-        "-out", certPath,
-        "-subj", `/CN=${this.commonName}`,
-        "-addext", `subjectAltName=${sans}`,
-      ], { timeout: 10_000 });
+      const result = spawnSync(
+        "openssl",
+        [
+          "req",
+          "-x509",
+          "-nodes",
+          "-days",
+          String(this.validityDays),
+          "-newkey",
+          "rsa:2048",
+          "-keyout",
+          keyPath,
+          "-out",
+          certPath,
+          "-subj",
+          `/CN=${this.commonName}`,
+          "-addext",
+          `subjectAltName=${sans}`,
+        ],
+        { timeout: 10_000 },
+      );
 
       if (result.status === 0 && existsSync(keyPath) && existsSync(certPath)) {
         return {
@@ -142,7 +160,10 @@ export class TlsConfig {
    *
    * This is a simpler fallback — for production, use a real CA-signed cert.
    */
-  private async generateWithBun(keyPath: string, certPath: string): Promise<TlsCertificate> {
+  private async generateWithBun(
+    keyPath: string,
+    certPath: string,
+  ): Promise<TlsCertificate> {
     // Use Bun's crypto.subtle for key generation
     const keyPair = await crypto.subtle.generateKey(
       { name: "ECDSA", namedCurve: "P-256" } as EcKeyGenParams,
@@ -151,15 +172,27 @@ export class TlsConfig {
     );
 
     // Export the private key as PKCS#8 PEM
-    const privateKeyBytes = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    const privateKeyPem = this.bytesToPem(new Uint8Array(privateKeyBytes), "PRIVATE KEY");
+    const privateKeyBytes = await crypto.subtle.exportKey(
+      "pkcs8",
+      keyPair.privateKey,
+    );
+    const privateKeyPem = this.bytesToPem(
+      new Uint8Array(privateKeyBytes),
+      "PRIVATE KEY",
+    );
 
     // For now, generate a placeholder self-signed cert notice.
     // Full X.509 generation in Bun requires lower-level ASN.1 encoding
     // which is beyond the scope of this initial implementation.
     // Users should replace with a proper cert or use openssl.
-    const publicKeyBytes = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-    const publicKeyPem = this.bytesToPem(new Uint8Array(publicKeyBytes), "PUBLIC KEY");
+    const publicKeyBytes = await crypto.subtle.exportKey(
+      "spki",
+      keyPair.publicKey,
+    );
+    const publicKeyPem = this.bytesToPem(
+      new Uint8Array(publicKeyBytes),
+      "PUBLIC KEY",
+    );
 
     const notice = [
       "# agent-workbench auto-generated certificate",
@@ -176,9 +209,9 @@ export class TlsConfig {
 
     console.warn(
       "[auth] Self-signed certificate generated (Bun native mode).\n" +
-      "       For production, install openssl and re-run, or replace with a CA-signed cert.\n" +
-      `       Cert: ${certPath}\n` +
-      `       Key:  ${keyPath}`
+        "       For production, install openssl and re-run, or replace with a CA-signed cert.\n" +
+        `       Cert: ${certPath}\n` +
+        `       Key:  ${keyPath}`,
     );
 
     return {

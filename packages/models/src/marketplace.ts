@@ -1,6 +1,13 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
+import { join, resolve } from "node:path";
 import type {
   ProviderProfile,
   ProviderTier,
@@ -19,7 +26,8 @@ export class ProviderMarketplace {
   private profiles: Map<string, ProviderProfile> = new Map();
 
   constructor(profilesDir?: string) {
-    this.profilesDir = profilesDir ?? resolve(homedir(), ".agent-workbench", "providers");
+    this.profilesDir =
+      profilesDir ?? resolve(homedir(), ".agent-workbench", "providers");
     this.ensureProfilesDir();
     this.loadAll();
   }
@@ -41,7 +49,8 @@ export class ProviderMarketplace {
     }
 
     return result.sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
   }
 
@@ -65,7 +74,10 @@ export class ProviderMarketplace {
       model: input.model as string,
       baseUrl: input.baseUrl as string | undefined,
       tier: (input.tier as ProviderTier) ?? "fallback",
-      taskCategories: (input.taskCategories as TaskCategory[]) ?? ["read", "summarization"],
+      taskCategories: (input.taskCategories as TaskCategory[]) ?? [
+        "read",
+        "summarization",
+      ],
       contextLimit: input.contextLimit as number | undefined,
       hasKey: Boolean(input.apiKey && (input.apiKey as string).length > 0),
       costPer1KInput: (input.costPer1KInput as number) ?? 0,
@@ -82,10 +94,7 @@ export class ProviderMarketplace {
   }
 
   /** Update an existing provider profile. */
-  update(
-    id: string,
-    patch: Record<string, unknown>,
-  ): ProviderProfile {
+  update(id: string, patch: Record<string, unknown>): ProviderProfile {
     const existing = this.profiles.get(id);
     if (existing === undefined) {
       throw new Error(`Provider profile not found: ${id}`);
@@ -98,7 +107,8 @@ export class ProviderMarketplace {
       (updated as Record<string, unknown>).name = patch.name as string;
     }
     if (patch.providerType !== undefined && patch.providerType !== null) {
-      (updated as Record<string, unknown>).providerType = patch.providerType as string;
+      (updated as Record<string, unknown>).providerType =
+        patch.providerType as string;
     }
     if (patch.model !== undefined && patch.model !== null) {
       (updated as Record<string, unknown>).model = patch.model as string;
@@ -113,16 +123,23 @@ export class ProviderMarketplace {
       updated.taskCategories = patch.taskCategories as TaskCategory[];
     }
     if (patch.contextLimit !== undefined && patch.contextLimit !== null) {
-      (updated as Record<string, unknown>).contextLimit = patch.contextLimit as number;
+      (updated as Record<string, unknown>).contextLimit =
+        patch.contextLimit as number;
     }
     if (patch.costPer1KInput !== undefined && patch.costPer1KInput !== null) {
-      (updated as Record<string, unknown>).costPer1KInput = patch.costPer1KInput as number;
+      (updated as Record<string, unknown>).costPer1KInput =
+        patch.costPer1KInput as number;
     }
     if (patch.costPer1KOutput !== undefined && patch.costPer1KOutput !== null) {
-      (updated as Record<string, unknown>).costPer1KOutput = patch.costPer1KOutput as number;
+      (updated as Record<string, unknown>).costPer1KOutput =
+        patch.costPer1KOutput as number;
     }
-    if (patch.supportsStreaming !== undefined && patch.supportsStreaming !== null) {
-      (updated as Record<string, unknown>).supportsStreaming = patch.supportsStreaming as boolean;
+    if (
+      patch.supportsStreaming !== undefined &&
+      patch.supportsStreaming !== null
+    ) {
+      (updated as Record<string, unknown>).supportsStreaming =
+        patch.supportsStreaming as boolean;
     }
     if (patch.enabled !== undefined && patch.enabled !== null) {
       (updated as Record<string, unknown>).enabled = patch.enabled as boolean;
@@ -229,6 +246,8 @@ export class ProviderMarketplace {
 
   private persist(profile: ProviderProfile): void {
     const filePath = join(this.profilesDir, `${profile.id}.json`);
-    writeFileSync(filePath, JSON.stringify(profile, null, 2), { encoding: "utf-8" });
+    writeFileSync(filePath, JSON.stringify(profile, null, 2), {
+      encoding: "utf-8",
+    });
   }
 }

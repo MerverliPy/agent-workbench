@@ -1,23 +1,27 @@
 // Public API for packages/core
 
-export { SessionRunner } from "./session-runner";
+export type { AgentProfile } from "./agent";
+export { AgentRegistry, ALL_AGENTS, BUILD_AGENT, PLAN_AGENT } from "./agent";
 export { ContextBuilder } from "./context-builder";
-export { ModelRouter } from "./model-router";
-export { ToolCallDispatcher } from "./tool-dispatcher";
 export { EventPublisher } from "./event-publisher";
-export { RunLedger } from "./run-ledger";
-export { PlanGate, isMutationOrRisky, isMutationTool, isShellTool } from "./plan-gate";
-export { TokenHealthService } from "./token-health";
-export { RunRegistry, type ActiveRun } from "./run-state";
-export { AgentRegistry, BUILD_AGENT, PLAN_AGENT, ALL_AGENTS } from "./agent";
+export { ModelRouter } from "./model-router";
+export {
+  isMutationOrRisky,
+  isMutationTool,
+  isShellTool,
+  PlanGate,
+} from "./plan-gate";
 export { PtyOrchestrator } from "./pty-orchestrator";
-
+export { RunLedger } from "./run-ledger";
+export { type ActiveRun, RunRegistry } from "./run-state";
+export { SessionRunner } from "./session-runner";
+export { TokenHealthService } from "./token-health";
+export { ToolCallDispatcher } from "./tool-dispatcher";
 export type {
   ContextMessage,
-  ToolCallRequest,
-  ToolCallResult,
+  CoreDependencies,
   RunOptions,
   RunResult,
-  CoreDependencies,
+  ToolCallRequest,
+  ToolCallResult,
 } from "./types";
-export type { AgentProfile } from "./agent";

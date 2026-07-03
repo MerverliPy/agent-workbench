@@ -1,6 +1,9 @@
 import { z } from "zod/v4";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { ProviderProfile, ProviderProfileInput } from "../schemas/provider-profile";
+import {
+  ProviderProfile,
+  ProviderProfileInput,
+} from "../schemas/provider-profile";
 
 /**
  * GET /marketplace/providers — list all provider profiles.

@@ -29,23 +29,32 @@ export class ErrorReporter {
   /**
    * Report an error with optional context.
    */
-  report(error: Error, context?: {
-    traceId?: string;
-    sessionId?: string;
-    runId?: string;
-    spanName?: string;
-    metadata?: Record<string, unknown>;
-    level?: "error" | "warning" | "info";
-  }): ErrorReport {
+  report(
+    error: Error,
+    context?: {
+      traceId?: string;
+      sessionId?: string;
+      runId?: string;
+      spanName?: string;
+      metadata?: Record<string, unknown>;
+      level?: "error" | "warning" | "info";
+    },
+  ): ErrorReport {
     const report: ErrorReport = {
       id: crypto.randomUUID().slice(0, 12),
       message: error.message,
       ...(error.stack !== undefined ? { stack: error.stack } : {}),
       ...(context?.traceId !== undefined ? { traceId: context.traceId } : {}),
-      ...(context?.sessionId !== undefined ? { sessionId: context.sessionId } : {}),
+      ...(context?.sessionId !== undefined
+        ? { sessionId: context.sessionId }
+        : {}),
       ...(context?.runId !== undefined ? { runId: context.runId } : {}),
-      ...(context?.spanName !== undefined ? { spanName: context.spanName } : {}),
-      ...(context?.metadata !== undefined ? { metadata: context.metadata } : {}),
+      ...(context?.spanName !== undefined
+        ? { spanName: context.spanName }
+        : {}),
+      ...(context?.metadata !== undefined
+        ? { metadata: context.metadata }
+        : {}),
       timestamp: new Date().toISOString(),
       level: context?.level ?? "error",
     };

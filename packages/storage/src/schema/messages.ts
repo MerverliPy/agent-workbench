@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const messages = sqliteTable(
   "messages",
@@ -18,5 +18,5 @@ export const messages = sqliteTable(
     index("messages_session_id_idx").on(table.sessionId),
     index("messages_run_id_idx").on(table.runId),
     index("messages_role_idx").on(table.role),
-  ]
+  ],
 );

@@ -12,7 +12,7 @@
  * Future: Support JWT format for integration with OIDC providers.
  */
 
-import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { ulid } from "ulid";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ export class SessionToken {
     if (!config.secret || config.secret.length < 16) {
       throw new Error(
         "Auth secret must be at least 16 characters. " +
-        "Set AGENT_WORKBENCH_AUTH_SECRET to a secure random string."
+          "Set AGENT_WORKBENCH_AUTH_SECRET to a secure random string.",
       );
     }
     this.secret = config.secret;
@@ -57,7 +57,10 @@ export class SessionToken {
   }
 
   /** Generate a new token for the given subject/label. */
-  generate(label: string, scopes: string[] = ["*"]): { token: string; expiresAt: string } {
+  generate(
+    label: string,
+    scopes: string[] = ["*"],
+  ): { token: string; expiresAt: string } {
     const now = Date.now();
     const payload: TokenPayload = {
       jti: ulid(),
@@ -112,7 +115,10 @@ export class SessionToken {
 
     try {
       const payload = this.decodePayload(rest.slice(0, separatorIndex));
-      return { label: payload.sub, expiresAt: new Date(payload.exp).toISOString() };
+      return {
+        label: payload.sub,
+        expiresAt: new Date(payload.exp).toISOString(),
+      };
     } catch {
       return null;
     }
@@ -132,13 +138,13 @@ export class SessionToken {
   }
 
   private decodePayload(encoded: string): TokenPayload {
-    return JSON.parse(Buffer.from(encoded, "base64url").toString("utf-8")) as TokenPayload;
+    return JSON.parse(
+      Buffer.from(encoded, "base64url").toString("utf-8"),
+    ) as TokenPayload;
   }
 
   private sign(data: string): string {
-    return createHmac("sha256", this.secret)
-      .update(data)
-      .digest("base64url");
+    return createHmac("sha256", this.secret).update(data).digest("base64url");
   }
 
   private constantTimeEqual(a: string, b: string): boolean {

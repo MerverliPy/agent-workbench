@@ -114,7 +114,7 @@ export interface CoreDependencies {
 /** Converts a ModelToolCall (from models package) to a ToolCallRequest. */
 export function modelToolCallToRequest(
   call: ModelToolCall,
-  storageId: string
+  storageId: string,
 ): ToolCallRequest {
   return {
     id: storageId,

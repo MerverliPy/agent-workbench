@@ -1,33 +1,33 @@
+import { authMiddleware } from "@agent-workbench/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { ServerConfig } from "./config";
 import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
 import { handleAppError } from "./middleware/error-handler";
-import { requestIdMiddleware } from "./middleware/request-id";
-import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { metricsMiddleware } from "./middleware/metrics-middleware";
+import { rateLimitMiddleware } from "./middleware/rate-limit";
+import { requestIdMiddleware } from "./middleware/request-id";
 import { tracingMiddleware } from "./middleware/tracing";
-import { registerGlobalRoutes } from "./routes/global";
-import { registerSessionRoutes } from "./routes/session-routes";
-import { registerMessageRoutes } from "./routes/message-routes";
-import { registerPermissionRoutes } from "./routes/permission-routes";
 import { registerAgentRoutes } from "./routes/agent-routes";
-import { registerTokenHealthRoutes } from "./routes/token-health-routes";
-import { registerPlanRoutes } from "./routes/plan-routes";
-import { registerProviderRoutes } from "./routes/provider-routes";
-import { registerWorkspaceRoutes } from "./routes/workspace-routes";
-import { registerFileRoutes } from "./routes/file-routes";
-import { registerGitRoutes } from "./routes/git-routes";
-import { registerPlaceholderRoutes } from "./routes/placeholders";
-import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
-import { registerObservabilityRoutes } from "./routes/observability-routes";
-import { registerPluginRoutes } from "./routes/plugin-routes";
 import { registerAuthRoutes } from "./routes/auth-routes";
 import { registerCollabRoutes } from "./routes/collab-routes";
-import { registerShareRoutes } from "./routes/share-routes";
+import { registerFileRoutes } from "./routes/file-routes";
+import { registerGitRoutes } from "./routes/git-routes";
+import { registerGlobalRoutes } from "./routes/global";
+import { registerMarketplaceRoutes } from "./routes/marketplace-routes";
+import { registerMessageRoutes } from "./routes/message-routes";
+import { registerObservabilityRoutes } from "./routes/observability-routes";
+import { registerPermissionRoutes } from "./routes/permission-routes";
+import { registerPlaceholderRoutes } from "./routes/placeholders";
+import { registerPlanRoutes } from "./routes/plan-routes";
+import { registerPluginRoutes } from "./routes/plugin-routes";
+import { registerProviderRoutes } from "./routes/provider-routes";
 import { registerReviewRoutes } from "./routes/review-routes";
-import { authMiddleware } from "@agent-workbench/auth";
+import { registerSessionRoutes } from "./routes/session-routes";
+import { registerShareRoutes } from "./routes/share-routes";
+import { registerTokenHealthRoutes } from "./routes/token-health-routes";
+import { registerWorkspaceRoutes } from "./routes/workspace-routes";
 
 export interface CreateAppOptions {
   readonly config: ServerConfig;
@@ -55,9 +55,12 @@ export function createApp(options: CreateAppOptions) {
           /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
           /^https?:\/\/\[::1\](:\d+)?$/,
         ];
-        const envOverride = process.env["AGENT_WORKBENCH_CORS_ORIGINS"];
+        const envOverride = process.env.AGENT_WORKBENCH_CORS_ORIGINS;
         if (envOverride) {
-          const patterns = envOverride.split(",").map((s) => s.trim()).filter(Boolean);
+          const patterns = envOverride
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
           for (const pat of patterns) {
             allowedOrigins.push(new RegExp(pat));
           }
@@ -66,16 +69,25 @@ export function createApp(options: CreateAppOptions) {
         const ok = allowedOrigins.some((r) => r.test(origin));
         return ok ? origin : null;
       },
-    })
+    }),
   );
 
   // Phase 27: Authentication middleware — protects all routes except
   // exempt paths (/health, /auth/token, /info).
   if (options.services.auth.isEnabled) {
-    app.use("*", authMiddleware({
-      auth: options.services.auth,
-      excludePaths: ["/global/health", "/global/info", "/auth/token", "/auth/status", "/metrics"],
-    }));
+    app.use(
+      "*",
+      authMiddleware({
+        auth: options.services.auth,
+        excludePaths: [
+          "/global/health",
+          "/global/info",
+          "/auth/token",
+          "/auth/status",
+          "/metrics",
+        ],
+      }),
+    );
   }
 
   registerAuthRoutes(app, { auth: options.services.auth });
@@ -112,7 +124,7 @@ export function createApp(options: CreateAppOptions) {
         message: "Route not found",
         recoverable: true,
       }),
-      context
+      context,
     );
   });
 

@@ -4,7 +4,7 @@
 // When promptfoo is installed but no API key is set, the adapter returns results
 // from the failed provider call rather than a fallback error.
 
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { runPromptfooEval } from "../integrations/promptfoo";
 import type { EvalRunOptions } from "../runner";
 

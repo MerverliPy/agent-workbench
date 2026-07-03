@@ -25,9 +25,13 @@
  * | `AGENT_WORKBENCH_TOKEN_TTL_MS` | `3600000` | Session token time-to-live in milliseconds (default: 1 hour). |
  */
 export { AuthManager } from "./auth-manager";
-export { authMiddleware, type AuthMiddlewareOptions, type AuthContext } from "./auth-middleware";
-export { TlsConfig, type TlsConfigOptions } from "./tls-config";
-export { SessionToken, type SessionTokenConfig } from "./session-tokens";
-export { InMemoryTokenStore, type TokenRecord } from "./token-store";
-export { Scope, hasScope, scopeMatches, defaultScopes } from "./scopes";
+export {
+  type AuthContext,
+  type AuthMiddlewareOptions,
+  authMiddleware,
+} from "./auth-middleware";
 export type { ScopeValue } from "./scopes";
+export { defaultScopes, hasScope, Scope, scopeMatches } from "./scopes";
+export { SessionToken, type SessionTokenConfig } from "./session-tokens";
+export { TlsConfig, type TlsConfigOptions } from "./tls-config";
+export { InMemoryTokenStore, type TokenRecord } from "./token-store";

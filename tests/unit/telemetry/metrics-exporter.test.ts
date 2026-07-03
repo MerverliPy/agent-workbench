@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { MetricsExporter } from "@agent-workbench/telemetry";
 
 describe("MetricsExporter", () => {
@@ -24,12 +24,31 @@ describe("MetricsExporter", () => {
   });
 
   it("supports labeled counters", () => {
-    exporter.incrementCounter("http_requests_total", { method: "GET", status: "200" });
-    exporter.incrementCounter("http_requests_total", { method: "POST", status: "201" });
-    exporter.incrementCounter("http_requests_total", { method: "GET", status: "200" });
+    exporter.incrementCounter("http_requests_total", {
+      method: "GET",
+      status: "200",
+    });
+    exporter.incrementCounter("http_requests_total", {
+      method: "POST",
+      status: "201",
+    });
+    exporter.incrementCounter("http_requests_total", {
+      method: "GET",
+      status: "200",
+    });
 
-    expect(exporter.getCounter("http_requests_total", { method: "GET", status: "200" })).toBe(2);
-    expect(exporter.getCounter("http_requests_total", { method: "POST", status: "201" })).toBe(1);
+    expect(
+      exporter.getCounter("http_requests_total", {
+        method: "GET",
+        status: "200",
+      }),
+    ).toBe(2);
+    expect(
+      exporter.getCounter("http_requests_total", {
+        method: "POST",
+        status: "201",
+      }),
+    ).toBe(1);
   });
 
   it("returns 0 for unknown counters", () => {
@@ -92,8 +111,12 @@ describe("MetricsExporter", () => {
       startTime: 100,
       endTime: 150,
     });
-    expect(exporter.getCounter("spans_total", { span: "model.call", status: "ok" })).toBe(1);
-    expect(exporter.getCounter("spans_errors_total", { span: "model.call" })).toBe(0);
+    expect(
+      exporter.getCounter("spans_total", { span: "model.call", status: "ok" }),
+    ).toBe(1);
+    expect(
+      exporter.getCounter("spans_errors_total", { span: "model.call" }),
+    ).toBe(0);
   });
 
   it("counts span errors", () => {
@@ -103,8 +126,15 @@ describe("MetricsExporter", () => {
       startTime: 100,
       endTime: 200,
     });
-    expect(exporter.getCounter("spans_total", { span: "tool.execute", status: "error" })).toBe(1);
-    expect(exporter.getCounter("spans_errors_total", { span: "tool.execute" })).toBe(1);
+    expect(
+      exporter.getCounter("spans_total", {
+        span: "tool.execute",
+        status: "error",
+      }),
+    ).toBe(1);
+    expect(
+      exporter.getCounter("spans_errors_total", { span: "tool.execute" }),
+    ).toBe(1);
   });
 
   it("records zero duration for unended spans", () => {
@@ -114,7 +144,12 @@ describe("MetricsExporter", () => {
       startTime: 100,
     });
     // Should not throw — just records 0ms
-    expect(exporter.getCounter("spans_total", { span: "incomplete", status: "unset" })).toBe(1);
+    expect(
+      exporter.getCounter("spans_total", {
+        span: "incomplete",
+        status: "unset",
+      }),
+    ).toBe(1);
   });
 
   // ── Prometheus export ─────────────────────────────────────────────────────
@@ -148,7 +183,9 @@ describe("MetricsExporter", () => {
   });
 
   it("handles custom latency buckets", () => {
-    const custom = new MetricsExporter({ latencyBucketsMs: [1, 10, 100, 1000] });
+    const custom = new MetricsExporter({
+      latencyBucketsMs: [1, 10, 100, 1000],
+    });
     custom.observeLatency("fast", 5);
     custom.observeLatency("slow", 500);
 

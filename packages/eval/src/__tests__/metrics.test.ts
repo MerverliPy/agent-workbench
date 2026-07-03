@@ -2,7 +2,7 @@
 //
 // Tests cost estimation, latency percentiles, comparison, and formatting.
 
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { MetricsCollector } from "../metrics";
 
 // Mock repository for testing
@@ -49,7 +49,11 @@ describe("MetricsCollector", () => {
 
     it("uses prefix matching for model variants", () => {
       const collector = new MetricsCollector(createMockRepo() as any);
-      const cost = collector.computeCostPerEval("claude-sonnet-4-20250514", 1000, 500);
+      const cost = collector.computeCostPerEval(
+        "claude-sonnet-4-20250514",
+        1000,
+        500,
+      );
       expect(cost).toBeCloseTo(0.003 * 1 + 0.015 * 0.5, 6);
     });
 
@@ -84,10 +88,10 @@ describe("MetricsCollector", () => {
       const retrieved = collector.get("run-1");
 
       expect(retrieved).toBeDefined();
-      expect(retrieved!.accuracy).toBeCloseTo(0.85, 4);
-      expect(retrieved!.tokensUsed.total).toBe(15000);
-      expect(retrieved!.latencyMs.p95).toBe(800);
-      expect(retrieved!.errorRate).toBeCloseTo(0.02, 4);
+      expect(retrieved?.accuracy).toBeCloseTo(0.85, 4);
+      expect(retrieved?.tokensUsed.total).toBe(15000);
+      expect(retrieved?.latencyMs.p95).toBe(800);
+      expect(retrieved?.errorRate).toBeCloseTo(0.02, 4);
     });
 
     it("returns undefined for nonexistent run", () => {
@@ -127,10 +131,10 @@ describe("MetricsCollector", () => {
 
       const results = collector.compare(["run-a", "run-b"]);
       expect(results).toHaveLength(2);
-      expect(results[0]!.runId).toBe("run-a");
-      expect(results[0]!.metrics.accuracy).toBeCloseTo(0.9, 4);
-      expect(results[1]!.runId).toBe("run-b");
-      expect(results[1]!.metrics.accuracy).toBeCloseTo(0.7, 4);
+      expect(results[0]?.runId).toBe("run-a");
+      expect(results[0]?.metrics.accuracy).toBeCloseTo(0.9, 4);
+      expect(results[1]?.runId).toBe("run-b");
+      expect(results[1]?.metrics.accuracy).toBeCloseTo(0.7, 4);
     });
 
     it("skips missing runs", () => {
@@ -148,7 +152,7 @@ describe("MetricsCollector", () => {
 
       const results = collector.compare(["run-a", "nonexistent"]);
       expect(results).toHaveLength(1);
-      expect(results[0]!.runId).toBe("run-a");
+      expect(results[0]?.runId).toBe("run-a");
     });
   });
 

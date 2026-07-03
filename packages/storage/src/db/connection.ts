@@ -1,5 +1,5 @@
-import { statSync, mkdirSync } from "node:fs";
 import { Database } from "bun:sqlite";
+import { mkdirSync, statSync } from "node:fs";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import * as schema from "../schema";
 
@@ -14,12 +14,12 @@ export interface StorageConnectionOptions {
 }
 
 export function defaultDbPath(): string {
-  const xdgDataHome = process.env["XDG_DATA_HOME"];
-  const home = process.env["HOME"];
+  const xdgDataHome = process.env.XDG_DATA_HOME;
+  const home = process.env.HOME;
 
   if (!home) {
     throw new Error(
-      "Cannot determine default database path: HOME environment variable is not set"
+      "Cannot determine default database path: HOME environment variable is not set",
     );
   }
 
@@ -36,7 +36,7 @@ function ensureParentDir(filePath: string): void {
     const st = statSync(dir);
     if (!st.isDirectory()) {
       throw new Error(
-        `Database parent path exists but is not a directory: ${dir}`
+        `Database parent path exists but is not a directory: ${dir}`,
       );
     }
   } catch (err: unknown) {
@@ -50,7 +50,7 @@ function ensureParentDir(filePath: string): void {
 }
 
 export function createStorageConnection(
-  options: StorageConnectionOptions = {}
+  options: StorageConnectionOptions = {},
 ): StorageConnection {
   const dbPath = options.dbPath ?? defaultDbPath();
   ensureParentDir(dbPath);

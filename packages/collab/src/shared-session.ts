@@ -183,8 +183,8 @@ export class SharedSessionManager {
   getUsers(sessionId: string): readonly SharedSessionUser[] {
     const session = this.sessions.get(sessionId);
     if (!session) return [];
-    return Array.from(session.values()).sort(
-      (a, b) => a.joinedAt.localeCompare(b.joinedAt),
+    return Array.from(session.values()).sort((a, b) =>
+      a.joinedAt.localeCompare(b.joinedAt),
     );
   }
 

@@ -12,12 +12,14 @@ export interface RouteContract {
   readonly isStream?: boolean;
 }
 
-export type InferRouteResponse<T extends RouteContract> = z.infer<T["response"]>;
+export type InferRouteResponse<T extends RouteContract> = z.infer<
+  T["response"]
+>;
 
-export type InferRouteParams<T extends RouteContract> = T["pathParams"] extends z.ZodType
-  ? z.infer<T["pathParams"]>
-  : Record<string, never>;
+export type InferRouteParams<T extends RouteContract> =
+  T["pathParams"] extends z.ZodType
+    ? z.infer<T["pathParams"]>
+    : Record<string, never>;
 
-export type InferRouteQuery<T extends RouteContract> = T["query"] extends z.ZodType
-  ? z.infer<T["query"]>
-  : Record<string, never>;
+export type InferRouteQuery<T extends RouteContract> =
+  T["query"] extends z.ZodType ? z.infer<T["query"]> : Record<string, never>;

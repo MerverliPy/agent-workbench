@@ -87,35 +87,58 @@ export class ModelPlayground {
   /**
    * Send a single message to a model and get the response.
    */
-  async send(config: PlaygroundConfig, message: string): Promise<PlaygroundResult> {
+  async send(
+    config: PlaygroundConfig,
+    message: string,
+  ): Promise<PlaygroundResult> {
     const startTime = performance.now();
     const stream = config.stream ?? false;
     const temperature = config.temperature ?? 0.7;
     const maxTokens = config.maxTokens ?? 4096;
-    const systemPrompt = config.systemPrompt ?? DEFAULT_SYSTEM_PROMPTS[config.provider] ?? "";
+    const systemPrompt =
+      config.systemPrompt ?? DEFAULT_SYSTEM_PROMPTS[config.provider] ?? "";
 
     const apiKey = resolveApiKey(config);
     if (!apiKey) {
       throw new Error(
         `No API key found for provider "${config.provider}". ` +
-        `Set the ${config.provider.toUpperCase()}_API_KEY environment variable, ` +
-        `or pass apiKey in PlaygroundConfig.`,
+          `Set the ${config.provider.toUpperCase()}_API_KEY environment variable, ` +
+          `or pass apiKey in PlaygroundConfig.`,
       );
     }
 
     const endpoint = resolveEndpoint(config);
-    const body = buildRequestBody(config.provider, config.model, message, systemPrompt, temperature, maxTokens, stream);
+    const body = buildRequestBody(
+      config.provider,
+      config.model,
+      message,
+      systemPrompt,
+      temperature,
+      maxTokens,
+      stream,
+    );
 
     // Make the API call
     const response = await callApi(endpoint, apiKey, body, stream);
     const latencyMs = performance.now() - startTime;
 
     // Parse token usage
-    const tokensInput = response.usage?.input_tokens ?? response.usage?.prompt_tokens ?? estimateInputTokens(systemPrompt, message);
-    const tokensOutput = response.usage?.output_tokens ?? response.usage?.completion_tokens ?? estimateOutputTokens(response.content);
+    const tokensInput =
+      response.usage?.input_tokens ??
+      response.usage?.prompt_tokens ??
+      estimateInputTokens(systemPrompt, message);
+    const tokensOutput =
+      response.usage?.output_tokens ??
+      response.usage?.completion_tokens ??
+      estimateOutputTokens(response.content);
 
     // Estimate cost
-    const costUsd = computeCost(config.provider, config.model, tokensInput, tokensOutput);
+    const costUsd = computeCost(
+      config.provider,
+      config.model,
+      tokensInput,
+      tokensOutput,
+    );
 
     return {
       output: response.content,
@@ -132,7 +155,9 @@ export class ModelPlayground {
   /**
    * List available models for the playground dropdown.
    */
-  async listAvailableModels(): Promise<Array<{ model: string; provider: string }>> {
+  async listAvailableModels(): Promise<
+    Array<{ model: string; provider: string }>
+  > {
     const models: Array<{ model: string; provider: string }> = [];
 
     // OpenAI models (detected by API key presence)
@@ -213,11 +238,14 @@ function resolveEndpoint(config: PlaygroundConfig): string {
     anthropic: "https://api.anthropic.com/v1/messages",
     openrouter: "https://openrouter.ai/api/v1/chat/completions",
     deepseek: "https://api.deepseek.com/v1/chat/completions",
-    google: "https://generativelanguage.googleapis.com/v1/models/{model}:generateContent",
-    gemini: "https://generativelanguage.googleapis.com/v1/models/{model}:generateContent",
+    google:
+      "https://generativelanguage.googleapis.com/v1/models/{model}:generateContent",
+    gemini:
+      "https://generativelanguage.googleapis.com/v1/models/{model}:generateContent",
   };
 
-  const endpoint = endpoints[config.provider] ?? "https://api.openai.com/v1/chat/completions";
+  const endpoint =
+    endpoints[config.provider] ?? "https://api.openai.com/v1/chat/completions";
   // Replace {model} placeholder for providers that embed it in the URL
   return (endpoint as string).replace("{model}", config.model);
 }
@@ -246,7 +274,14 @@ function buildRequestBody(
     return {
       contents: [
         ...(systemPrompt
-          ? [{ role: "user", parts: [{ text: `System: ${systemPrompt}\n\nUser: ${message}` }] }]
+          ? [
+              {
+                role: "user",
+                parts: [
+                  { text: `System: ${systemPrompt}\n\nUser: ${message}` },
+                ],
+              },
+            ]
           : [{ role: "user", parts: [{ text: message }] }]),
       ],
       generationConfig: {
@@ -281,7 +316,12 @@ interface ApiResult {
 }
 
 /** Make the HTTP API call with optional streaming */
-async function callApi(endpoint: string, apiKey: string, body: unknown, stream: boolean): Promise<ApiResult> {
+async function callApi(
+  endpoint: string,
+  apiKey: string,
+  body: unknown,
+  stream: boolean,
+): Promise<ApiResult> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${apiKey}`,
@@ -318,7 +358,7 @@ async function callApi(endpoint: string, apiKey: string, body: unknown, stream: 
     return parseStreamResponse(response);
   }
 
-  const data = await response.json() as Record<string, unknown>;
+  const data = (await response.json()) as Record<string, unknown>;
 
   // Handle Google's Gemini response format
   if (
@@ -326,7 +366,8 @@ async function callApi(endpoint: string, apiKey: string, body: unknown, stream: 
     Array.isArray(data.candidates) &&
     (data.candidates as unknown[]).length > 0
   ) {
-    const candidate = (data.candidates as Array<Record<string, unknown>>)[0] ?? {};
+    const candidate =
+      (data.candidates as Array<Record<string, unknown>>)[0] ?? {};
     const content = (candidate.content ?? {}) as Record<string, unknown>;
     const parts = (content.parts ?? []) as Array<Record<string, unknown>>;
     const text = parts.map((p) => p.text as string).join("") ?? "";
@@ -344,7 +385,9 @@ async function callApi(endpoint: string, apiKey: string, body: unknown, stream: 
 
   // Handle OpenAI-compatible response format
   const choices = data.choices as Array<Record<string, unknown>> | undefined;
-  const contentObj = choices?.[0]?.message as Record<string, unknown> | undefined;
+  const contentObj = choices?.[0]?.message as
+    | Record<string, unknown>
+    | undefined;
   const text = (contentObj?.content as string) ?? "No response";
   const usageObj = (data.usage ?? {}) as Record<string, number>;
 
@@ -391,7 +434,9 @@ async function parseStreamResponse(response: Response): Promise<ApiResult> {
 
       try {
         const data = JSON.parse(dataStr);
-        const choices = data.choices as Array<Record<string, unknown>> | undefined;
+        const choices = data.choices as
+          | Array<Record<string, unknown>>
+          | undefined;
 
         if (choices?.[0]) {
           const delta = choices[0].delta as Record<string, unknown> | undefined;
@@ -403,7 +448,7 @@ async function parseStreamResponse(response: Response): Promise<ApiResult> {
 
         // Capture usage from final chunk
         if (data.usage) {
-          streamUsage = (data.usage as unknown) as ApiResult["usage"];
+          streamUsage = data.usage as unknown as ApiResult["usage"];
         }
       } catch {
         // Skip malformed JSON in SSE stream
@@ -434,10 +479,11 @@ function computeCost(
   outputTokens: number,
 ): number {
   // Try exact model match, then provider match, then GPT-4o fallback
-  const pricing =
-    PROVIDER_PRICING[model] ??
-    PROVIDER_PRICING[provider] ??
-    { input: 0.0025, output: 0.01 }; // GPT-4o default pricing
+  const pricing = PROVIDER_PRICING[model] ??
+    PROVIDER_PRICING[provider] ?? { input: 0.0025, output: 0.01 }; // GPT-4o default pricing
 
-  return (inputTokens / 1000) * pricing.input + (outputTokens / 1000) * pricing.output;
+  return (
+    (inputTokens / 1000) * pricing.input +
+    (outputTokens / 1000) * pricing.output
+  );
 }

@@ -1,8 +1,8 @@
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import type { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
 import { ApiError } from "../errors";
-import { existsSync, mkdirSync, cpSync, rmSync } from "node:fs";
-import { join, basename } from "node:path";
 import { createLogger } from "../utils/logger";
 
 const logger = createLogger("plugin-routes");
@@ -68,12 +68,16 @@ export function registerPluginRoutes(
   // ── Install a plugin ──────────────────────────────────────────────────────
 
   app.post("/plugins", async (ctx) => {
-    const body = (await ctx.req.json().catch(() => null)) as Record<string, unknown> | null;
+    const body = (await ctx.req.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
     if (!body || typeof body.source !== "string") {
       throw new ApiError({
         status: 400,
         code: "BAD_REQUEST",
-        message: "Request body must include 'source' (e.g. 'local:/path/to/plugin')",
+        message:
+          "Request body must include 'source' (e.g. 'local:/path/to/plugin')",
         recoverable: true,
       });
     }
@@ -141,7 +145,8 @@ export function registerPluginRoutes(
       throw new ApiError({
         status: 501,
         code: "NOT_IMPLEMENTED",
-        message: "npm plugin installation is not yet supported. Use 'local:' source.",
+        message:
+          "npm plugin installation is not yet supported. Use 'local:' source.",
         recoverable: true,
       });
     }
@@ -151,7 +156,8 @@ export function registerPluginRoutes(
       throw new ApiError({
         status: 501,
         code: "NOT_IMPLEMENTED",
-        message: "Git plugin installation is not yet supported. Use 'local:' source.",
+        message:
+          "Git plugin installation is not yet supported. Use 'local:' source.",
         recoverable: true,
       });
     }
@@ -159,7 +165,8 @@ export function registerPluginRoutes(
     throw new ApiError({
       status: 400,
       code: "BAD_REQUEST",
-      message: "Unsupported source type. Use 'local:', 'npm:', or 'git:' prefix.",
+      message:
+        "Unsupported source type. Use 'local:', 'npm:', or 'git:' prefix.",
       recoverable: true,
     });
   });
@@ -226,7 +233,9 @@ export function registerPluginRoutes(
       rmSync(plugin.installPath, { recursive: true, force: true });
       logger.info(`Removed plugin directory: ${plugin.installPath}`);
     } catch (err) {
-      logger.warn(`Failed to remove plugin directory ${plugin.installPath}: ${err instanceof Error ? err.message : String(err)}`);
+      logger.warn(
+        `Failed to remove plugin directory ${plugin.installPath}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     // Unregister

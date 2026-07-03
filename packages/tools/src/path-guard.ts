@@ -6,8 +6,8 @@
  * permission engine (which arrives in Phase 8).
  */
 
-import * as path from "path";
-import * as fs from "fs";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 // ---------------------------------------------------------------------------
 // Error type
@@ -41,17 +41,9 @@ const SENSITIVE_FILENAME_EXACT = new Set([
 
 const SENSITIVE_FILENAME_PREFIXES = [".env."];
 
-const SENSITIVE_FILENAME_SUFFIXES = [
-  ".pem",
-  ".key",
-  ".p12",
-  ".pfx",
-];
+const SENSITIVE_FILENAME_SUFFIXES = [".pem", ".key", ".p12", ".pfx"];
 
-const SENSITIVE_PATH_SEGMENTS = new Set([
-  ".ssh",
-  "secrets",
-]);
+const SENSITIVE_PATH_SEGMENTS = new Set([".ssh", "secrets"]);
 
 /**
  * Directory patterns that must be treated as sensitive regardless of depth.
@@ -64,9 +56,7 @@ const SENSITIVE_PATH_CONTAINS = [".aws/credentials"];
  * Matched as: filename starts with "service-account" and ends with ".json".
  */
 function isServiceAccountJson(filename: string): boolean {
-  return (
-    filename.startsWith("service-account") && filename.endsWith(".json")
-  );
+  return filename.startsWith("service-account") && filename.endsWith(".json");
 }
 
 /**
@@ -123,10 +113,7 @@ export function isSensitivePath(relPath: string): boolean {
  *  - The resolved path escapes the project root (including via symlinks).
  *  - The path matches a sensitive file pattern.
  */
-export function assertSafePath(
-  filePath: string,
-  projectRoot: string
-): string {
+export function assertSafePath(filePath: string, projectRoot: string): string {
   const normalizedRoot = path.resolve(projectRoot);
 
   // Resolve the target path relative to the project root.
@@ -135,7 +122,7 @@ export function assertSafePath(
   // --- Containment check (pre-realpath) ---
   if (!isUnderRoot(resolved, normalizedRoot)) {
     throw new PathGuardError(
-      `Path escapes project root. Provided: "${filePath}"`
+      `Path escapes project root. Provided: "${filePath}"`,
     );
   }
 
@@ -148,7 +135,7 @@ export function assertSafePath(
     const realRoot = fs.realpathSync(normalizedRoot);
     if (!isUnderRoot(finalPath, realRoot)) {
       throw new PathGuardError(
-        `Path resolves outside project root via symlink. Provided: "${filePath}"`
+        `Path resolves outside project root via symlink. Provided: "${filePath}"`,
       );
     }
   } catch (err: unknown) {
@@ -162,7 +149,7 @@ export function assertSafePath(
   const relPath = path.relative(normalizedRoot, finalPath);
   if (isSensitivePath(relPath) || isSensitivePath(path.basename(finalPath))) {
     throw new PathGuardError(
-      `Access to sensitive path denied. Provided: "${filePath}"`
+      `Access to sensitive path denied. Provided: "${filePath}"`,
     );
   }
 

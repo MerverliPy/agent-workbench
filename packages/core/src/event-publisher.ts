@@ -1,9 +1,9 @@
-import { ulid } from "ulid";
 import type { EventBus } from "@agent-workbench/events";
 import { EventName } from "@agent-workbench/events";
-import type { EventEnvelope, DiffPreview } from "@agent-workbench/protocol";
 import type { ModelUsage } from "@agent-workbench/models";
+import type { DiffPreview, EventEnvelope } from "@agent-workbench/protocol";
 import type { CommandPreview } from "@agent-workbench/shell";
+import { ulid } from "ulid";
 
 /**
  * Typed wrapper around EventBus for publishing Phase 6 runtime events.
@@ -16,7 +16,7 @@ export class EventPublisher {
   constructor(
     private readonly bus: EventBus,
     private readonly sessionId: string,
-    private readonly runId: string
+    private readonly runId: string,
   ) {}
 
   // ── Run lifecycle ───────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export class EventPublisher {
   publishStreamComplete(
     content: string,
     usage?: ModelUsage,
-    stopReason?: string
+    stopReason?: string,
   ): void {
     this.publish(EventName.MODEL_STREAM_COMPLETE, {
       content,
@@ -87,7 +87,11 @@ export class EventPublisher {
     this.publish(EventName.TOOL_CALL_COMPLETED, { toolCallId, toolName });
   }
 
-  publishToolCallFailed(toolCallId: string, toolName: string, error: string): void {
+  publishToolCallFailed(
+    toolCallId: string,
+    toolName: string,
+    error: string,
+  ): void {
     this.publish(EventName.TOOL_CALL_FAILED, { toolCallId, toolName, error });
   }
 
@@ -108,7 +112,7 @@ export class EventPublisher {
     toolName: string,
     riskLevel: string,
     reason?: string,
-    permissionRequest?: unknown
+    permissionRequest?: unknown,
   ): void {
     // Include the full permission request object in the payload so the TUI
     // can render the modal without a follow-up API call.
@@ -124,7 +128,7 @@ export class EventPublisher {
   publishPermissionDecided(
     requestId: string,
     decision: string,
-    decidedBy?: string
+    decidedBy?: string,
   ): void {
     this.publish(EventName.PERMISSION_DECIDED, {
       requestId,
@@ -136,7 +140,7 @@ export class EventPublisher {
   publishPermissionDenied(
     requestId: string,
     toolName: string,
-    reason?: string
+    reason?: string,
   ): void {
     this.publish(EventName.PERMISSION_DENIED, {
       requestId,
@@ -155,7 +159,7 @@ export class EventPublisher {
   publishDiffPreviewCreated(
     toolCallId: string,
     toolName: string,
-    preview: DiffPreview
+    preview: DiffPreview,
   ): void {
     this.publish(EventName.DIFF_PREVIEW_CREATED, {
       toolCallId,
@@ -171,7 +175,7 @@ export class EventPublisher {
     toolCallId: string,
     toolName: string,
     path: string,
-    changeId?: string
+    changeId?: string,
   ): void {
     this.publish(EventName.FILE_CHANGE_APPLIED, {
       toolCallId,
@@ -188,7 +192,7 @@ export class EventPublisher {
     toolCallId: string,
     toolName: string,
     path: string,
-    error: string
+    error: string,
   ): void {
     this.publish(EventName.FILE_CHANGE_FAILED, {
       toolCallId,
@@ -201,10 +205,7 @@ export class EventPublisher {
   /**
    * Emitted when revert_last_change is dispatched (before execution).
    */
-  publishFileRevertAttempted(
-    toolCallId: string,
-    path: string
-  ): void {
+  publishFileRevertAttempted(toolCallId: string, path: string): void {
     this.publish(EventName.FILE_REVERT_ATTEMPTED, {
       toolCallId,
       path,
@@ -217,7 +218,7 @@ export class EventPublisher {
   publishFileRevertCompleted(
     toolCallId: string,
     path: string,
-    revertedChangeId: string
+    revertedChangeId: string,
   ): void {
     this.publish(EventName.FILE_REVERT_COMPLETED, {
       toolCallId,
@@ -232,7 +233,7 @@ export class EventPublisher {
   publishFileRevertFailed(
     toolCallId: string,
     path: string,
-    error: string
+    error: string,
   ): void {
     this.publish(EventName.FILE_REVERT_FAILED, {
       toolCallId,
@@ -245,7 +246,7 @@ export class EventPublisher {
 
   publishShellCommandRequested(
     toolCallId: string,
-    preview: CommandPreview
+    preview: CommandPreview,
   ): void {
     this.publish(EventName.SHELL_COMMAND_REQUESTED, {
       toolCallId,
@@ -256,7 +257,7 @@ export class EventPublisher {
   publishShellRiskClassified(
     toolCallId: string,
     riskLevel: string,
-    matchedRules: string[]
+    matchedRules: string[],
   ): void {
     this.publish(EventName.SHELL_COMMAND_RISK_CLASSIFIED, {
       toolCallId,
@@ -275,7 +276,7 @@ export class EventPublisher {
   publishShellOutputChunk(
     toolCallId: string,
     stream: "stdout" | "stderr",
-    chunk: string
+    chunk: string,
   ): void {
     this.publish(EventName.SHELL_OUTPUT_CHUNK, {
       toolCallId,
@@ -288,7 +289,7 @@ export class EventPublisher {
     toolCallId: string,
     exitCode: number | null,
     timedOut: boolean,
-    truncated: boolean
+    truncated: boolean,
   ): void {
     this.publish(EventName.SHELL_COMMAND_COMPLETED, {
       toolCallId,
@@ -298,20 +299,14 @@ export class EventPublisher {
     });
   }
 
-  publishShellCommandFailed(
-    toolCallId: string,
-    error: string
-  ): void {
+  publishShellCommandFailed(toolCallId: string, error: string): void {
     this.publish(EventName.SHELL_COMMAND_FAILED, {
       toolCallId,
       error,
     });
   }
 
-  publishShellCommandAborted(
-    toolCallId: string,
-    reason: string
-  ): void {
+  publishShellCommandAborted(toolCallId: string, reason: string): void {
     this.publish(EventName.SHELL_COMMAND_ABORTED, {
       toolCallId,
       reason,
@@ -359,7 +354,7 @@ export class EventPublisher {
   publishCompactionSuggested(
     currentTokens: number,
     estimatedCompactedTokens?: number,
-    reason?: string
+    reason?: string,
   ): void {
     this.publish(EventName.COMPACTION_SUGGESTED, {
       currentTokens,
@@ -384,7 +379,7 @@ export class EventPublisher {
     toolCallId: string,
     originalLength: number,
     truncatedLength: number,
-    reason: string
+    reason: string,
   ): void {
     this.publish(EventName.TOOL_RESULT_TRUNCATED, {
       toolCallId,
@@ -416,7 +411,11 @@ export class EventPublisher {
     this.publish(EventName.PLAN_STEP_COMPLETED, { planId, stepOrder });
   }
 
-  publishPlanStepFailed(planId: string, stepOrder: number, error: string): void {
+  publishPlanStepFailed(
+    planId: string,
+    stepOrder: number,
+    error: string,
+  ): void {
     this.publish(EventName.PLAN_STEP_FAILED, { planId, stepOrder, error });
   }
 

@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 import { ErrorEnvelope } from "../schemas/error-envelope";
-import { FileContent, FileEntry, DiffPreview } from "../schemas/file";
+import { DiffPreview, FileContent, FileEntry } from "../schemas/file";
 
 export const FileContentParams = z.object({
   path: z.string(),

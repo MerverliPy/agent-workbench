@@ -21,10 +21,10 @@
 //   "itemsPassed": number
 // }
 
+import { existsSync } from "node:fs";
 import { ulid } from "ulid";
-import { existsSync } from "fs";
-import type { EvalRunOptions, EvalResult } from "../runner";
 import { MetricsCollector } from "../metrics";
+import type { EvalResult, EvalRunOptions } from "../runner";
 
 /**
  * Run a user-provided custom eval script.
@@ -37,17 +37,30 @@ import { MetricsCollector } from "../metrics";
  */
 export async function runCustomEvalScript(
   options: EvalRunOptions,
-  repo: { createRun: Function; createScores: Function; upsertMetrics: Function; updateRunStatus: Function },
+  repo: {
+    createRun: Function;
+    createScores: Function;
+    upsertMetrics: Function;
+    updateRunStatus: Function;
+  },
 ): Promise<EvalResult> {
   const runId = ulid();
   const now = new Date().toISOString();
 
   if (!options.customScript) {
-    return createFallback(runId, options, "No custom script provided. Set options.customScript.");
+    return createFallback(
+      runId,
+      options,
+      "No custom script provided. Set options.customScript.",
+    );
   }
 
   if (!existsSync(options.customScript)) {
-    return createFallback(runId, options, `Custom script not found: ${options.customScript}`);
+    return createFallback(
+      runId,
+      options,
+      `Custom script not found: ${options.customScript}`,
+    );
   }
 
   // Create a "running" record
@@ -76,7 +89,8 @@ export async function runCustomEvalScript(
     // Determine interpreter
     const scriptArgs = options.customScript.endsWith(".py")
       ? ["python3", options.customScript]
-      : options.customScript.endsWith(".ts") || options.customScript.endsWith(".js")
+      : options.customScript.endsWith(".ts") ||
+          options.customScript.endsWith(".js")
         ? ["bun", options.customScript]
         : [options.customScript]; // executable with shebang
 
@@ -89,7 +103,7 @@ export async function runCustomEvalScript(
     });
 
     // Write input JSON to stdin and close
-    proc.stdin.write(JSON.stringify(input) + "\n");
+    proc.stdin.write(`${JSON.stringify(input)}\n`);
     proc.stdin.end();
 
     const stdout = await new Response(proc.stdout).text();
@@ -107,19 +121,28 @@ export async function runCustomEvalScript(
     try {
       output = JSON.parse(stdout.trim());
     } catch {
-      throw new Error(`Script output was not valid JSON:\n${stdout.slice(0, 200)}`);
+      throw new Error(
+        `Script output was not valid JSON:\n${stdout.slice(0, 200)}`,
+      );
     }
 
-    const scores: EvalResult["scores"] = (output.scores ?? []).map((s: any) => ({
-      task: s.task ?? "unknown",
-      score: typeof s.score === "number" ? s.score : 0,
-      metric: s.metric ?? "custom",
-      itemCount: s.itemCount ?? 1,
-    }));
+    const scores: EvalResult["scores"] = (output.scores ?? []).map(
+      (s: any) => ({
+        task: s.task ?? "unknown",
+        score: typeof s.score === "number" ? s.score : 0,
+        metric: s.metric ?? "custom",
+        itemCount: s.itemCount ?? 1,
+      }),
+    );
 
-    const totalItems = scores.reduce((sum: number, s: EvalResult["scores"][number]) => sum + s.itemCount, 0);
+    const totalItems = scores.reduce(
+      (sum: number, s: EvalResult["scores"][number]) => sum + s.itemCount,
+      0,
+    );
     const itemsPassed = scores.reduce(
-      (sum: number, s: EvalResult["scores"][number]) => sum + Math.round(s.score * s.itemCount), 0,
+      (sum: number, s: EvalResult["scores"][number]) =>
+        sum + Math.round(s.score * s.itemCount),
+      0,
     );
     const accuracy = totalItems > 0 ? itemsPassed / totalItems : 0;
 
@@ -135,7 +158,11 @@ export async function runCustomEvalScript(
         totalItems,
         itemsPassed,
         durationMs,
-        costUsd: metrics.computeCostPerEval(options.model, options.limit ?? totalItems, 0),
+        costUsd: metrics.computeCostPerEval(
+          options.model,
+          options.limit ?? totalItems,
+          0,
+        ),
         tokensUsed: { input: 0, output: 0, total: 0 },
         latencyMs: { p50: 0, p95: 0, p99: 0 },
         errorRate: 0,
@@ -160,12 +187,21 @@ export async function runCustomEvalScript(
     return result;
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
-    repo.updateRunStatus(runId, "failed", new Date().toISOString(), errorMessage);
+    repo.updateRunStatus(
+      runId,
+      "failed",
+      new Date().toISOString(),
+      errorMessage,
+    );
     return createFallback(runId, options, errorMessage);
   }
 }
 
-function createFallback(runId: string, options: EvalRunOptions, reason: string): EvalResult {
+function createFallback(
+  runId: string,
+  options: EvalRunOptions,
+  reason: string,
+): EvalResult {
   return {
     id: runId,
     timestamp: new Date().toISOString(),

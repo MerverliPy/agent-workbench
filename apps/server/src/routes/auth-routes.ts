@@ -11,25 +11,32 @@
  * DELETE /auth/token — Revoke a token (authenticated)
  */
 
-import { Hono } from "hono";
 import type { AuthManager } from "@agent-workbench/auth";
 import { Scope } from "@agent-workbench/auth";
+import type { Hono } from "hono";
 import type { ServerAppBindings } from "../context";
-import { requireScope } from "../middleware/auth-scope";
 import { ApiError } from "../errors";
+import { requireScope } from "../middleware/auth-scope";
 import { handleAppError } from "../middleware/error-handler";
 
 interface AuthServices {
   readonly auth: AuthManager;
 }
 
-export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthServices): void {
+export function registerAuthRoutes(
+  app: Hono<ServerAppBindings>,
+  services: AuthServices,
+): void {
   const { auth } = services;
 
   // ── POST /auth/token — Exchange shared secret for a bearer token ────────
   app.post("/auth/token", async (c) => {
     try {
-      const body = await c.req.json<{ secret?: string; label?: string; scopes?: string[] }>();
+      const body = await c.req.json<{
+        secret?: string;
+        label?: string;
+        scopes?: string[];
+      }>();
       const providedSecret = body.secret;
       const label = body.label ?? "unnamed-client";
       const requestedScopes = body.scopes;
@@ -52,7 +59,8 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
           new ApiError({
             status: 503,
             code: "AUTH_NOT_CONFIGURED",
-            message: "Authentication is not configured. Set AGENT_WORKBENCH_AUTH_SECRET to enable.",
+            message:
+              "Authentication is not configured. Set AGENT_WORKBENCH_AUTH_SECRET to enable.",
             recoverable: false,
           }),
           503,
@@ -101,12 +109,14 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
         );
       }
       return handleAppError(
-        err instanceof ApiError ? err : new ApiError({
-          status: 500,
-          code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Unknown error",
-          recoverable: false,
-        }),
+        err instanceof ApiError
+          ? err
+          : new ApiError({
+              status: 500,
+              code: "INTERNAL_ERROR",
+              message: err instanceof Error ? err.message : "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }
@@ -118,7 +128,9 @@ export function registerAuthRoutes(app: Hono<ServerAppBindings>, services: AuthS
 
     return c.json({
       authenticated: authCtx?.authenticated ?? false,
-      method: authCtx?.authenticated ? `bearer (${authCtx.subject ?? "unknown"})` : "none",
+      method: authCtx?.authenticated
+        ? `bearer (${authCtx.subject ?? "unknown"})`
+        : "none",
     });
   });
 

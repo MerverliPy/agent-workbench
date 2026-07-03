@@ -86,10 +86,7 @@ export function defaultScopes(): string[] {
  * Check if a scope value matches a required scope.
  * Supports wildcard matching: `*` matches everything.
  */
-export function scopeMatches(
-  required: string,
-  tokenScope: string,
-): boolean {
+export function scopeMatches(required: string, tokenScope: string): boolean {
   if (tokenScope === "*") return true;
   return tokenScope === required;
 }

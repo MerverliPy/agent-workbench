@@ -1,19 +1,18 @@
-import { HttpTransport } from "./transport/http";
-import { SseTransport } from "./transport/sse";
-import { HealthResource } from "./resources/health";
-import { EventResource } from "./resources/events";
-import { SessionResource } from "./resources/sessions";
-import { MessageResource } from "./resources/messages";
+import { AgentResource } from "./resources/agents";
+import { AuthResource } from "./resources/auth";
 import { ConfigResource } from "./resources/config";
-import { ProviderResource } from "./resources/providers";
+import { EventResource } from "./resources/events";
 import { FileResource } from "./resources/files";
+import { HealthResource } from "./resources/health";
+import { MessageResource } from "./resources/messages";
 import { PermissionResource } from "./resources/permissions";
+import { PlanResource } from "./resources/plans";
+import { ProviderResource } from "./resources/providers";
+import { SessionResource } from "./resources/sessions";
+import { TokenHealthResource } from "./resources/token-health";
 import { ToolResource } from "./resources/tools";
 import { TuiResource } from "./resources/tui";
-import { AgentResource } from "./resources/agents";
-import { TokenHealthResource } from "./resources/token-health";
-import { AuthResource } from "./resources/auth";
-import { PlanResource } from "./resources/plans";
+import { HttpTransport } from "./transport/http";
 
 export interface WorkbenchClientOptions {
   baseUrl?: string;

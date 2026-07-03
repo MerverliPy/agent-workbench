@@ -39,7 +39,7 @@ export class ModelComparer {
    * All models receive the identical system prompt and user message.
    */
   async compare(
-    prompt: string,
+    _prompt: string,
     systemPrompt: string | undefined,
     models: Array<{ model: string; provider: string }>,
   ): Promise<ComparisonResult> {

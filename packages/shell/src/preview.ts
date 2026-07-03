@@ -156,8 +156,9 @@ function extractBaseBinary(tokens: string[]): string {
   let i = 0;
   while (
     i < tokens.length - 1 &&
-    (tokens[i]!.match(/^[A-Z_]+[A-Z0-9_]*=/) !== null || tokens[i]!.includes("=")) &&
-    !tokens[i]!.includes(" ")
+    (tokens[i]?.match(/^[A-Z_]+[A-Z0-9_]*=/) !== null ||
+      tokens[i]?.includes("=")) &&
+    !tokens[i]?.includes(" ")
   ) {
     i++;
   }
@@ -169,7 +170,10 @@ function extractBaseBinary(tokens: string[]): string {
   return slashIdx >= 0 ? raw.slice(slashIdx + 1) : raw;
 }
 
-function classifyRisk(baseBinary: string, command: string): {
+function classifyRisk(
+  baseBinary: string,
+  command: string,
+): {
   riskLevel: RiskLevel;
   matchedRules: string[];
 } {
@@ -219,7 +223,7 @@ function classifyRisk(baseBinary: string, command: string): {
 
 export function previewCommand(
   rawCommand: string,
-  cwd: string
+  cwd: string,
 ): CommandPreview {
   const tokens = tokenize(rawCommand);
   const baseBinary = extractBaseBinary(tokens);

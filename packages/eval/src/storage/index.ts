@@ -1,10 +1,11 @@
 // Eval storage exports
+
+export { EvalRepository } from "./eval-repository";
 export {
+  comparisonResults,
+  comparisonRuns,
+  evalMetrics,
   evalRuns,
   evalScores,
-  evalMetrics,
   playgroundRuns,
-  comparisonRuns,
-  comparisonResults,
 } from "./schema";
-export { EvalRepository } from "./eval-repository";

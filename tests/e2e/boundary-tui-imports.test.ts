@@ -1,7 +1,7 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve } from "node:path";
 
 const RESTRICTED_PACKAGES = [
   "@agent-workbench/core",
@@ -11,7 +11,7 @@ const RESTRICTED_PACKAGES = [
   "@agent-workbench/permissions",
 ] as const;
 
-const ALLOWED_PACKAGES = [
+const _ALLOWED_PACKAGES = [
   "@agent-workbench/protocol",
   "@agent-workbench/sdk",
   "@agent-workbench/events",
@@ -28,7 +28,10 @@ function findTuiSourceFiles(dir: string): string[] {
     const full = resolve(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findTuiSourceFiles(full));
-    } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))) {
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))
+    ) {
       results.push(full);
     }
   }
@@ -50,7 +53,7 @@ describe("TUI import boundaries", () => {
       for (const pkg of RESTRICTED_PACKAGES) {
         const regex = new RegExp(
           `(?:from\\s+["']${pkg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/|["']))|(?:import\\s*\\(\\s*["']${pkg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']\\s*\\))`,
-          "g"
+          "g",
         );
         expect(content).not.toMatch(regex);
       }

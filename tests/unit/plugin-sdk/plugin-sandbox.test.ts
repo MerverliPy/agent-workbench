@@ -1,6 +1,6 @@
-import { describe, it, expect } from "bun:test";
-import { validatePluginPermissions } from "@agent-workbench/server/public";
+import { describe, expect, it } from "bun:test";
 import type { PluginManifest } from "@agent-workbench/plugin-sdk";
+import { validatePluginPermissions } from "@agent-workbench/server/public";
 
 function makeManifest(overrides?: Partial<PluginManifest>): PluginManifest {
   return {

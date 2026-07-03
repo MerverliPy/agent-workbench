@@ -11,23 +11,23 @@
  * Default ignore list: .git, node_modules, dist
  */
 
-import { z } from "zod";
-import * as fs from "fs";
-import * as path from "path";
-import type { RegisteredTool, ToolExecutionContext } from "../types";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import type { ToolCache } from "@agent-workbench/cache";
 import type { ToolDefinition } from "@agent-workbench/protocol";
+import { z } from "zod";
 import {
-  assertSafePath,
-  toRelativePath,
-  isSensitivePath,
-  PathGuardError,
-} from "../path-guard";
-import {
-  GREP_MAX_MATCHES,
   GREP_EXCERPT_MAX_CHARS,
+  GREP_MAX_MATCHES,
   truncateItems,
 } from "../compress";
-import type { ToolCache } from "@agent-workbench/cache";
+import {
+  assertSafePath,
+  isSensitivePath,
+  PathGuardError,
+  toRelativePath,
+} from "../path-guard";
+import type { RegisteredTool, ToolExecutionContext } from "../types";
 
 // ---------------------------------------------------------------------------
 // Default ignore segments
@@ -118,14 +118,12 @@ export function createGrepTool(options: GrepToolOptions = {}): RegisteredTool {
     executor: {
       async execute(
         input: unknown,
-        context: ToolExecutionContext
+        context: ToolExecutionContext,
       ): Promise<GrepResult> {
         // 1. Validate input.
         const parsed = GrepInput.safeParse(input);
         if (!parsed.success) {
-          throw new Error(
-            `Invalid grep input: ${parsed.error.message}`
-          );
+          throw new Error(`Invalid grep input: ${parsed.error.message}`);
         }
         const {
           pattern,
@@ -144,7 +142,7 @@ export function createGrepTool(options: GrepToolOptions = {}): RegisteredTool {
         } catch (err: unknown) {
           if (err instanceof PathGuardError) throw err;
           throw new Error(
-            `Path validation failed for "${searchPath ?? "."}": ${String(err)}`
+            `Path validation failed for "${searchPath ?? "."}": ${String(err)}`,
           );
         }
 
@@ -169,7 +167,7 @@ export function createGrepTool(options: GrepToolOptions = {}): RegisteredTool {
           context.sessionId,
           context.projectRoot,
           "tool:grep",
-          cacheKey
+          cacheKey,
         );
         if (cached !== undefined) {
           return cached as GrepResult;
@@ -256,7 +254,7 @@ export function createGrepTool(options: GrepToolOptions = {}): RegisteredTool {
         // 7. Truncate results.
         const { items: matches, meta } = truncateItems(
           allMatches,
-          effectiveMax
+          effectiveMax,
         );
 
         const result: GrepResult = {
@@ -274,7 +272,7 @@ export function createGrepTool(options: GrepToolOptions = {}): RegisteredTool {
           context.projectRoot,
           "tool:grep",
           cacheKey,
-          result
+          result,
         );
 
         return result;

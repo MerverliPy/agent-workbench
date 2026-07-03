@@ -1,16 +1,19 @@
-import type { z } from "zod/v4";
-import type { HttpTransport } from "../transport/http";
+import type { InferRouteResponse } from "@agent-workbench/protocol";
 import {
-  PrefillPromptRoute,
   FocusRoute,
   GetTuiStateRoute,
+  PrefillPromptRoute,
 } from "@agent-workbench/protocol";
-import type { InferRouteResponse } from "@agent-workbench/protocol";
+import type { z } from "zod/v4";
+import type { HttpTransport } from "../transport/http";
 
 export class TuiResource {
   constructor(private transport: HttpTransport) {}
 
-  async prefillPrompt(data: z.infer<typeof PrefillPromptRoute.body>, signal?: AbortSignal): Promise<InferRouteResponse<typeof PrefillPromptRoute>> {
+  async prefillPrompt(
+    data: z.infer<typeof PrefillPromptRoute.body>,
+    signal?: AbortSignal,
+  ): Promise<InferRouteResponse<typeof PrefillPromptRoute>> {
     return this.transport.request(
       PrefillPromptRoute.method,
       PrefillPromptRoute.path,
@@ -19,7 +22,10 @@ export class TuiResource {
     );
   }
 
-  async focus(data: z.infer<typeof FocusRoute.body>, signal?: AbortSignal): Promise<InferRouteResponse<typeof FocusRoute>> {
+  async focus(
+    data: z.infer<typeof FocusRoute.body>,
+    signal?: AbortSignal,
+  ): Promise<InferRouteResponse<typeof FocusRoute>> {
     return this.transport.request(
       FocusRoute.method,
       FocusRoute.path,
@@ -28,7 +34,9 @@ export class TuiResource {
     );
   }
 
-  async getState(signal?: AbortSignal): Promise<InferRouteResponse<typeof GetTuiStateRoute>> {
+  async getState(
+    signal?: AbortSignal,
+  ): Promise<InferRouteResponse<typeof GetTuiStateRoute>> {
     return this.transport.request(
       GetTuiStateRoute.method,
       GetTuiStateRoute.path,

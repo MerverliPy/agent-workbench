@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { CostTracker } from "@agent-workbench/models";
 
 describe("CostTracker", () => {
@@ -13,7 +13,13 @@ describe("CostTracker", () => {
   });
 
   it("records a single model call", () => {
-    const record = tracker.recordCall("session-1", "openai", "gpt-4o", 500, 200);
+    const record = tracker.recordCall(
+      "session-1",
+      "openai",
+      "gpt-4o",
+      500,
+      200,
+    );
     expect(record.providerId).toBe("openai");
     expect(record.model).toBe("gpt-4o");
     expect(record.inputTokens).toBe(500);
@@ -22,14 +28,28 @@ describe("CostTracker", () => {
   });
 
   it("records with custom costs", () => {
-    const record = tracker.recordCall("session-1", "custom", "my-model", 1000, 500, 0.001, 0.002);
+    const record = tracker.recordCall(
+      "session-1",
+      "custom",
+      "my-model",
+      1000,
+      500,
+      0.001,
+      0.002,
+    );
     // Expect (1000/1000)*0.001 + (500/1000)*0.002 = 0.001 + 0.001 = 0.002
     expect(record.cost).toBe(0.002);
   });
 
   it("stores per-session records", () => {
     tracker.recordCall("session-a", "openai", "gpt-4o", 100, 50);
-    tracker.recordCall("session-a", "anthropic", "claude-sonnet-4-20250514", 200, 100);
+    tracker.recordCall(
+      "session-a",
+      "anthropic",
+      "claude-sonnet-4-20250514",
+      200,
+      100,
+    );
     tracker.recordCall("session-b", "openai", "gpt-4o-mini", 50, 25);
 
     expect(tracker.getSessionRecords("session-a")).toHaveLength(2);
@@ -46,13 +66,19 @@ describe("CostTracker", () => {
     expect(summary.totalInputTokens).toBe(1500);
     expect(summary.totalOutputTokens).toBe(750);
     expect(summary.totalCost).toBeGreaterThan(0);
-    expect(summary.providerBreakdown["openai"]).toBeDefined();
-    expect(summary.providerBreakdown["openai"]!.calls).toBe(2);
+    expect(summary.providerBreakdown.openai).toBeDefined();
+    expect(summary.providerBreakdown.openai?.calls).toBe(2);
   });
 
   it("aggregates day summary", () => {
     tracker.recordCall("session-1", "openai", "gpt-4o", 100, 50);
-    tracker.recordCall("session-2", "anthropic", "claude-sonnet-4-20250514", 200, 100);
+    tracker.recordCall(
+      "session-2",
+      "anthropic",
+      "claude-sonnet-4-20250514",
+      200,
+      100,
+    );
 
     const today = new Date().toISOString().slice(0, 10);
     const summary = tracker.getDaySummary(today);

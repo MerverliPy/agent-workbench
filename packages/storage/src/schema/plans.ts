@@ -1,4 +1,4 @@
-import { sqliteTable, text, index } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const plans = sqliteTable(
   "plans",
@@ -22,5 +22,5 @@ export const plans = sqliteTable(
     index("plans_run_id_idx").on(table.runId),
     index("plans_status_idx").on(table.status),
     index("plans_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );

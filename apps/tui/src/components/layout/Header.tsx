@@ -1,6 +1,6 @@
 import type { JSX } from "@opentui/solid";
-import { serverStatus, currentAgentId } from "../../state/app";
 import { SERVER_BASE_URL } from "../../lib/sdk";
+import { currentAgentId, serverStatus } from "../../state/app";
 
 export function Header(): JSX.Element {
   const status = serverStatus();

@@ -1,22 +1,19 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
+  CreateSessionRequest,
   ErrorEnvelope,
   Plan,
+  PlanDecision,
   PlanStatus,
   PlanStep,
-  CreateSessionRequest,
-  UpdateSessionRequest,
-  SessionStatus,
-  PermissionRequest,
-  PermissionDecision,
-  SubmitDecisionRequest,
-  SubmitPlanDecisionRequest,
-  PlanDecision,
-  SubmitMessageRequest,
-  ToolCall,
-  ToolCallStatus,
   RunStatus,
+  SessionStatus,
+  SubmitDecisionRequest,
+  SubmitMessageRequest,
+  SubmitPlanDecisionRequest,
+  ToolCallStatus,
+  UpdateSessionRequest,
 } from "@agent-workbench/protocol";
 
 describe("Protocol contract — ErrorEnvelope", () => {
@@ -54,7 +51,8 @@ describe("Protocol contract — ErrorEnvelope", () => {
 
   it("rejects an ErrorEnvelope with missing error wrapper", () => {
     const result = ErrorEnvelope.safeParse({
-      code: "BAD", message: "Wrong shape",
+      code: "BAD",
+      message: "Wrong shape",
     });
     expect(result.success).toBe(false);
   });
@@ -110,7 +108,15 @@ describe("Protocol contract — Plan", () => {
   });
 
   it("validates PlanStatus enum values", () => {
-    const valid = ["draft", "pending", "approved", "denied", "executing", "completed", "failed"];
+    const valid = [
+      "draft",
+      "pending",
+      "approved",
+      "denied",
+      "executing",
+      "completed",
+      "failed",
+    ];
     for (const s of valid) {
       expect(PlanStatus.safeParse(s).success).toBe(true);
     }
@@ -252,7 +258,15 @@ describe("Protocol contract — Permission", () => {
 
 describe("Protocol contract — ToolCall", () => {
   it("validates ToolCallStatus enum", () => {
-    const valid = ["requested", "permission_pending", "running", "completed", "failed", "denied", "aborted"];
+    const valid = [
+      "requested",
+      "permission_pending",
+      "running",
+      "completed",
+      "failed",
+      "denied",
+      "aborted",
+    ];
     for (const s of valid) {
       expect(ToolCallStatus.safeParse(s).success).toBe(true);
     }

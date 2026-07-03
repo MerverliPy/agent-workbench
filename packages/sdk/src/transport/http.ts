@@ -1,5 +1,5 @@
-import type { z } from "zod/v4";
 import { ErrorEnvelope } from "@agent-workbench/protocol";
+import type { z } from "zod/v4";
 import { ApiError, SdkError } from "./errors";
 
 export interface HttpTransportOptions {
@@ -54,20 +54,15 @@ export class HttpTransport {
       response = await fetch(resolvedUrl, fetchOptions);
     } catch (error) {
       const reason =
-        error instanceof TypeError && (
-          error.message === "Failed to fetch" ||
-          error.message === "Load failed"
-        )
+        error instanceof TypeError &&
+        (error.message === "Failed to fetch" || error.message === "Load failed")
           ? " (connection refused, unreachable, or CORS blocked)"
           : error instanceof DOMException && error.name === "AbortError"
             ? " (request timed out or was cancelled)"
             : error instanceof Error
               ? ` (${error.message})`
               : "";
-      throw new SdkError(
-        `${method} ${resolvedUrl} failed${reason}`,
-        error,
-      );
+      throw new SdkError(`${method} ${resolvedUrl} failed${reason}`, error);
     }
 
     if (!response.ok) {
@@ -84,14 +79,23 @@ export class HttpTransport {
     try {
       parsed = JSON.parse(text);
     } catch (error) {
-      throw new SdkError(`Failed to parse response: ${text.slice(0, 100)}`, error);
+      throw new SdkError(
+        `Failed to parse response: ${text.slice(0, 100)}`,
+        error,
+      );
     }
 
     if (options?.responseSchema) {
       const result = options.responseSchema.safeParse(parsed);
       if (!result.success) {
-        const issues = result.error?.issues?.map((i: { message: string }) => i.message).join(", ") ?? "unknown";
-        throw new SdkError(`Response validation failed: ${issues}`, result.error);
+        const issues =
+          result.error?.issues
+            ?.map((i: { message: string }) => i.message)
+            .join(", ") ?? "unknown";
+        throw new SdkError(
+          `Response validation failed: ${issues}`,
+          result.error,
+        );
       }
       return result.data as T;
     }
@@ -123,6 +127,13 @@ export class HttpTransport {
       // body not parseable as error envelope
     }
 
-    return new ApiError(code, message, response.status, requestId, recoverable, details);
+    return new ApiError(
+      code,
+      message,
+      response.status,
+      requestId,
+      recoverable,
+      details,
+    );
   }
 }

@@ -17,25 +17,61 @@ export interface Keybinding {
 
 export const KEYBINDINGS: readonly Keybinding[] = [
   // ── Global ──
-  { combo: "Ctrl+K / Ctrl+P", description: "Open command palette", category: "global" },
+  {
+    combo: "Ctrl+K / Ctrl+P",
+    description: "Open command palette",
+    category: "global",
+  },
   { combo: "Escape", description: "Close active overlay", category: "global" },
-  { combo: "Ctrl+/", description: "Show keyboard shortcuts", category: "global" },
+  {
+    combo: "Ctrl+/",
+    description: "Show keyboard shortcuts",
+    category: "global",
+  },
   { combo: "Ctrl+C", description: "Exit TUI", category: "global" },
 
   // ── Navigation ──
-  { combo: "Ctrl+1", description: "Switch to Build agent", category: "navigation" },
-  { combo: "Ctrl+2", description: "Switch to Plan agent", category: "navigation" },
-  { combo: "↑ / ↓", description: "Navigate command palette / scroll", category: "navigation" },
+  {
+    combo: "Ctrl+1",
+    description: "Switch to Build agent",
+    category: "navigation",
+  },
+  {
+    combo: "Ctrl+2",
+    description: "Switch to Plan agent",
+    category: "navigation",
+  },
+  {
+    combo: "↑ / ↓",
+    description: "Navigate command palette / scroll",
+    category: "navigation",
+  },
 
   // ── Prompt ──
   { combo: "Ctrl+Enter", description: "Submit prompt", category: "prompt" },
-  { combo: "Enter", description: "Newline in prompt editor", category: "prompt" },
-  { combo: "Shift+Enter", description: "Newline (same as Enter)", category: "prompt" },
+  {
+    combo: "Enter",
+    description: "Newline in prompt editor",
+    category: "prompt",
+  },
+  {
+    combo: "Shift+Enter",
+    description: "Newline (same as Enter)",
+    category: "prompt",
+  },
 
   // ── Panels ──
   { combo: "Ctrl+D", description: "Toggle diff viewer", category: "panels" },
-  { combo: "Ctrl+T", description: "Toggle token health panel", category: "panels" },
-  { combo: "Ctrl+L", description: "Clear message timeline", category: "panels" },
+  {
+    combo: "Ctrl+T",
+    description: "Toggle token health panel",
+    category: "panels",
+  },
+  {
+    combo: "Ctrl+L",
+    description: "Clear message timeline",
+    category: "panels",
+  },
 ];
 
 /**

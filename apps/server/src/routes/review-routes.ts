@@ -12,71 +12,95 @@
  * POST   /review/:reviewId/changes           — Request changes on a review (auth required)
  */
 
-import { Hono } from "hono";
-import type { ServerAppBindings, ServerServices } from "../context";
-import type { SubmitReviewOptions } from "@agent-workbench/collab";
 import { Scope } from "@agent-workbench/auth";
-import { requireScope } from "../middleware/auth-scope";
+import type { SubmitReviewOptions } from "@agent-workbench/collab";
+import type { Hono } from "hono";
+import type { ServerAppBindings, ServerServices } from "../context";
 import { ApiError } from "../errors";
+import { requireScope } from "../middleware/auth-scope";
 import { handleAppError } from "../middleware/error-handler";
 
-export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: ServerServices): void {
+export function registerReviewRoutes(
+  app: Hono<ServerAppBindings>,
+  services: ServerServices,
+): void {
   const { reviewQueue, sessionRepository } = services;
 
   // ── POST /session/:sessionId/review — Submit for review ─────────────────
-  app.post("/session/:sessionId/review", requireScope(Scope.REVIEW_SUBMIT), async (c) => {
-    try {
-      const sessionId = c.req.param("sessionId");
+  app.post(
+    "/session/:sessionId/review",
+    requireScope(Scope.REVIEW_SUBMIT),
+    async (c) => {
+      try {
+        const sessionId = c.req.param("sessionId");
 
-      const session = sessionRepository.findById(sessionId);
-      if (!session) {
-        return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Session not found: ${sessionId}`, recoverable: true }),
-          404,
+        const session = sessionRepository.findById(sessionId);
+        if (!session) {
+          return c.json(
+            new ApiError({
+              status: 404,
+              code: "NOT_FOUND",
+              message: `Session not found: ${sessionId}`,
+              recoverable: true,
+            }),
+            404,
+          );
+        }
+
+        const body = (await c.req.json().catch(() => ({}))) as {
+          title?: string;
+          description?: string;
+          diffContent?: string;
+          filePath?: string;
+        };
+
+        if (!body.title || !body.diffContent || !body.filePath) {
+          return c.json(
+            new ApiError({
+              status: 400,
+              code: "BAD_REQUEST",
+              message: "Missing required fields: title, diffContent, filePath.",
+              recoverable: true,
+            }),
+            400,
+          );
+        }
+
+        const authContext = c.get("auth" as never) as
+          | { subject?: string }
+          | undefined;
+        const submittedBy = authContext?.subject ?? "anonymous";
+
+        const opts: SubmitReviewOptions = {
+          title: body.title!,
+          diffContent: body.diffContent!,
+          filePath: body.filePath!,
+          ...(body.description ? { description: body.description } : {}),
+        };
+
+        const item = reviewQueue.submit(sessionId, submittedBy, opts);
+
+        return c.json(item, 201);
+      } catch (err) {
+        return handleAppError(
+          err instanceof Error
+            ? new ApiError({
+                status: 500,
+                code: "REVIEW_SUBMIT_FAILED",
+                message: err.message,
+                recoverable: false,
+              })
+            : new ApiError({
+                status: 500,
+                code: "REVIEW_SUBMIT_FAILED",
+                message: "Unknown error",
+                recoverable: false,
+              }),
+          c,
         );
       }
-
-      const body = (await c.req.json().catch(() => ({}))) as {
-        title?: string;
-        description?: string;
-        diffContent?: string;
-        filePath?: string;
-      };
-
-      if (!body.title || !body.diffContent || !body.filePath) {
-        return c.json(
-          new ApiError({
-            status: 400,
-            code: "BAD_REQUEST",
-            message: "Missing required fields: title, diffContent, filePath.",
-            recoverable: true,
-          }),
-          400,
-        );
-      }
-
-      const authContext = c.get("auth" as never) as { subject?: string } | undefined;
-      const submittedBy = authContext?.subject ?? "anonymous";
-
-      const opts: SubmitReviewOptions = {
-        title: body.title!,
-        diffContent: body.diffContent!,
-        filePath: body.filePath!,
-        ...(body.description ? { description: body.description } : {}),
-      };
-
-      const item = reviewQueue.submit(sessionId, submittedBy, opts);
-
-      return c.json(item, 201);
-    } catch (err) {
-      return handleAppError(
-        err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_SUBMIT_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_SUBMIT_FAILED", message: "Unknown error", recoverable: false }),
-        c,
-      );
-    }
-  });
+    },
+  );
 
   // ── GET /review/pending — List all pending reviews ──────────────────────
   app.get("/review/pending", async (c) => {
@@ -86,8 +110,18 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
     } catch (err) {
       return handleAppError(
         err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_LIST_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_LIST_FAILED", message: "Unknown error", recoverable: false }),
+          ? new ApiError({
+              status: 500,
+              code: "REVIEW_LIST_FAILED",
+              message: err.message,
+              recoverable: false,
+            })
+          : new ApiError({
+              status: 500,
+              code: "REVIEW_LIST_FAILED",
+              message: "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }
@@ -101,7 +135,12 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
       const session = sessionRepository.findById(sessionId);
       if (!session) {
         return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Session not found: ${sessionId}`, recoverable: true }),
+          new ApiError({
+            status: 404,
+            code: "NOT_FOUND",
+            message: `Session not found: ${sessionId}`,
+            recoverable: true,
+          }),
           404,
         );
       }
@@ -111,8 +150,18 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
     } catch (err) {
       return handleAppError(
         err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_LIST_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_LIST_FAILED", message: "Unknown error", recoverable: false }),
+          ? new ApiError({
+              status: 500,
+              code: "REVIEW_LIST_FAILED",
+              message: err.message,
+              recoverable: false,
+            })
+          : new ApiError({
+              status: 500,
+              code: "REVIEW_LIST_FAILED",
+              message: "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }
@@ -126,7 +175,12 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
 
       if (!item) {
         return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Review not found: ${reviewId}`, recoverable: true }),
+          new ApiError({
+            status: 404,
+            code: "NOT_FOUND",
+            message: `Review not found: ${reviewId}`,
+            recoverable: true,
+          }),
           404,
         );
       }
@@ -135,106 +189,189 @@ export function registerReviewRoutes(app: Hono<ServerAppBindings>, services: Ser
     } catch (err) {
       return handleAppError(
         err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_GET_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_GET_FAILED", message: "Unknown error", recoverable: false }),
+          ? new ApiError({
+              status: 500,
+              code: "REVIEW_GET_FAILED",
+              message: err.message,
+              recoverable: false,
+            })
+          : new ApiError({
+              status: 500,
+              code: "REVIEW_GET_FAILED",
+              message: "Unknown error",
+              recoverable: false,
+            }),
         c,
       );
     }
   });
 
   // ── POST /review/:reviewId/approve — Approve ────────────────────────────
-  app.post("/review/:reviewId/approve", requireScope(Scope.REVIEW_DECIDE), async (c) => {
-    try {
-      const reviewId = c.req.param("reviewId");
-      const authContext = c.get("auth" as never) as { subject?: string } | undefined;
-      const reviewerId = authContext?.subject ?? "anonymous";
+  app.post(
+    "/review/:reviewId/approve",
+    requireScope(Scope.REVIEW_DECIDE),
+    async (c) => {
+      try {
+        const reviewId = c.req.param("reviewId");
+        const authContext = c.get("auth" as never) as
+          | { subject?: string }
+          | undefined;
+        const reviewerId = authContext?.subject ?? "anonymous";
 
-      const body = (await c.req.json().catch(() => ({}))) as { comment?: string };
+        const body = (await c.req.json().catch(() => ({}))) as {
+          comment?: string;
+        };
 
-      const item = reviewQueue.approve(reviewId, reviewerId, body.comment);
-      if (!item) {
-        return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Review not found: ${reviewId}`, recoverable: true }),
-          404,
+        const item = reviewQueue.approve(reviewId, reviewerId, body.comment);
+        if (!item) {
+          return c.json(
+            new ApiError({
+              status: 404,
+              code: "NOT_FOUND",
+              message: `Review not found: ${reviewId}`,
+              recoverable: true,
+            }),
+            404,
+          );
+        }
+
+        return c.json(item);
+      } catch (err) {
+        return handleAppError(
+          err instanceof Error
+            ? new ApiError({
+                status: 500,
+                code: "REVIEW_APPROVE_FAILED",
+                message: err.message,
+                recoverable: false,
+              })
+            : new ApiError({
+                status: 500,
+                code: "REVIEW_APPROVE_FAILED",
+                message: "Unknown error",
+                recoverable: false,
+              }),
+          c,
         );
       }
-
-      return c.json(item);
-    } catch (err) {
-      return handleAppError(
-        err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_APPROVE_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_APPROVE_FAILED", message: "Unknown error", recoverable: false }),
-        c,
-      );
-    }
-  });
+    },
+  );
 
   // ── POST /review/:reviewId/reject — Reject ──────────────────────────────
-  app.post("/review/:reviewId/reject", requireScope(Scope.REVIEW_DECIDE), async (c) => {
-    try {
-      const reviewId = c.req.param("reviewId");
-      const authContext = c.get("auth" as never) as { subject?: string } | undefined;
-      const reviewerId = authContext?.subject ?? "anonymous";
+  app.post(
+    "/review/:reviewId/reject",
+    requireScope(Scope.REVIEW_DECIDE),
+    async (c) => {
+      try {
+        const reviewId = c.req.param("reviewId");
+        const authContext = c.get("auth" as never) as
+          | { subject?: string }
+          | undefined;
+        const reviewerId = authContext?.subject ?? "anonymous";
 
-      const body = (await c.req.json().catch(() => ({}))) as { comment?: string };
+        const body = (await c.req.json().catch(() => ({}))) as {
+          comment?: string;
+        };
 
-      const item = reviewQueue.reject(reviewId, reviewerId, body.comment);
-      if (!item) {
-        return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Review not found: ${reviewId}`, recoverable: true }),
-          404,
+        const item = reviewQueue.reject(reviewId, reviewerId, body.comment);
+        if (!item) {
+          return c.json(
+            new ApiError({
+              status: 404,
+              code: "NOT_FOUND",
+              message: `Review not found: ${reviewId}`,
+              recoverable: true,
+            }),
+            404,
+          );
+        }
+
+        return c.json(item);
+      } catch (err) {
+        return handleAppError(
+          err instanceof Error
+            ? new ApiError({
+                status: 500,
+                code: "REVIEW_REJECT_FAILED",
+                message: err.message,
+                recoverable: false,
+              })
+            : new ApiError({
+                status: 500,
+                code: "REVIEW_REJECT_FAILED",
+                message: "Unknown error",
+                recoverable: false,
+              }),
+          c,
         );
       }
-
-      return c.json(item);
-    } catch (err) {
-      return handleAppError(
-        err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_REJECT_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_REJECT_FAILED", message: "Unknown error", recoverable: false }),
-        c,
-      );
-    }
-  });
+    },
+  );
 
   // ── POST /review/:reviewId/changes — Request changes ────────────────────
-  app.post("/review/:reviewId/changes", requireScope(Scope.REVIEW_DECIDE), async (c) => {
-    try {
-      const reviewId = c.req.param("reviewId");
-      const authContext = c.get("auth" as never) as { subject?: string } | undefined;
-      const reviewerId = authContext?.subject ?? "anonymous";
+  app.post(
+    "/review/:reviewId/changes",
+    requireScope(Scope.REVIEW_DECIDE),
+    async (c) => {
+      try {
+        const reviewId = c.req.param("reviewId");
+        const authContext = c.get("auth" as never) as
+          | { subject?: string }
+          | undefined;
+        const reviewerId = authContext?.subject ?? "anonymous";
 
-      const body = (await c.req.json().catch(() => ({}))) as { comment?: string };
+        const body = (await c.req.json().catch(() => ({}))) as {
+          comment?: string;
+        };
 
-      if (!body.comment || body.comment.trim().length === 0) {
-        return c.json(
-          new ApiError({
-            status: 400,
-            code: "BAD_REQUEST",
-            message: "Comment is required when requesting changes.",
-            recoverable: true,
-          }),
-          400,
+        if (!body.comment || body.comment.trim().length === 0) {
+          return c.json(
+            new ApiError({
+              status: 400,
+              code: "BAD_REQUEST",
+              message: "Comment is required when requesting changes.",
+              recoverable: true,
+            }),
+            400,
+          );
+        }
+
+        const item = reviewQueue.requestChanges(
+          reviewId,
+          reviewerId,
+          body.comment,
+        );
+        if (!item) {
+          return c.json(
+            new ApiError({
+              status: 404,
+              code: "NOT_FOUND",
+              message: `Review not found: ${reviewId}`,
+              recoverable: true,
+            }),
+            404,
+          );
+        }
+
+        return c.json(item);
+      } catch (err) {
+        return handleAppError(
+          err instanceof Error
+            ? new ApiError({
+                status: 500,
+                code: "REVIEW_CHANGES_FAILED",
+                message: err.message,
+                recoverable: false,
+              })
+            : new ApiError({
+                status: 500,
+                code: "REVIEW_CHANGES_FAILED",
+                message: "Unknown error",
+                recoverable: false,
+              }),
+          c,
         );
       }
-
-      const item = reviewQueue.requestChanges(reviewId, reviewerId, body.comment);
-      if (!item) {
-        return c.json(
-          new ApiError({ status: 404, code: "NOT_FOUND", message: `Review not found: ${reviewId}`, recoverable: true }),
-          404,
-        );
-      }
-
-      return c.json(item);
-    } catch (err) {
-      return handleAppError(
-        err instanceof Error
-          ? new ApiError({ status: 500, code: "REVIEW_CHANGES_FAILED", message: err.message, recoverable: false })
-          : new ApiError({ status: 500, code: "REVIEW_CHANGES_FAILED", message: "Unknown error", recoverable: false }),
-        c,
-      );
-    }
-  });
+    },
+  );
 }

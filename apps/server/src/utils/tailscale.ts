@@ -19,7 +19,7 @@ export function detectTailscaleIp(): string | null {
       const text = output.stdout.toString();
       // Look for inet addr like "inet 100.81.83.98/24"
       const match = text.match(/inet\s+(\d+\.\d+\.\d+\.\d+)/);
-      if (match && match[1]) {
+      if (match?.[1]) {
         return match[1];
       }
     }

@@ -10,11 +10,7 @@
   "enabled": true,
   "provides": {
     "tools": [],
-    "providers": [
-      "hermes:deepseek",
-      "hermes:copilot",
-      "hermes:opencode-go"
-    ],
+    "providers": ["hermes:deepseek", "hermes:copilot", "hermes:opencode-go"],
     "panels": [],
     "hooks": []
   },

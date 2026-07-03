@@ -1,8 +1,12 @@
-import type { Context, Handler } from "hono";
 import type { RouteContract } from "@agent-workbench/protocol";
+import type { Context, Handler } from "hono";
 import type { ServerAppBindings } from "../context";
 import { ApiError } from "../errors";
-import { validateRequest, validateResponse, type ValidatedRequest } from "../utils/validation";
+import {
+  type ValidatedRequest,
+  validateRequest,
+  validateResponse,
+} from "../utils/validation";
 
 export interface RouteHandlerContext {
   readonly validated: ValidatedRequest;
@@ -12,7 +16,10 @@ type AppContext = Context<ServerAppBindings>;
 
 export function createJsonRouteHandler<T>(
   contract: RouteContract,
-  handler: (context: AppContext, routeContext: RouteHandlerContext) => Promise<T> | T
+  handler: (
+    context: AppContext,
+    routeContext: RouteHandlerContext,
+  ) => Promise<T> | T,
 ): Handler<ServerAppBindings> {
   return async (context) => {
     const validated = await validateRequest(contract, context.req);
@@ -22,7 +29,10 @@ export function createJsonRouteHandler<T>(
   };
 }
 
-export function createNotImplementedHandler(contract: RouteContract, routeName: string): Handler<ServerAppBindings> {
+export function createNotImplementedHandler(
+  contract: RouteContract,
+  routeName: string,
+): Handler<ServerAppBindings> {
   return async (context) => {
     await validateRequest(contract, context.req);
 

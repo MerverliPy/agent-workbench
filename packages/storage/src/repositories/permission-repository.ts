@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+import { permissionDecisions, permissionRequests } from "../schema";
 import type { DrizzleBunSqliteDatabase } from "../types";
-import { permissionRequests, permissionDecisions } from "../schema";
 
 export type PermissionRequestRow = typeof permissionRequests.$inferSelect;
 export type PermissionRequestInsert = typeof permissionRequests.$inferInsert;
@@ -63,7 +63,7 @@ export class PermissionRepository {
 
   updateRequest(
     id: string,
-    data: Partial<Omit<PermissionRequestInsert, "id">>
+    data: Partial<Omit<PermissionRequestInsert, "id">>,
   ): PermissionRequestRow | undefined {
     this.db
       .update(permissionRequests)

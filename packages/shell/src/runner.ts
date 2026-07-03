@@ -1,11 +1,11 @@
+import { redactSecrets } from "./redact";
+import type { ShellResult, ShellRunOptions } from "./types";
 import {
-  MAX_STDOUT_BYTES,
-  MAX_STDERR_BYTES,
   DEFAULT_TIMEOUT_MS,
+  MAX_STDERR_BYTES,
+  MAX_STDOUT_BYTES,
   MAX_TIMEOUT_MS,
 } from "./types";
-import type { ShellRunOptions, ShellResult } from "./types";
-import { redactSecrets } from "./redact";
 
 const encoder = new TextEncoder();
 
@@ -17,7 +17,7 @@ export class SimpleCommandRunner {
   async run(opts: ShellRunOptions): Promise<ShellResult> {
     const effectiveTimeout = Math.min(
       opts.timeout ?? DEFAULT_TIMEOUT_MS,
-      MAX_TIMEOUT_MS
+      MAX_TIMEOUT_MS,
     );
 
     let stdoutBuf = "";
@@ -85,7 +85,7 @@ export class SimpleCommandRunner {
               }
               stdoutBuf += redacted;
               opts.onStdout?.(redacted);
-            })
+            }),
           );
         }
 
@@ -105,7 +105,7 @@ export class SimpleCommandRunner {
               }
               stderrBuf += redacted;
               opts.onStderr?.(redacted);
-            })
+            }),
           );
         }
 

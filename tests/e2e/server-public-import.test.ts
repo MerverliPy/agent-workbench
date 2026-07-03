@@ -1,16 +1,24 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
-import { readFileSync, readdirSync } from "node:fs";
-import { join, resolve, extname } from "node:path";
+import { describe, expect, it } from "bun:test";
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join, resolve } from "node:path";
 
 function findTestFiles(dir: string): string[] {
   const results: string[] = [];
   const entries = readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
-    if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+    if (
+      entry.isDirectory() &&
+      !entry.name.startsWith(".") &&
+      entry.name !== "node_modules"
+    ) {
       results.push(...findTestFiles(fullPath));
-    } else if (entry.isFile() && extname(entry.name) === ".ts" && !entry.name.endsWith(".d.ts")) {
+    } else if (
+      entry.isFile() &&
+      extname(entry.name) === ".ts" &&
+      !entry.name.endsWith(".d.ts")
+    ) {
       results.push(fullPath);
     }
   }
@@ -45,10 +53,10 @@ describe("Server public import boundary", () => {
     }
 
     if (violations.length > 0) {
-      const msg = violations
-        .map((v) => `  ${v.file}: ${v.line}`)
-        .join("\n");
-      throw new Error(`Test files import @agent-workbench/server without /public:\n${msg}`);
+      const msg = violations.map((v) => `  ${v.file}: ${v.line}`).join("\n");
+      throw new Error(
+        `Test files import @agent-workbench/server without /public:\n${msg}`,
+      );
     }
   });
 

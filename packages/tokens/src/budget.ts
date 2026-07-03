@@ -1,11 +1,15 @@
-import type { TokenBudget, TokenHealthLevel, ContextBudgetInput } from "./types";
 import { estimateTokensFromLength } from "./counting";
+import type {
+  ContextBudgetInput,
+  TokenBudget,
+  TokenHealthLevel,
+} from "./types";
 
 const DEFAULT_CONTEXT_LIMIT = 128_000;
 
-const HEALTHY_THRESHOLD = 0.50;
-const WATCH_THRESHOLD = 0.30;
-const STRAINED_THRESHOLD = 0.10;
+const HEALTHY_THRESHOLD = 0.5;
+const WATCH_THRESHOLD = 0.3;
+const STRAINED_THRESHOLD = 0.1;
 
 function classifyLevel(utilizationPercent: number): TokenHealthLevel {
   if (utilizationPercent > (1 - STRAINED_THRESHOLD) * 100) return "critical";
@@ -33,7 +37,7 @@ export function calculateBudget(input: ContextBudgetInput): TokenBudget {
 
   for (const tool of input.toolDefinitions ?? []) {
     estimatedUsed += estimateTokensFromLength(
-      tool.name.length + tool.description.length + 100
+      tool.name.length + tool.description.length + 100,
     );
   }
 
@@ -46,9 +50,8 @@ export function calculateBudget(input: ContextBudgetInput): TokenBudget {
   }
 
   const remaining = Math.max(0, limit - estimatedUsed);
-  const utilizationPercent = limit > 0
-    ? Math.round((estimatedUsed / limit) * 100)
-    : 0;
+  const utilizationPercent =
+    limit > 0 ? Math.round((estimatedUsed / limit) * 100) : 0;
 
   return {
     limit,

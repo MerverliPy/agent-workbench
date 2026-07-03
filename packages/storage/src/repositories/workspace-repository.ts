@@ -1,6 +1,6 @@
-import { eq, and, isNull } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { eq } from "drizzle-orm";
 import { workspaces } from "../schema/workspaces";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type WorkspaceRow = typeof workspaces.$inferSelect;
 export type WorkspaceInsert = typeof workspaces.$inferInsert;
@@ -39,18 +39,19 @@ export class WorkspaceRepository {
     patch: Partial<
       Pick<
         WorkspaceInsert,
-        "name" | "rootPath" | "description" | "archived" | "tagsJson" | "updatedAt"
+        | "name"
+        | "rootPath"
+        | "description"
+        | "archived"
+        | "tagsJson"
+        | "updatedAt"
       >
     >,
   ): WorkspaceRow | undefined {
     const existing = this.findById(id);
     if (!existing) return undefined;
 
-    this.db
-      .update(workspaces)
-      .set(patch)
-      .where(eq(workspaces.id, id))
-      .run();
+    this.db.update(workspaces).set(patch).where(eq(workspaces.id, id)).run();
     return this.findById(id);
   }
 

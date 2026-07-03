@@ -13,12 +13,12 @@
  */
 
 import type {
-  SessionRepository,
-  MessageRepository,
-  ToolCallRepository,
-  PermissionRepository,
   LedgerRepository,
+  MessageRepository,
+  PermissionRepository,
+  SessionRepository,
   SummaryRepository,
+  ToolCallRepository,
 } from "@agent-workbench/storage";
 
 // ── Export schema (pure types for portability) ─────────────────────────────
@@ -129,15 +129,19 @@ export async function exportSession(
   const rawToolCalls = repos.toolCallRepository.listBySession(sessionId);
   const toolCalls: ExportedToolCall[] = rawToolCalls.map((tc) => {
     const started = tc.startedAt ? new Date(tc.startedAt).getTime() : null;
-    const completed = tc.completedAt ? new Date(tc.completedAt).getTime() : null;
+    const completed = tc.completedAt
+      ? new Date(tc.completedAt).getTime()
+      : null;
     const durationMs = started && completed ? completed - started : undefined;
     const success = tc.status === "completed" || tc.status === "success";
 
     return {
       toolName: tc.toolName,
       input: JSON.parse(tc.inputJson) as Record<string, unknown>,
-      output: includeToolOutputs && tc.resultJson
-        ? truncate(tc.resultJson, maxLen) : undefined,
+      output:
+        includeToolOutputs && tc.resultJson
+          ? truncate(tc.resultJson, maxLen)
+          : undefined,
       error: tc.errorJson ?? undefined,
       success,
       durationMs,
@@ -148,12 +152,18 @@ export async function exportSession(
   // Fetch permission requests
   let permissions: ExportedPermission[] = [];
   if (includePermissions) {
-    const rawPerms = repos.permissionRepository.listRequestsBySession(sessionId);
+    const rawPerms =
+      repos.permissionRepository.listRequestsBySession(sessionId);
     permissions = rawPerms.map((p) => ({
       action: p.toolName,
       toolName: p.toolName,
       riskLevel: p.riskLevel,
-      decision: p.status === "approved" ? "allow" : p.status === "denied" ? "deny" : p.status,
+      decision:
+        p.status === "approved"
+          ? "allow"
+          : p.status === "denied"
+            ? "deny"
+            : p.status,
       createdAt: p.createdAt,
     }));
   }
@@ -211,11 +221,16 @@ export async function importSession(
     activeAgent: "build",
     status: "active",
     workspaceId: exportData.session.workspaceId ?? null,
-    tagsJson: exportData.session.tags ? JSON.stringify(exportData.session.tags) : null,
+    tagsJson: exportData.session.tags
+      ? JSON.stringify(exportData.session.tags)
+      : null,
     createdAt: now,
     updatedAt: now,
     lastRunAt: null,
-    metadataJson: JSON.stringify({ importedFrom: exportData.session.id, importedAt: now }),
+    metadataJson: JSON.stringify({
+      importedFrom: exportData.session.id,
+      importedAt: now,
+    }),
   });
 
   // Replay messages
@@ -239,8 +254,11 @@ export async function importSession(
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function truncate(text: string | null | undefined, maxLen: number): string | undefined {
+function truncate(
+  text: string | null | undefined,
+  maxLen: number,
+): string | undefined {
   if (!text) return undefined;
   if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen) + `\n... [truncated, ${text.length - maxLen} more chars]`;
+  return `${text.slice(0, maxLen)}\n... [truncated, ${text.length - maxLen} more chars]`;
 }

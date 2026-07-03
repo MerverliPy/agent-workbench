@@ -1,49 +1,46 @@
-export type {
-  ModelMessage,
-  ModelToolSpec,
-  ModelToolCall,
-  ModelUsage,
-  ModelResponseKind,
-  ModelResponse,
-  ModelRequest,
-  ModelStreamChunk,
-  ModelProvider,
-} from "./types";
-
-export { StubModelProvider } from "./stub-provider";
+export { CostTracker } from "./cost-tracker";
+export {
+  ProviderAuthError,
+  ProviderConfigError,
+  ProviderRateLimitError,
+  ProviderResponseError,
+  ProviderServerError,
+} from "./errors";
+export { ProviderMarketplace } from "./marketplace";
+export type { ProviderConfig } from "./provider-config";
 
 export {
-  ProviderConfigError,
-  ProviderAuthError,
-  ProviderRateLimitError,
-  ProviderServerError,
-  ProviderResponseError,
-} from "./errors";
-
+  detectAvailableProviders,
+  parseProviderConfig,
+} from "./provider-config";
+export type { ProviderHealthStatus } from "./provider-health";
+export { ProviderHealthMonitor } from "./provider-health";
+export type { ProviderEntry, ProviderModelEntry } from "./provider-registry";
+export { ProviderRegistry } from "./provider-registry";
+export { AnthropicProvider } from "./providers/anthropic";
+export { OpenAICompatibleProvider } from "./providers/openai-compatible";
+export {
+  createOllamaProvider,
+  createOpenRouterProvider,
+} from "./providers/openrouter";
 export {
   redactApiKey,
   redactAuthorizationHeader,
-  redactString,
-  redactHeaders,
   redactError,
+  redactHeaders,
+  redactString,
 } from "./redact";
-
-export {
-  parseProviderConfig,
-  detectAvailableProviders,
-} from "./provider-config";
-export type { ProviderConfig } from "./provider-config";
-
-export { OpenAICompatibleProvider } from "./providers/openai-compatible";
-export { AnthropicProvider } from "./providers/anthropic";
-export { createOpenRouterProvider, createOllamaProvider } from "./providers/openrouter";
-
-export { ProviderRegistry } from "./provider-registry";
-export type { ProviderEntry, ProviderModelEntry } from "./provider-registry";
-
-export { ProviderMarketplace } from "./marketplace";
+export type { RoutingDecision, TaskClassification } from "./smart-router";
 export { SmartRouter } from "./smart-router";
-export { CostTracker } from "./cost-tracker";
-export { ProviderHealthMonitor } from "./provider-health";
-export type { TaskClassification, RoutingDecision } from "./smart-router";
-export type { ProviderHealthStatus } from "./provider-health";
+export { StubModelProvider } from "./stub-provider";
+export type {
+  ModelMessage,
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelResponseKind,
+  ModelStreamChunk,
+  ModelToolCall,
+  ModelToolSpec,
+  ModelUsage,
+} from "./types";

@@ -1,4 +1,7 @@
-import type { MessageRepository, SummaryRepository } from "@agent-workbench/storage";
+import type {
+  MessageRepository,
+  SummaryRepository,
+} from "@agent-workbench/storage";
 import type { ContextMessage } from "./types";
 
 export interface BuildOptions {
@@ -23,7 +26,7 @@ const MAX_CONTEXT_MESSAGES = 200;
 export class ContextBuilder {
   constructor(
     private readonly messageRepository: MessageRepository,
-    private readonly summaryRepository: SummaryRepository
+    private readonly summaryRepository: SummaryRepository,
   ) {}
 
   /**
@@ -83,16 +86,20 @@ export class ContextBuilder {
 
       const msg: ContextMessage = { role, content: row.content };
 
-      if (role === "assistant" && row.metadataJson !== null && row.metadataJson !== undefined) {
+      if (
+        role === "assistant" &&
+        row.metadataJson !== null &&
+        row.metadataJson !== undefined
+      ) {
         try {
           const meta = JSON.parse(row.metadataJson) as Record<string, unknown>;
-          if (meta["type"] === "tool_calls") {
+          if (meta.type === "tool_calls") {
             const calls = JSON.parse(row.content) as unknown;
             if (Array.isArray(calls)) {
               msg.toolCalls = calls.map((c: Record<string, unknown>) => ({
-                id: typeof c["id"] === "string" ? c["id"] : "",
-                name: typeof c["name"] === "string" ? c["name"] : "unknown",
-                input: c["input"],
+                id: typeof c.id === "string" ? c.id : "",
+                name: typeof c.name === "string" ? c.name : "unknown",
+                input: c.input,
               }));
             }
           }
@@ -101,11 +108,15 @@ export class ContextBuilder {
         }
       }
 
-      if (role === "tool" && row.metadataJson !== null && row.metadataJson !== undefined) {
+      if (
+        role === "tool" &&
+        row.metadataJson !== null &&
+        row.metadataJson !== undefined
+      ) {
         try {
           const meta = JSON.parse(row.metadataJson) as Record<string, unknown>;
-          if (typeof meta["toolCallId"] === "string") {
-            msg.toolCallId = meta["toolCallId"];
+          if (typeof meta.toolCallId === "string") {
+            msg.toolCallId = meta.toolCallId;
           }
         } catch {
           // Ignore malformed metadata.
@@ -118,9 +129,7 @@ export class ContextBuilder {
     return messages;
   }
 
-  private mapRole(
-    storageRole: string
-  ): ContextMessage["role"] | null {
+  private mapRole(storageRole: string): ContextMessage["role"] | null {
     switch (storageRole) {
       case "user":
         return "user";

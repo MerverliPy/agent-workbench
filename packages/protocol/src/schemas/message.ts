@@ -1,7 +1,13 @@
 import { z } from "zod/v4";
-import { Ulid, Timestamp } from "./common";
+import { Timestamp, Ulid } from "./common";
 
-export const MessageRole = z.enum(["user", "assistant", "system", "tool", "summary"]);
+export const MessageRole = z.enum([
+  "user",
+  "assistant",
+  "system",
+  "tool",
+  "summary",
+]);
 export type MessageRole = z.infer<typeof MessageRole>;
 
 export const ContentFormat = z.enum(["text", "json", "markdown"]);

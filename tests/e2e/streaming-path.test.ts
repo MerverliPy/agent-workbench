@@ -1,12 +1,12 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { StubModelProvider } from "@agent-workbench/models";
+import type { TestDb } from "../helpers/test-db";
 import { createTestDb } from "../helpers/test-db";
 import { createTestServer } from "../helpers/test-server";
-import type { TestDb } from "../helpers/test-db";
-import { StubModelProvider } from "@agent-workbench/models";
 
 /**
  * Streaming validation E2E test.
@@ -31,7 +31,9 @@ describe("Streaming path (E2E via server)", () => {
 
   afterAll(() => {
     testDb.cleanup();
-    try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+    try {
+      rmSync(projectDir, { recursive: true, force: true });
+    } catch {}
   });
 
   it("StubModelProvider.stream() yields word-by-word deltas", async () => {
@@ -71,7 +73,7 @@ describe("Streaming path (E2E via server)", () => {
       body: JSON.stringify({ projectPath: projectDir, title: "Stream E2E" }),
     });
     expect(createRes.status).toBeOneOf([200, 201]);
-    const session = await createRes.json() as { id: string };
+    const session = (await createRes.json()) as { id: string };
 
     // Submit message — SessionRunner uses streaming path internally
     const msgRes = await server.app.request(`/session/${session.id}/message`, {
@@ -80,7 +82,7 @@ describe("Streaming path (E2E via server)", () => {
       body: JSON.stringify({ content: "Stream test message", role: "user" }),
     });
     expect(msgRes.status).toBeOneOf([200, 201]);
-    const message = await msgRes.json() as { role: string; content: string };
+    const message = (await msgRes.json()) as { role: string; content: string };
 
     // Verify final message was persisted with complete streamed content
     expect(message.role).toBe("assistant");
@@ -102,7 +104,7 @@ describe("Streaming path (E2E via server)", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectPath: projectDir }),
     });
-    const session = await createRes.json() as { id: string };
+    const session = (await createRes.json()) as { id: string };
 
     await server.app.request(`/session/${session.id}/message`, {
       method: "POST",
@@ -112,11 +114,13 @@ describe("Streaming path (E2E via server)", () => {
 
     const listRes = await server.app.request(`/session/${session.id}/message`);
     expect(listRes.status).toBe(200);
-    const listBody = await listRes.json() as { items: Array<{ role: string; content: string }> };
+    const listBody = (await listRes.json()) as {
+      items: Array<{ role: string; content: string }>;
+    };
     expect(listBody.items.length).toBeGreaterThanOrEqual(2);
     const assistantMsg = listBody.items.find((m) => m.role === "assistant");
     expect(assistantMsg).toBeDefined();
-    expect(assistantMsg!.content).toContain("streaming");
+    expect(assistantMsg?.content).toContain("streaming");
   });
 });
 
@@ -131,7 +135,9 @@ describe("Non-streaming fallback (E2E via server)", () => {
 
   afterAll(() => {
     testDb.cleanup();
-    try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+    try {
+      rmSync(projectDir, { recursive: true, force: true });
+    } catch {}
   });
 
   it("non-streaming mock provider returns complete response", async () => {
@@ -143,17 +149,23 @@ describe("Non-streaming fallback (E2E via server)", () => {
     const createRes = await server.app.request("/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectPath: projectDir, title: "No-stream test" }),
+      body: JSON.stringify({
+        projectPath: projectDir,
+        title: "No-stream test",
+      }),
     });
-    const session = await createRes.json() as { id: string };
+    const session = (await createRes.json()) as { id: string };
 
     const msgRes = await server.app.request(`/session/${session.id}/message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: "Hello from non-streaming.", role: "user" }),
+      body: JSON.stringify({
+        content: "Hello from non-streaming.",
+        role: "user",
+      }),
     });
     expect(msgRes.status).toBeOneOf([200, 201]);
-    const message = await msgRes.json() as { content: string; role: string };
+    const message = (await msgRes.json()) as { content: string; role: string };
     expect(message.role).toBe("assistant");
     expect(message.content).toContain("Non-streaming");
   });
@@ -169,7 +181,7 @@ describe("Non-streaming fallback (E2E via server)", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectPath: projectDir }),
     });
-    const session = await createRes.json() as { id: string };
+    const session = (await createRes.json()) as { id: string };
 
     await server.app.request(`/session/${session.id}/message`, {
       method: "POST",
@@ -179,10 +191,12 @@ describe("Non-streaming fallback (E2E via server)", () => {
 
     const listRes = await server.app.request(`/session/${session.id}/message`);
     expect(listRes.status).toBe(200);
-    const listBody = await listRes.json() as { items: Array<{ role: string; content: string }> };
+    const listBody = (await listRes.json()) as {
+      items: Array<{ role: string; content: string }>;
+    };
     expect(listBody.items.length).toBeGreaterThanOrEqual(2);
     const assistantMsg = listBody.items.find((m) => m.role === "assistant");
     expect(assistantMsg).toBeDefined();
-    expect(assistantMsg!.content).toContain("non-streaming");
+    expect(assistantMsg?.content).toContain("non-streaming");
   });
 });

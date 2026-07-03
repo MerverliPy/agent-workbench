@@ -1,4 +1,4 @@
-import { sqliteTable, text, index } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const summaries = sqliteTable(
   "summaries",
@@ -17,5 +17,5 @@ export const summaries = sqliteTable(
     index("summaries_session_id_idx").on(table.sessionId),
     index("summaries_run_id_idx").on(table.runId),
     index("summaries_summary_type_idx").on(table.summaryType),
-  ]
+  ],
 );

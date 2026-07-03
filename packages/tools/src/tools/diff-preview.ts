@@ -14,12 +14,16 @@
  * tool consistent with the overall mutation-first safety posture.
  */
 
-import { z } from "zod/v4";
-import { generateDiffPreview } from "@agent-workbench/diff";
 import type { DiffParams } from "@agent-workbench/diff";
+import { generateDiffPreview } from "@agent-workbench/diff";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { RegisteredTool, ToolExecutor, ToolExecutionContext } from "../types";
+import { z } from "zod/v4";
 import { assertSafePath } from "../path-guard";
+import type {
+  RegisteredTool,
+  ToolExecutionContext,
+  ToolExecutor,
+} from "../types";
 
 // ── Input / Result schemas ────────────────────────────────────────────────────
 
@@ -54,11 +58,23 @@ const definition: ToolDefinition = {
   inputSchema: {
     type: "object",
     properties: {
-      path: { type: "string", description: "File path to preview (relative to project root)." },
-      newContent: { type: "string", description: "Full new content (write preview)." },
+      path: {
+        type: "string",
+        description: "File path to preview (relative to project root).",
+      },
+      newContent: {
+        type: "string",
+        description: "Full new content (write preview).",
+      },
       patch: { type: "string", description: "Unified diff patch string." },
-      oldString: { type: "string", description: "String to replace (edit preview)." },
-      newString: { type: "string", description: "Replacement string (edit preview)." },
+      oldString: {
+        type: "string",
+        description: "String to replace (edit preview).",
+      },
+      newString: {
+        type: "string",
+        description: "Replacement string (edit preview).",
+      },
     },
     required: ["path"],
   },
@@ -69,20 +85,35 @@ const definition: ToolDefinition = {
 /** diff_preview is read-only and has no MutationToolOptions dependencies. */
 export function createDiffPreviewTool(): RegisteredTool {
   const executor: ToolExecutor = {
-    async execute(input: unknown, context: ToolExecutionContext): Promise<unknown> {
+    async execute(
+      input: unknown,
+      context: ToolExecutionContext,
+    ): Promise<unknown> {
       const parsed = DiffPreviewInput.safeParse(input);
       if (!parsed.success) {
         throw new Error(`diff_preview: invalid input: ${parsed.error.message}`);
       }
-      const { path: rawPath, newContent, patch, oldString, newString } = parsed.data;
+      const {
+        path: rawPath,
+        newContent,
+        patch,
+        oldString,
+        newString,
+      } = parsed.data;
 
       const resolvedPath = resolvePath(rawPath, context.projectRoot);
       assertSafePath(resolvedPath, context.projectRoot);
 
-      const params = buildParams(resolvedPath, newContent, patch, oldString, newString);
+      const params = buildParams(
+        resolvedPath,
+        newContent,
+        patch,
+        oldString,
+        newString,
+      );
       if (params === undefined) {
         throw new Error(
-          "diff_preview: provide one of newContent, patch, or oldString+newString"
+          "diff_preview: provide one of newContent, patch, or oldString+newString",
         );
       }
 
@@ -106,7 +137,7 @@ function buildParams(
   newContent?: string,
   patch?: string,
   oldString?: string,
-  newString?: string
+  newString?: string,
 ): DiffParams | undefined {
   if (newContent !== undefined) {
     return { type: "write", path, content: newContent };

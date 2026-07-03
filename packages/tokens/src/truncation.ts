@@ -14,7 +14,7 @@ export interface TruncatedResult {
 
 export function truncateToolOutput(
   raw: string,
-  options: TruncationOptions = {}
+  options: TruncationOptions = {},
 ): TruncatedResult {
   const maxLen = options.maxResultLength ?? DEFAULT_MAX_RESULT_LENGTH;
 
@@ -54,7 +54,13 @@ export function truncateToolOutput(
       originalLength: raw.length,
       truncatedLength: truncated.length,
       reason: "output_limit",
-      preservedElements: ["start_excerpt", "end_excerpt", "line_count", "match_count", ...preservedElements],
+      preservedElements: [
+        "start_excerpt",
+        "end_excerpt",
+        "line_count",
+        "match_count",
+        ...preservedElements,
+      ],
     },
   };
 }

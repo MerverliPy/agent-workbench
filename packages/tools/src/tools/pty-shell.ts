@@ -1,7 +1,7 @@
-import { z } from "zod";
-import type { RegisteredTool, ToolExecutionContext } from "../types";
 import type { ToolDefinition } from "@agent-workbench/protocol";
 import type { PtyCommandRunner } from "@agent-workbench/shell";
+import { z } from "zod";
+import type { RegisteredTool, ToolExecutionContext } from "../types";
 
 export const PtyShellInput = z.object({
   command: z.string().min(1, "command is required"),
@@ -34,7 +34,9 @@ export interface PtyShellToolOptions {
   ptyRunner: PtyCommandRunner;
 }
 
-export function createPtyShellTool(options: PtyShellToolOptions): RegisteredTool {
+export function createPtyShellTool(
+  options: PtyShellToolOptions,
+): RegisteredTool {
   return {
     definition: DEFINITION,
     executor: {
@@ -54,9 +56,7 @@ export function createPtyShellTool(options: PtyShellToolOptions): RegisteredTool
           command,
           cwd: effectiveCwd,
           ...(timeout !== undefined ? { timeout } : {}),
-          ...(context.signal !== undefined
-            ? { signal: context.signal }
-            : {}),
+          ...(context.signal !== undefined ? { signal: context.signal } : {}),
           ...(context.onStdout !== undefined
             ? { onStdout: context.onStdout }
             : {}),

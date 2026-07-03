@@ -1,14 +1,14 @@
-import { ulid } from "ulid";
-import type { Hono } from "hono";
 import {
   CreateWorkspaceRoute,
-  ListWorkspacesRoute,
-  GetWorkspaceRoute,
-  UpdateWorkspaceRoute,
   DeleteWorkspaceRoute,
+  GetWorkspaceRoute,
+  ListWorkspacesRoute,
+  UpdateWorkspaceRoute,
 } from "@agent-workbench/protocol";
-import { ApiError } from "../errors";
+import type { Hono } from "hono";
+import { ulid } from "ulid";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 export function registerWorkspaceRoutes(
@@ -108,7 +108,10 @@ export function registerWorkspaceRoutes(
       if (body.archived !== undefined) patch.archived = body.archived;
       if (body.tags !== undefined) patch.tagsJson = JSON.stringify(body.tags);
 
-      const updated = workspaceRepository.update(workspaceId, patch as Parameters<typeof workspaceRepository.update>[1]);
+      const updated = workspaceRepository.update(
+        workspaceId,
+        patch as Parameters<typeof workspaceRepository.update>[1],
+      );
       if (!updated) {
         throw new ApiError({
           status: 500,

@@ -1,44 +1,49 @@
+import type {
+  AgentListItem,
+  DiffPreview,
+  EventEnvelope,
+  PermissionRequest,
+  Plan,
+} from "@agent-workbench/protocol";
 import type { JSX } from "@opentui/solid";
-import { onMount, onCleanup } from "solid-js";
 import { useKeyboard } from "@opentui/solid";
-import type { EventEnvelope, PermissionRequest, DiffPreview, AgentListItem } from "@agent-workbench/protocol";
-import type { Plan } from "@agent-workbench/protocol";
-import { sdk } from "./lib/sdk";
+import { onCleanup, onMount } from "solid-js";
+import { AppLayout } from "./components/layout/AppLayout";
 import { formatKeybindings } from "./lib/keybindings";
+import { sdk } from "./lib/sdk";
 import {
-  setServerStatus,
-  setServerError,
   addPendingPermissionRequest,
-  removePendingPermissionRequest,
   appendMessage,
-  appendSystemNotice,
-  appendStreamingContent,
-  finalizeStreamingMessage,
-  cancelStreaming,
-  streamingMessageId,
-  setStreamingMessageId,
-  commandPaletteOpen,
-  setCommandPaletteOpen,
-  setPermissionModalOpen,
-  setCurrentDiffPreview,
-  setDiffViewerOpen,
-  diffViewerOpen,
-  setMutationStatus,
-  setShellStatus,
   appendShellOutputChunk,
+  appendStreamingContent,
+  appendSystemNotice,
+  cancelStreaming,
   clearShellOutput,
-  setCurrentAgentId,
+  commandPaletteOpen,
+  diffViewerOpen,
+  finalizeStreamingMessage,
+  ledgerPanelOpen,
+  PLACEHOLDER_SESSION_ID,
+  removePendingPermissionRequest,
   setAvailableAgents,
+  setCommandPaletteOpen,
+  setCompactionSuggestion,
+  setCurrentAgentId,
+  setCurrentDiffPreview,
+  setCurrentPlan,
+  setDiffViewerOpen,
+  setLedgerPanelOpen,
+  setMutationStatus,
+  setPermissionModalOpen,
+  setServerError,
+  setServerStatus,
+  setShellStatus,
+  setStreamingMessageId,
   setTokenHealth,
   setTokenHealthOpen,
+  streamingMessageId,
   tokenHealthOpen,
-  setLedgerPanelOpen,
-  ledgerPanelOpen,
-  setCompactionSuggestion,
-  setCurrentPlan,
-  PLACEHOLDER_SESSION_ID,
 } from "./state/app";
-import { AppLayout } from "./components/layout/AppLayout";
 
 /**
  * Root application component.
@@ -64,7 +69,9 @@ export function App(): JSX.Element {
   async function selectAgent(agentId: string): Promise<void> {
     setCurrentAgentId(agentId);
     try {
-      await sdk.sessions.update(PLACEHOLDER_SESSION_ID, { activeAgent: agentId as "build" | "plan" });
+      await sdk.sessions.update(PLACEHOLDER_SESSION_ID, {
+        activeAgent: agentId as "build" | "plan",
+      });
     } catch {
       // Session may not exist yet — local state already updated; server update
       // will be retried on next full session creation.
@@ -136,8 +143,8 @@ export function App(): JSX.Element {
     if (type === "message.created" || type === "message.delta") {
       // Phase 6+: assistant messages via SSE
       const payload = event.payload as Record<string, unknown>;
-      const role = (payload["role"] as string | undefined) ?? "assistant";
-      const content = (payload["content"] as string | undefined) ?? "";
+      const role = (payload.role as string | undefined) ?? "assistant";
+      const content = (payload.content as string | undefined) ?? "";
       if (content) {
         appendMessage({
           id: event.id,
@@ -154,7 +161,7 @@ export function App(): JSX.Element {
       // can render the modal without a follow-up API call.
       // TUI does not evaluate the request — it only displays backend-provided data.
       const payload = event.payload as Record<string, unknown>;
-      const req = payload["permissionRequest"] as PermissionRequest | undefined;
+      const req = payload.permissionRequest as PermissionRequest | undefined;
       if (req !== undefined) {
         addPendingPermissionRequest(req);
         setPermissionModalOpen(true);
@@ -168,7 +175,7 @@ export function App(): JSX.Element {
 
     if (type === "permission.decided") {
       const payload = event.payload as Record<string, unknown>;
-      const requestId = payload["requestId"] as string | undefined;
+      const requestId = payload.requestId as string | undefined;
       if (requestId !== undefined) {
         removePendingPermissionRequest(requestId);
       }
@@ -183,7 +190,7 @@ export function App(): JSX.Element {
       // Backend generated a diff preview before the permission gate.
       // TUI opens DiffViewer to show the preview (render-only — no mutation here).
       const payload = event.payload as Record<string, unknown>;
-      const preview = payload["preview"] as DiffPreview | undefined;
+      const preview = payload.preview as DiffPreview | undefined;
       if (preview !== undefined) {
         setCurrentDiffPreview(preview);
         setMutationStatus("proposed");
@@ -194,23 +201,21 @@ export function App(): JSX.Element {
 
     if (type === "file.change_applied") {
       const payload = event.payload as Record<string, unknown>;
-      const path = payload["path"] as string | undefined;
+      const path = payload.path as string | undefined;
       setMutationStatus("applied");
       setCurrentDiffPreview(null);
       appendSystemNotice(
-        path !== undefined ? `File changed: ${path}` : "File mutation applied."
+        path !== undefined ? `File changed: ${path}` : "File mutation applied.",
       );
       return;
     }
 
     if (type === "file.change_failed") {
       const payload = event.payload as Record<string, unknown>;
-      const error = payload["error"] as string | undefined;
+      const error = payload.error as string | undefined;
       setMutationStatus("failed");
       setCurrentDiffPreview(null);
-      appendSystemNotice(
-        `Mutation failed: ${error ?? "unknown error"}`
-      );
+      appendSystemNotice(`Mutation failed: ${error ?? "unknown error"}`);
       return;
     }
 
@@ -221,22 +226,20 @@ export function App(): JSX.Element {
 
     if (type === "file.revert_completed") {
       const payload = event.payload as Record<string, unknown>;
-      const path = payload["path"] as string | undefined;
+      const path = payload.path as string | undefined;
       setMutationStatus("reverted");
       setCurrentDiffPreview(null);
       appendSystemNotice(
-        path !== undefined ? `Reverted: ${path}` : "File reverted."
+        path !== undefined ? `Reverted: ${path}` : "File reverted.",
       );
       return;
     }
 
     if (type === "file.revert_failed") {
       const payload = event.payload as Record<string, unknown>;
-      const error = payload["error"] as string | undefined;
+      const error = payload.error as string | undefined;
       setMutationStatus("failed");
-      appendSystemNotice(
-        `Revert failed: ${error ?? "unknown error"}`
-      );
+      appendSystemNotice(`Revert failed: ${error ?? "unknown error"}`);
       return;
     }
 
@@ -244,10 +247,10 @@ export function App(): JSX.Element {
 
     if (type === "shell.command_requested") {
       const payload = event.payload as Record<string, unknown>;
-      const preview = payload["preview"] as Record<string, unknown> | undefined;
+      const preview = payload.preview as Record<string, unknown> | undefined;
       if (preview !== undefined) {
         appendSystemNotice(
-          `Shell command: ${preview["normalized"] ?? "unknown"} (risk: ${preview["riskLevel"] ?? "high"})`
+          `Shell command: ${preview.normalized ?? "unknown"} (risk: ${preview.riskLevel ?? "high"})`,
         );
       }
       return;
@@ -261,8 +264,8 @@ export function App(): JSX.Element {
 
     if (type === "shell.output_chunk") {
       const payload = event.payload as Record<string, unknown>;
-      const stream = payload["stream"] as "stdout" | "stderr" | undefined;
-      const chunk = payload["chunk"] as string | undefined;
+      const stream = payload.stream as "stdout" | "stderr" | undefined;
+      const chunk = payload.chunk as string | undefined;
       if (stream !== undefined && chunk !== undefined) {
         appendShellOutputChunk({ stream, chunk });
       }
@@ -271,31 +274,29 @@ export function App(): JSX.Element {
 
     if (type === "shell.command_completed") {
       const payload = event.payload as Record<string, unknown>;
-      const exitCode = payload["exitCode"];
-      const timedOut = payload["timedOut"];
+      const exitCode = payload.exitCode;
+      const timedOut = payload.timedOut;
       setShellStatus("completed");
       appendSystemNotice(
-        `Shell command completed (exit code: ${exitCode ?? "null"}${timedOut ? ", timed out" : ""})`
+        `Shell command completed (exit code: ${exitCode ?? "null"}${timedOut ? ", timed out" : ""})`,
       );
       return;
     }
 
     if (type === "shell.command_failed") {
       const payload = event.payload as Record<string, unknown>;
-      const error = payload["error"] as string | undefined;
+      const error = payload.error as string | undefined;
       setShellStatus("failed");
-      appendSystemNotice(
-        `Shell command failed: ${error ?? "unknown error"}`
-      );
+      appendSystemNotice(`Shell command failed: ${error ?? "unknown error"}`);
       return;
     }
 
     if (type === "shell.command_aborted") {
       const payload = event.payload as Record<string, unknown>;
-      const reason = payload["reason"] as string | undefined;
+      const reason = payload.reason as string | undefined;
       setShellStatus("aborted");
       appendSystemNotice(
-        `Shell command aborted: ${reason ?? "unknown reason"}`
+        `Shell command aborted: ${reason ?? "unknown reason"}`,
       );
       return;
     }
@@ -304,7 +305,7 @@ export function App(): JSX.Element {
 
     if (type === "agent.selected") {
       const payload = event.payload as Record<string, unknown>;
-      const agentId = payload["agentId"] as string | undefined;
+      const agentId = payload.agentId as string | undefined;
       if (agentId !== undefined) {
         setCurrentAgentId(agentId);
       }
@@ -316,23 +317,23 @@ export function App(): JSX.Element {
     if (type === "token_health.updated") {
       const payload = event.payload as Record<string, unknown>;
       setTokenHealth({
-        budget: (payload["budget"] as number) ?? 0,
-        used: (payload["used"] as number) ?? 0,
-        remaining: (payload["remaining"] as number) ?? 0,
-        utilizationPercent: (payload["utilizationPercent"] as number) ?? 0,
-        level: (payload["level"] as string) ?? "healthy",
-        isEstimate: (payload["isEstimate"] as boolean) ?? true,
-        compactionSuggested: (payload["compactionSuggested"] as boolean) ?? false,
+        budget: (payload.budget as number) ?? 0,
+        used: (payload.used as number) ?? 0,
+        remaining: (payload.remaining as number) ?? 0,
+        utilizationPercent: (payload.utilizationPercent as number) ?? 0,
+        level: (payload.level as string) ?? "healthy",
+        isEstimate: (payload.isEstimate as boolean) ?? true,
+        compactionSuggested: (payload.compactionSuggested as boolean) ?? false,
       });
       return;
     }
 
     if (type === "token_health.warning") {
       const payload = event.payload as Record<string, unknown>;
-      const level = payload["level"] as string | undefined;
-      const message = payload["message"] as string | undefined;
+      const level = payload.level as string | undefined;
+      const message = payload.message as string | undefined;
       appendSystemNotice(
-        `Token health (${level ?? "unknown"}): ${message ?? "check usage"}`
+        `Token health (${level ?? "unknown"}): ${message ?? "check usage"}`,
       );
       return;
     }
@@ -340,13 +341,15 @@ export function App(): JSX.Element {
     if (type === "compaction.suggested") {
       const payload = event.payload as Record<string, unknown>;
       setCompactionSuggestion({
-        currentTokens: payload["currentTokens"] as number,
-        estimatedCompactedTokens: payload["estimatedCompactedTokens"] as number | undefined,
-        reason: payload["reason"] as string | undefined,
+        currentTokens: payload.currentTokens as number,
+        estimatedCompactedTokens: payload.estimatedCompactedTokens as
+          | number
+          | undefined,
+        reason: payload.reason as string | undefined,
       });
       setTokenHealthOpen(true);
       appendSystemNotice(
-        `Compaction suggested: ${(payload["reason"] as string) ?? "context usage is high"}`
+        `Compaction suggested: ${(payload.reason as string) ?? "context usage is high"}`,
       );
       return;
     }
@@ -358,9 +361,9 @@ export function App(): JSX.Element {
 
     if (type === "compaction.completed") {
       const payload = event.payload as Record<string, unknown>;
-      const summaryId = payload["summaryId"] as string | undefined;
+      const summaryId = payload.summaryId as string | undefined;
       appendSystemNotice(
-        `Compaction completed${summaryId !== undefined ? ` (${summaryId})` : ""}`
+        `Compaction completed${summaryId !== undefined ? ` (${summaryId})` : ""}`,
       );
       return;
     }
@@ -373,12 +376,16 @@ export function App(): JSX.Element {
 
     if (type === "tool_result.truncated") {
       const payload = event.payload as Record<string, unknown>;
-      const toolCallId = payload["toolCallId"] as string | undefined;
-      const originalLen = payload["originalLength"] as number | undefined;
-      const truncatedLen = payload["truncatedLength"] as number | undefined;
-      if (toolCallId !== undefined && originalLen !== undefined && truncatedLen !== undefined) {
+      const toolCallId = payload.toolCallId as string | undefined;
+      const originalLen = payload.originalLength as number | undefined;
+      const truncatedLen = payload.truncatedLength as number | undefined;
+      if (
+        toolCallId !== undefined &&
+        originalLen !== undefined &&
+        truncatedLen !== undefined
+      ) {
         appendSystemNotice(
-          `Tool result truncated (${originalLen} → ${truncatedLen} chars)`
+          `Tool result truncated (${originalLen} → ${truncatedLen} chars)`,
         );
       }
       return;
@@ -388,7 +395,7 @@ export function App(): JSX.Element {
 
     if (type === "model.stream_delta") {
       const payload = event.payload as Record<string, unknown>;
-      const delta = payload["delta"] as string | undefined;
+      const delta = payload.delta as string | undefined;
       if (delta && delta.length > 0) {
         // First delta: create a streaming message slot
         if (streamingMessageId() === null) {
@@ -406,10 +413,8 @@ export function App(): JSX.Element {
 
     if (type === "model.stream_error") {
       const payload = event.payload as Record<string, unknown>;
-      const message = payload["message"] as string | undefined;
-      appendSystemNotice(
-        `Stream error: ${message ?? "unknown error"}`
-      );
+      const message = payload.message as string | undefined;
+      appendSystemNotice(`Stream error: ${message ?? "unknown error"}`);
       cancelStreaming();
       return;
     }
@@ -421,7 +426,7 @@ export function App(): JSX.Element {
 
     if (type === "plan.proposed") {
       const payload = event.payload as Record<string, unknown>;
-      const plan = payload["plan"] as Plan | undefined;
+      const plan = payload.plan as Plan | undefined;
       if (plan !== undefined) {
         setCurrentPlan({
           planId: plan.id,
@@ -429,7 +434,12 @@ export function App(): JSX.Element {
           summary: plan.summary,
           riskLevel: plan.riskLevel,
           steps: plan.steps.map((s) => {
-            const step: { order: number; type: string; description: string; targetPath?: string } = {
+            const step: {
+              order: number;
+              type: string;
+              description: string;
+              targetPath?: string;
+            } = {
               order: s.order,
               type: s.type,
               description: s.description,
@@ -441,16 +451,16 @@ export function App(): JSX.Element {
         });
       }
       appendSystemNotice(
-        `Plan proposed: ${plan?.summary ?? "mutation plan"} [${plan?.riskLevel ?? "high"}]`
+        `Plan proposed: ${plan?.summary ?? "mutation plan"} [${plan?.riskLevel ?? "high"}]`,
       );
       return;
     }
 
     if (type === "plan.approved") {
       const payload = event.payload as Record<string, unknown>;
-      const planId = payload["planId"] as string | undefined;
+      const _planId = payload.planId as string | undefined;
       setCurrentPlan((prev) =>
-        prev !== null ? { ...prev, status: "approved" } : null
+        prev !== null ? { ...prev, status: "approved" } : null,
       );
       appendSystemNotice("Plan approved. Proceeding with execution.");
       return;
@@ -458,13 +468,11 @@ export function App(): JSX.Element {
 
     if (type === "plan.denied") {
       const payload = event.payload as Record<string, unknown>;
-      const reason = payload["reason"] as string | undefined;
+      const reason = payload.reason as string | undefined;
       setCurrentPlan((prev) =>
-        prev !== null ? { ...prev, status: "denied" } : null
+        prev !== null ? { ...prev, status: "denied" } : null,
       );
-      appendSystemNotice(
-        `Plan denied${reason ? `: ${reason}` : ""}.`
-      );
+      appendSystemNotice(`Plan denied${reason ? `: ${reason}` : ""}.`);
       return;
     }
 
@@ -475,11 +483,9 @@ export function App(): JSX.Element {
 
     if (type === "plan.failed") {
       const payload = event.payload as Record<string, unknown>;
-      const reason = payload["reason"] as string | undefined;
+      const reason = payload.reason as string | undefined;
       setCurrentPlan(null);
-      appendSystemNotice(
-        `Plan failed${reason ? `: ${reason}` : ""}.`
-      );
+      appendSystemNotice(`Plan failed${reason ? `: ${reason}` : ""}.`);
       return;
     }
   }
@@ -498,13 +504,14 @@ export function App(): JSX.Element {
       })
       .catch((err: unknown) => {
         setServerStatus("error");
-        setServerError(err instanceof Error ? err.message : "Server unreachable");
+        setServerError(
+          err instanceof Error ? err.message : "Server unreachable",
+        );
         appendSystemNotice(
           `Could not connect to server at ${
             (sdk as unknown as { http: { baseUrl: string } }).http?.baseUrl ??
             "http://localhost:3000"
-          }. ` +
-            "Start the server with: cd apps/server && bun run start",
+          }. ` + "Start the server with: cd apps/server && bun run start",
         );
       });
 
@@ -513,7 +520,11 @@ export function App(): JSX.Element {
       .list(controller.signal)
       .then((items: AgentListItem[]) => {
         setAvailableAgents(
-          items.map((a: AgentListItem) => ({ id: a.id, name: a.name, mode: a.mode }))
+          items.map((a: AgentListItem) => ({
+            id: a.id,
+            name: a.name,
+            mode: a.mode,
+          })),
         );
       })
       .catch(() => {

@@ -4,7 +4,7 @@
 // Validates config validation, credential detection, cost estimation,
 // and provider model listing.
 
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { ModelPlayground } from "../playground";
 
 describe("ModelPlayground", () => {
@@ -18,10 +18,7 @@ describe("ModelPlayground", () => {
 
       try {
         await expect(
-          playground.send(
-            { model: "gpt-4o", provider: "openai" },
-            "Hello",
-          ),
+          playground.send({ model: "gpt-4o", provider: "openai" }, "Hello"),
         ).rejects.toThrow(/API key/);
       } finally {
         if (savedKey) process.env.OPENAI_API_KEY = savedKey;
@@ -70,7 +67,9 @@ describe("ModelPlayground", () => {
   describe("listAvailableModels()", () => {
     it("always includes OpenRouter models", async () => {
       const models = await playground.listAvailableModels();
-      const openRouterModels = models.filter((m) => m.provider === "openrouter");
+      const openRouterModels = models.filter(
+        (m) => m.provider === "openrouter",
+      );
       expect(openRouterModels.length).toBeGreaterThanOrEqual(4);
     });
 
@@ -108,8 +107,12 @@ describe("ModelPlayground", () => {
 
       try {
         const models = await playground.listAvailableModels();
-        const anthropicModels = models.filter((m) => m.provider === "anthropic");
-        expect(anthropicModels.some((m) => m.model === "claude-sonnet-4-20250514")).toBe(true);
+        const anthropicModels = models.filter(
+          (m) => m.provider === "anthropic",
+        );
+        expect(
+          anthropicModels.some((m) => m.model === "claude-sonnet-4-20250514"),
+        ).toBe(true);
       } finally {
         if (savedKey) process.env.ANTHROPIC_API_KEY = savedKey;
         else delete process.env.ANTHROPIC_API_KEY;
@@ -126,10 +129,13 @@ describe("ModelPlayground", () => {
 
       try {
         await expect(
-          playground.send({
-            model: "gpt-4o",
-            provider: "openai",
-          }, "test"),
+          playground.send(
+            {
+              model: "gpt-4o",
+              provider: "openai",
+            },
+            "test",
+          ),
         ).rejects.toThrow(/API key/);
       } finally {
         if (savedKey) process.env.OPENAI_API_KEY = savedKey;
@@ -147,14 +153,16 @@ describe("playground cost estimation", () => {
     try {
       // With a fake API key, the send() will attempt and fail — we just
       // verify the cost estimation engine doesn't crash
-      const result = await new ModelPlayground().send(
-        { model: "gpt-4o", provider: "openai", apiKey: "sk-fake" },
-        "Calculate 2+2",
-      ).catch((err) => {
-        // Expected to fail on auth — that's fine for this test
-        expect(err.message).toContain("API call failed");
-        return null;
-      });
+      const _result = await new ModelPlayground()
+        .send(
+          { model: "gpt-4o", provider: "openai", apiKey: "sk-fake" },
+          "Calculate 2+2",
+        )
+        .catch((err) => {
+          // Expected to fail on auth — that's fine for this test
+          expect(err.message).toContain("API call failed");
+          return null;
+        });
     } finally {
       if (savedKey) process.env.OPENAI_API_KEY = savedKey;
       else delete process.env.OPENAI_API_KEY;

@@ -1,7 +1,7 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { createTestDb } from "../../helpers/test-db";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import type { TestDb } from "../../helpers/test-db";
+import { createTestDb } from "../../helpers/test-db";
 
 let testDb: TestDb;
 
@@ -21,7 +21,9 @@ describe("storage migrations", () => {
   it("has core tables", () => {
     const sqlite = testDb.connection.sqlite;
     const rows = sqlite
-      .query(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_drizzle_%' AND name NOT LIKE '__drizzle_%' ORDER BY name`)
+      .query(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_drizzle_%' AND name NOT LIKE '__drizzle_%' ORDER BY name`,
+      )
       .all() as Array<{ name: string }>;
     const names = rows.map((r) => r.name);
 
@@ -40,9 +42,11 @@ describe("storage migrations", () => {
   it("has plans table (Phase 13)", () => {
     const sqlite = testDb.connection.sqlite;
     const row = sqlite
-      .query(`SELECT name FROM sqlite_master WHERE type='table' AND name='plans'`)
+      .query(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='plans'`,
+      )
       .get() as { name: string } | undefined;
     expect(row).toBeDefined();
-    expect(row!.name).toBe("plans");
+    expect(row?.name).toBe("plans");
   });
 });

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
-import type { DrizzleBunSqliteDatabase } from "../types";
 import { migrate as drizzleMigrate } from "drizzle-orm/bun-sqlite/migrator";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 /**
  * Run all pending Drizzle migrations.
@@ -19,10 +19,9 @@ import { migrate as drizzleMigrate } from "drizzle-orm/bun-sqlite/migrator";
  */
 export function runMigrations(
   db: DrizzleBunSqliteDatabase,
-  migrationsFolder?: string
+  migrationsFolder?: string,
 ): void {
   const folder =
-    migrationsFolder ??
-    resolve(import.meta.dirname, "../../drizzle");
+    migrationsFolder ?? resolve(import.meta.dirname, "../../drizzle");
   drizzleMigrate(db, { migrationsFolder: folder });
 }

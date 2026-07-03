@@ -1,6 +1,10 @@
 import type { JSX } from "@opentui/solid";
 import { For, Show } from "solid-js";
-import { currentDiffPreview, setCurrentDiffPreview, setDiffViewerOpen } from "../../state/app";
+import {
+  currentDiffPreview,
+  setCurrentDiffPreview,
+  setDiffViewerOpen,
+} from "../../state/app";
 
 // ANSI color codes for diff rendering
 const GREEN = "\x1b[32m";

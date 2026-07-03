@@ -1,7 +1,7 @@
+import { execSync } from "node:child_process";
 import type { Hono } from "hono";
 import type { ServerAppBindings } from "../context";
 import { ApiError } from "../errors";
-import { execSync } from "node:child_process";
 
 interface GitStatusResponse {
   branch: string;
@@ -33,8 +33,8 @@ export function registerGitRoutes(app: Hono<ServerAppBindings>) {
       // Parse branch info
       const aheadMatch = statusOutput.match(/ahead (\d+)/);
       const behindMatch = statusOutput.match(/behind (\d+)/);
-      const ahead = aheadMatch ? parseInt(aheadMatch[1]!) : 0;
-      const behind = behindMatch ? parseInt(behindMatch[1]!) : 0;
+      const ahead = aheadMatch ? parseInt(aheadMatch[1]!, 10) : 0;
+      const behind = behindMatch ? parseInt(behindMatch[1]!, 10) : 0;
 
       // Parse file status
       const statusLines = statusOutput
@@ -43,8 +43,8 @@ export function registerGitRoutes(app: Hono<ServerAppBindings>) {
       const dirtyFiles = statusLines.filter(
         (l) => l.match(/^ ?[MADRCU]/) && !l.startsWith("??"),
       ).length;
-      const stagedFiles = statusLines.filter(
-        (l) => l.match(/^[MADRCU]/),
+      const stagedFiles = statusLines.filter((l) =>
+        l.match(/^[MADRCU]/),
       ).length;
       const untrackedFiles = statusLines.filter((l) =>
         l.startsWith("??"),
@@ -77,7 +77,8 @@ export function registerGitRoutes(app: Hono<ServerAppBindings>) {
 
       return ctx.json(response);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to read git status";
+      const msg =
+        err instanceof Error ? err.message : "Failed to read git status";
       throw new ApiError({
         status: 500,
         code: "GIT_ERROR",

@@ -1,18 +1,24 @@
-import type { Hono } from "hono";
+import type {
+  ProviderEntry,
+  ProviderModelEntry,
+} from "@agent-workbench/models";
+import type {
+  Model as ProtocolModel,
+  ModelProvider as ProtocolModelProvider,
+} from "@agent-workbench/protocol";
 import {
-  ListProvidersRoute,
   GetProviderRoute,
   ListProviderModelsRoute,
+  ListProvidersRoute,
 } from "@agent-workbench/protocol";
-import type { ModelProvider as ProtocolModelProvider, Model as ProtocolModel } from "@agent-workbench/protocol";
-import type { ProviderEntry, ProviderModelEntry } from "@agent-workbench/models";
-import { ApiError } from "../errors";
+import type { Hono } from "hono";
 import type { ServerAppBindings, ServerServices } from "../context";
+import { ApiError } from "../errors";
 import { createJsonRouteHandler } from "./helpers";
 
 export function registerProviderRoutes(
   app: Hono<ServerAppBindings>,
-  services: ServerServices
+  services: ServerServices,
 ): void {
   const { providerRegistry } = services;
 
@@ -25,11 +31,13 @@ export function registerProviderRoutes(
           id: entry.id,
           name: entry.name,
           status: entry.status,
-          ...(entry.description !== undefined ? { description: entry.description } : {}),
+          ...(entry.description !== undefined
+            ? { description: entry.description }
+            : {}),
         })),
       };
       return result;
-    })
+    }),
   );
 
   app.get(
@@ -49,9 +57,11 @@ export function registerProviderRoutes(
         id: entry.id,
         name: entry.name,
         status: entry.status,
-        ...(entry.description !== undefined ? { description: entry.description } : {}),
+        ...(entry.description !== undefined
+          ? { description: entry.description }
+          : {}),
       };
-    })
+    }),
   );
 
   app.get(
@@ -74,10 +84,12 @@ export function registerProviderRoutes(
           providerId: m.providerId,
           name: m.name,
           capabilities: m.capabilities,
-          ...(m.contextLimit !== undefined ? { contextLimit: m.contextLimit } : {}),
+          ...(m.contextLimit !== undefined
+            ? { contextLimit: m.contextLimit }
+            : {}),
         })),
       };
       return result;
-    })
+    }),
   );
 }

@@ -39,7 +39,8 @@ export class CostTracker {
       SmartRouter.getDefaultCost(model);
 
     const inputCost = (costPer1KInput ?? defaultInput) * (inputTokens / 1000);
-    const outputCost = (costPer1KOutput ?? defaultOutput) * (outputTokens / 1000);
+    const outputCost =
+      (costPer1KOutput ?? defaultOutput) * (outputTokens / 1000);
     const totalCost = inputCost + outputCost;
 
     const record: CostRecord = {
@@ -112,10 +113,7 @@ export class CostTracker {
 
   // ── Private helpers ─────────────────────────────────────────────────────
 
-  private aggregate(
-    records: CostRecord[],
-    periodId: string,
-  ): CostSummary {
+  private aggregate(records: CostRecord[], _periodId: string): CostSummary {
     if (records.length === 0) {
       const now = new Date().toISOString();
       return {
@@ -130,7 +128,8 @@ export class CostTracker {
     }
 
     const sorted = [...records].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     const totalInput = records.reduce((sum, r) => sum + r.inputTokens, 0);
@@ -157,7 +156,10 @@ export class CostTracker {
       providerMap.set(key, existing);
     }
 
-    const providerBreakdown: Record<string, { cost: number; calls: number; inputTokens: number; outputTokens: number }> = {};
+    const providerBreakdown: Record<
+      string,
+      { cost: number; calls: number; inputTokens: number; outputTokens: number }
+    > = {};
     for (const [key, value] of providerMap) {
       providerBreakdown[key] = value;
     }
@@ -166,8 +168,8 @@ export class CostTracker {
     const roundedTotal = Math.round(totalCost * 1000000) / 1000000;
 
     return {
-      periodStart: sorted[0]!.timestamp,
-      periodEnd: sorted[sorted.length - 1]!.timestamp,
+      periodStart: sorted[0]?.timestamp,
+      periodEnd: sorted[sorted.length - 1]?.timestamp,
       totalCost: roundedTotal,
       totalInputTokens: totalInput,
       totalOutputTokens: totalOutput,

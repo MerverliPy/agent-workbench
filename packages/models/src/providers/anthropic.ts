@@ -1,20 +1,20 @@
+import {
+  ProviderAuthError,
+  ProviderRateLimitError,
+  ProviderResponseError,
+  ProviderServerError,
+} from "../errors";
+import type { ProviderConfig } from "../provider-config";
+import { redactApiKey, redactString } from "../redact";
 import type {
+  ModelMessage,
   ModelProvider,
   ModelRequest,
   ModelResponse,
   ModelStreamChunk,
   ModelToolCall,
   ModelUsage,
-  ModelMessage,
 } from "../types";
-import type { ProviderConfig } from "../provider-config";
-import {
-  ProviderAuthError,
-  ProviderRateLimitError,
-  ProviderServerError,
-  ProviderResponseError,
-} from "../errors";
-import { redactApiKey, redactString } from "../redact";
 
 // ── Anthropic wire types ───────────────────────────────────────────────
 
@@ -132,7 +132,9 @@ export class AnthropicProvider implements ModelProvider {
     try {
       raw = await response.json();
     } catch {
-      throw new ProviderResponseError("Anthropic returned invalid JSON response");
+      throw new ProviderResponseError(
+        "Anthropic returned invalid JSON response",
+      );
     }
 
     return this.normalizeResponse(raw);
@@ -237,9 +239,14 @@ export class AnthropicProvider implements ModelProvider {
             if (delta?.type === "text_delta" && delta.text) {
               yield { content: delta.text, done: false };
             }
-            if (delta?.type === "input_json_delta" && delta.partial_json && accumulatedToolCalls) {
+            if (
+              delta?.type === "input_json_delta" &&
+              delta.partial_json &&
+              accumulatedToolCalls
+            ) {
               // Accumulate tool-call input JSON
-              const last = accumulatedToolCalls[accumulatedToolCalls.length - 1];
+              const last =
+                accumulatedToolCalls[accumulatedToolCalls.length - 1];
               if (last) {
                 const prev = typeof last.input === "string" ? last.input : "";
                 last.input = prev + delta.partial_json;
@@ -305,9 +312,8 @@ export class AnthropicProvider implements ModelProvider {
       const blocks = this.toContentBlocks(msg);
       if (blocks.length === 0) continue;
 
-      const role = msg.role === "user" || msg.role === "tool"
-        ? "user"
-        : "assistant";
+      const role =
+        msg.role === "user" || msg.role === "tool" ? "user" : "assistant";
 
       const prev = messages[messages.length - 1];
       if (prev && prev.role === role) {
@@ -342,7 +348,9 @@ export class AnthropicProvider implements ModelProvider {
 
   private toContentBlocks(m: ModelMessage): AnthropicContentBlock[] {
     if (m.role === "tool" && m.toolCallId) {
-      return [{ type: "tool_result", tool_use_id: m.toolCallId, content: m.content }];
+      return [
+        { type: "tool_result", tool_use_id: m.toolCallId, content: m.content },
+      ];
     }
 
     if (m.role === "assistant" && m.toolCalls && m.toolCalls.length > 0) {
@@ -372,21 +380,26 @@ export class AnthropicProvider implements ModelProvider {
 
   private normalizeResponse(raw: unknown): ModelResponse {
     if (typeof raw !== "object" || raw === null) {
-      throw new ProviderResponseError("Anthropic response was not a JSON object");
+      throw new ProviderResponseError(
+        "Anthropic response was not a JSON object",
+      );
     }
 
     const data = raw as Record<string, unknown>;
-    const content = data["content"];
+    const content = data.content;
 
     if (!Array.isArray(content) || content.length === 0) {
-      throw new ProviderResponseError("Anthropic response missing content array");
+      throw new ProviderResponseError(
+        "Anthropic response missing content array",
+      );
     }
 
     const blocks = content as AnthropicContentBlock[];
     const usage = this.extractUsage(data);
-    const stopReason = typeof data["stop_reason"] === "string"
-      ? (data["stop_reason"] as string)
-      : "end_turn";
+    const stopReason =
+      typeof data.stop_reason === "string"
+        ? (data.stop_reason as string)
+        : "end_turn";
 
     // Check for tool calls
     const toolCalls = this.normalizeToolCalls(blocks);
@@ -415,7 +428,9 @@ export class AnthropicProvider implements ModelProvider {
     return result;
   }
 
-  private normalizeToolCalls(blocks: AnthropicContentBlock[]): ModelToolCall[] | undefined {
+  private normalizeToolCalls(
+    blocks: AnthropicContentBlock[],
+  ): ModelToolCall[] | undefined {
     const calls: ModelToolCall[] = [];
     for (const block of blocks) {
       if (block.type === "tool_use") {
@@ -427,12 +442,15 @@ export class AnthropicProvider implements ModelProvider {
   }
 
   private extractUsage(data: Record<string, unknown>): ModelUsage | undefined {
-    const usage = data["usage"];
+    const usage = data.usage;
     if (!usage || typeof usage !== "object") return undefined;
     const u = usage as Record<string, unknown>;
-    const inputTokens = typeof u["input_tokens"] === "number" ? u["input_tokens"] : undefined;
-    const outputTokens = typeof u["output_tokens"] === "number" ? u["output_tokens"] : undefined;
-    if (inputTokens === undefined && outputTokens === undefined) return undefined;
+    const inputTokens =
+      typeof u.input_tokens === "number" ? u.input_tokens : undefined;
+    const outputTokens =
+      typeof u.output_tokens === "number" ? u.output_tokens : undefined;
+    if (inputTokens === undefined && outputTokens === undefined)
+      return undefined;
     return {
       ...(inputTokens !== undefined ? { inputTokens } : {}),
       ...(outputTokens !== undefined ? { outputTokens } : {}),
@@ -481,10 +499,14 @@ export class AnthropicProvider implements ModelProvider {
 
 function safeTruncate(text: string, maxLen = 500): string {
   if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen) + "...";
+  return `${text.slice(0, maxLen)}...`;
 }
 
-function safeErrorMessage(prefix: string, err: unknown, apiKey: string): string {
+function safeErrorMessage(
+  prefix: string,
+  err: unknown,
+  apiKey: string,
+): string {
   if (err instanceof Error) {
     let msg = err.message;
     if (apiKey.length > 0) {

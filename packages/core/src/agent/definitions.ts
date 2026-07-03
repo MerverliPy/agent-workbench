@@ -44,7 +44,8 @@ export const PLAN_AGENT: AgentProfile = {
   id: "plan",
   name: "Plan",
   mode: "plan",
-  description: "Planning, analysis, and implementation strategy before mutation.",
+  description:
+    "Planning, analysis, and implementation strategy before mutation.",
   capabilities: ["read", "grep", "glob", "diff_preview", "bash"],
   permissionProfile: [
     { toolName: "read", outcome: "allow" },
@@ -70,7 +71,8 @@ When working on tasks:
 You must NOT mutate files. Your purpose is planning and analysis only. Switch to the Build agent when ready to implement changes.`,
 };
 
-export const ALL_AGENTS: ReadonlyMap<AgentProfile["id"], AgentProfile> = new Map([
-  ["build", BUILD_AGENT],
-  ["plan", PLAN_AGENT],
-]);
+export const ALL_AGENTS: ReadonlyMap<AgentProfile["id"], AgentProfile> =
+  new Map([
+    ["build", BUILD_AGENT],
+    ["plan", PLAN_AGENT],
+  ]);

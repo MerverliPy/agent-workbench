@@ -1,5 +1,5 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { getServerConfig } from "@agent-workbench/server/public";
 
 describe("Security: localhost binding", () => {

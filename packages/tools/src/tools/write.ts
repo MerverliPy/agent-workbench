@@ -10,13 +10,17 @@
  *              packages/storage (FileChange persistence)
  */
 
-import { z } from "zod/v4";
-import { ulid } from "ulid";
 import { applyMutation } from "@agent-workbench/diff";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { RegisteredTool, ToolExecutor, ToolExecutionContext } from "../types";
-import { assertSafePath } from "../path-guard";
+import { ulid } from "ulid";
+import { z } from "zod/v4";
 import type { MutationToolOptions } from "../mutation-context";
+import { assertSafePath } from "../path-guard";
+import type {
+  RegisteredTool,
+  ToolExecutionContext,
+  ToolExecutor,
+} from "../types";
 
 // ── Input / Result schemas ────────────────────────────────────────────────────
 
@@ -49,8 +53,14 @@ const definition: ToolDefinition = {
   inputSchema: {
     type: "object",
     properties: {
-      path: { type: "string", description: "File path to write (relative to project root)." },
-      content: { type: "string", description: "Full content to write to the file." },
+      path: {
+        type: "string",
+        description: "File path to write (relative to project root).",
+      },
+      content: {
+        type: "string",
+        description: "Full content to write to the file.",
+      },
     },
     required: ["path", "content"],
   },
@@ -65,7 +75,10 @@ const definition: ToolDefinition = {
  */
 export function createWriteTool(options: MutationToolOptions): RegisteredTool {
   const executor: ToolExecutor = {
-    async execute(input: unknown, context: ToolExecutionContext): Promise<unknown> {
+    async execute(
+      input: unknown,
+      context: ToolExecutionContext,
+    ): Promise<unknown> {
       const parsed = WriteInput.safeParse(input);
       if (!parsed.success) {
         throw new Error(`write: invalid input: ${parsed.error.message}`);
@@ -82,7 +95,7 @@ export function createWriteTool(options: MutationToolOptions): RegisteredTool {
       // Apply the mutation via packages/diff.
       const result = await applyMutation(
         { type: "write", path: resolvedPath, content },
-        context.projectRoot
+        context.projectRoot,
       );
 
       if (!result.success) {
@@ -111,7 +124,7 @@ export function createWriteTool(options: MutationToolOptions): RegisteredTool {
       options.toolCache?.invalidateAffectedByPath(
         context.sessionId,
         context.projectRoot,
-        resolvedPath
+        resolvedPath,
       );
 
       const linesWritten = content.split("\n").length;

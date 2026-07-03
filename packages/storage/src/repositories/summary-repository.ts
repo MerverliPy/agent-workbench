@@ -1,6 +1,6 @@
-import { eq, asc } from "drizzle-orm";
-import type { DrizzleBunSqliteDatabase } from "../types";
+import { asc, eq } from "drizzle-orm";
 import { summaries } from "../schema";
+import type { DrizzleBunSqliteDatabase } from "../types";
 
 export type SummaryRow = typeof summaries.$inferSelect;
 export type SummaryInsert = typeof summaries.$inferInsert;

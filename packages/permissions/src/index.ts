@@ -1,16 +1,16 @@
 // Public API for packages/permissions
 
 export { PermissionEngine } from "./engine";
-export { PermissionGate, type PermissionDecisionValue } from "./gate";
+export { type PermissionDecisionValue, PermissionGate } from "./gate";
 export { defaultPolicy } from "./policy";
 
 export type {
+  AgentRule,
+  CommandRule,
+  PathRule,
   PermissionEvalInput,
   PermissionEvalResult,
   PermissionOutcome,
   PermissionPolicy,
   ToolRule,
-  PathRule,
-  CommandRule,
-  AgentRule,
 } from "./types";

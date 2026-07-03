@@ -74,7 +74,10 @@ export function parseProviderConfig(env?: typeof process.env): ProviderConfig {
       ? ""
       : (e[entry.keyVar]?.trim() ?? null);
 
-  if (apiKey === null || (apiKey.length === 0 && entry.keyVar !== "__OLLAMA_NO_KEY__")) {
+  if (
+    apiKey === null ||
+    (apiKey.length === 0 && entry.keyVar !== "__OLLAMA_NO_KEY__")
+  ) {
     throw new ProviderConfigError(
       `Provider "${provider}" requires ${entry.keyVar} to be set.`,
     );

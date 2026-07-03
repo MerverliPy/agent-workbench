@@ -4,7 +4,9 @@ import type { ServerAppBindings } from "../context";
 import { ApiError } from "../errors";
 import { createErrorEnvelope } from "../utils/error-envelope";
 
-function requestIdFromContext(context: Context<ServerAppBindings>): string | undefined {
+function requestIdFromContext(
+  context: Context<ServerAppBindings>,
+): string | undefined {
   try {
     return context.get("requestId");
   } catch {
@@ -12,7 +14,10 @@ function requestIdFromContext(context: Context<ServerAppBindings>): string | und
   }
 }
 
-export function handleAppError(error: unknown, context: Context<ServerAppBindings>) {
+export function handleAppError(
+  error: unknown,
+  context: Context<ServerAppBindings>,
+) {
   const requestId = requestIdFromContext(context);
 
   if (error instanceof ApiError) {
@@ -24,7 +29,7 @@ export function handleAppError(error: unknown, context: Context<ServerAppBinding
         requestId,
         recoverable: error.recoverable,
       }),
-      { status: error.status as 400 | 404 | 500 | 501 }
+      { status: error.status as 400 | 404 | 500 | 501 },
     );
   }
 
@@ -37,7 +42,7 @@ export function handleAppError(error: unknown, context: Context<ServerAppBinding
         details: undefined,
         recoverable: error.status < 500,
       }),
-      { status: error.status as 400 | 404 | 500 | 501 }
+      { status: error.status as 400 | 404 | 500 | 501 },
     );
   }
 
@@ -56,11 +61,12 @@ export function handleAppError(error: unknown, context: Context<ServerAppBinding
         details: undefined,
         recoverable: error.status < 500,
       }),
-      { status: error.status as 400 | 404 | 500 | 501 }
+      { status: error.status as 400 | 404 | 500 | 501 },
     );
   }
 
-  const message = error instanceof Error ? error.message : "Unexpected server error";
+  const message =
+    error instanceof Error ? error.message : "Unexpected server error";
   return context.json(
     createErrorEnvelope({
       code: "INTERNAL_ERROR",
@@ -69,6 +75,6 @@ export function handleAppError(error: unknown, context: Context<ServerAppBinding
       details: undefined,
       recoverable: false,
     }),
-    { status: 500 }
+    { status: 500 },
   );
 }

@@ -1,10 +1,8 @@
-export { Tracer } from "./tracer";
-export type { Span, SpanStatus, TraceOptions, TraceHandler } from "./tracer";
+export type { ErrorReport } from "./error-reporter";
+export { ErrorReporter } from "./error-reporter";
 
 export { MetricsExporter } from "./metrics-exporter";
-
-export { ErrorReporter } from "./error-reporter";
-export type { ErrorReport } from "./error-reporter";
-
+export type { LogEntry, LoggerOptions, LogLevel } from "./request-logger";
 export { RequestLogger } from "./request-logger";
-export type { LogEntry, LogLevel, LoggerOptions } from "./request-logger";
+export type { Span, SpanStatus, TraceHandler, TraceOptions } from "./tracer";
+export { Tracer } from "./tracer";

@@ -49,7 +49,9 @@ export interface AuthContext {
  * Exempt paths bypass validation entirely (e.g. /health, /auth/token).
  * When auth is globally disabled, all requests pass through.
  */
-export function authMiddleware(options: AuthMiddlewareOptions): MiddlewareHandler {
+export function authMiddleware(
+  options: AuthMiddlewareOptions,
+): MiddlewareHandler {
   const { auth, excludePaths = [] } = options;
 
   return async (c: Context, next) => {
@@ -70,11 +72,12 @@ export function authMiddleware(options: AuthMiddlewareOptions): MiddlewareHandle
 
     // Extract bearer token
     const authHeader = c.req.header("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       c.status(401);
       return c.json({
         error: "Unauthorized",
-        message: "Missing or invalid Authorization header. Use: Authorization: Bearer <token>",
+        message:
+          "Missing or invalid Authorization header. Use: Authorization: Bearer <token>",
         recoverable: true,
         status: 401 as const,
       });
@@ -97,7 +100,8 @@ export function authMiddleware(options: AuthMiddlewareOptions): MiddlewareHandle
       c.status(401);
       return c.json({
         error: "Unauthorized",
-        message: "Invalid or expired token. Generate a new one via POST /auth/token.",
+        message:
+          "Invalid or expired token. Generate a new one via POST /auth/token.",
         recoverable: true,
         status: 401 as const,
       });

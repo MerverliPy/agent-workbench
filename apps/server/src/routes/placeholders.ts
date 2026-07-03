@@ -1,17 +1,17 @@
-import type { Hono } from "hono";
 import {
   CreateTokenRoute,
   FocusRoute,
   GetAuthStatusRoute,
   GetConfigRoute,
   GetEffectiveConfigRoute,
+  GetToolRoute,
   GetTuiStateRoute,
   ListToolsRoute,
-  GetToolRoute,
   PrefillPromptRoute,
-  ValidateConfigRoute,
   type RouteContract,
+  ValidateConfigRoute,
 } from "@agent-workbench/protocol";
+import type { Hono } from "hono";
 import type { ServerAppBindings } from "../context";
 import { createNotImplementedHandler } from "./helpers";
 
@@ -43,8 +43,14 @@ const placeholderRoutes: readonly PlaceholderRouteDefinition[] = [
   { contract: GetAuthStatusRoute, routeName: "auth.getStatus" },
 ] as const;
 
-function registerRoute(app: Hono<ServerAppBindings>, definition: PlaceholderRouteDefinition) {
-  const handler = createNotImplementedHandler(definition.contract, definition.routeName);
+function registerRoute(
+  app: Hono<ServerAppBindings>,
+  definition: PlaceholderRouteDefinition,
+) {
+  const handler = createNotImplementedHandler(
+    definition.contract,
+    definition.routeName,
+  );
 
   switch (definition.contract.method) {
     case "GET":

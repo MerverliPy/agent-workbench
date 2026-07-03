@@ -1,12 +1,14 @@
+import type { Tracer } from "@agent-workbench/telemetry";
 import type { MiddlewareHandler } from "hono";
 import type { ServerAppBindings } from "../context";
-import type { Tracer } from "@agent-workbench/telemetry";
 
 /**
  * Middleware that creates an OpenTelemetry-style span for every request.
  * Uses the existing requestId as the traceId.
  */
-export function tracingMiddleware(tracer: Tracer): MiddlewareHandler<ServerAppBindings> {
+export function tracingMiddleware(
+  tracer: Tracer,
+): MiddlewareHandler<ServerAppBindings> {
   return async (context, next) => {
     const span = tracer.startSpan({
       name: `${context.req.method} ${context.req.routePath || context.req.path}`,

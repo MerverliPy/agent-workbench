@@ -1,10 +1,13 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import {
+  GetProviderRoute,
+  ListProviderModelsRoute,
+  ListProvidersRoute,
+} from "@agent-workbench/protocol";
+import type { TestDb } from "../../helpers/test-db";
 import { createTestDb } from "../../helpers/test-db";
 import { createTestServer } from "../../helpers/test-server";
-import type { TestDb } from "../../helpers/test-db";
-import { ListProvidersRoute, GetProviderRoute, ListProviderModelsRoute } from "@agent-workbench/protocol";
-import type { InferRouteResponse } from "@agent-workbench/protocol";
 
 let testDb: TestDb;
 
@@ -33,10 +36,12 @@ describe("Provider routes — GET /provider", () => {
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.items.length).toBeGreaterThanOrEqual(2);
-      const stubEntry = parsed.data.items.find((i: { id: string }) => i.id === "stub");
+      const stubEntry = parsed.data.items.find(
+        (i: { id: string }) => i.id === "stub",
+      );
       expect(stubEntry).toBeDefined();
-      expect(stubEntry!.name).toBe("Stub Provider");
-      expect(stubEntry!.status).toBe("connected");
+      expect(stubEntry?.name).toBe("Stub Provider");
+      expect(stubEntry?.status).toBe("connected");
     }
   });
 
@@ -171,7 +176,10 @@ describe("Provider routes — GET /provider/:providerId/model", () => {
       modelTurns: [],
     });
 
-    const path = ListProviderModelsRoute.path.replace(":providerId", "nonexistent");
+    const path = ListProviderModelsRoute.path.replace(
+      ":providerId",
+      "nonexistent",
+    );
     const res = await server.app.request(path, {
       method: ListProviderModelsRoute.method,
     });

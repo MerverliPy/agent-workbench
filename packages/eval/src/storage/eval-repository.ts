@@ -2,15 +2,15 @@
 //
 // Follows the repository pattern from @agent-workbench/storage.
 
-import { eq, asc, desc, sql } from "drizzle-orm";
 import type { DrizzleBunSqliteDatabase } from "@agent-workbench/storage";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import {
+  comparisonResults,
+  comparisonRuns,
+  evalMetrics,
   evalRuns,
   evalScores,
-  evalMetrics,
   playgroundRuns,
-  comparisonRuns,
-  comparisonResults,
 } from "./schema";
 
 // --- Type helpers ---
@@ -78,7 +78,12 @@ export class EvalRepository {
     return this.findRunById(data.id)!;
   }
 
-  updateRunStatus(id: string, status: string, completedAt?: string, error?: string): void {
+  updateRunStatus(
+    id: string,
+    status: string,
+    completedAt?: string,
+    error?: string,
+  ): void {
     const updates: Partial<EvalRunInsert> = { status };
     if (completedAt !== undefined) updates.completedAt = completedAt;
     if (error !== undefined) updates.error = error;
@@ -139,7 +144,9 @@ export class EvalRepository {
   }
 
   /** Compare metrics across multiple runs */
-  compareMetrics(runIds: string[]): Array<{ runId: string; metrics: EvalMetricsRow }> {
+  compareMetrics(
+    runIds: string[],
+  ): Array<{ runId: string; metrics: EvalMetricsRow }> {
     return runIds
       .map((id) => {
         const m = this.findMetricsByRun(id);

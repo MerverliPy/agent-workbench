@@ -6,8 +6,8 @@
  * requiring changes to ToolExecutionContext.
  */
 
-import type { FileChangeRepository } from "@agent-workbench/storage";
 import type { ToolCache } from "@agent-workbench/cache";
+import type { FileChangeRepository } from "@agent-workbench/storage";
 
 export interface MutationToolOptions {
   /** Repository for persisting file change records (Phase 9 storage). */

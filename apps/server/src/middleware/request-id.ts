@@ -1,7 +1,10 @@
 import type { MiddlewareHandler } from "hono";
 import type { ServerAppBindings } from "../context";
 
-export const requestIdMiddleware: MiddlewareHandler<ServerAppBindings> = async (context, next) => {
+export const requestIdMiddleware: MiddlewareHandler<ServerAppBindings> = async (
+  context,
+  next,
+) => {
   const requestId = crypto.randomUUID();
   context.set("requestId", requestId);
   await next();

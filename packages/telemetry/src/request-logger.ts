@@ -81,9 +81,12 @@ export class RequestLogger {
     durationMs: number;
     error?: string;
   }): void {
-    const level = entry.statusCode >= 500 ? "error" as const
-      : entry.statusCode >= 400 ? "warn" as const
-      : "info" as const;
+    const level =
+      entry.statusCode >= 500
+        ? ("error" as const)
+        : entry.statusCode >= 400
+          ? ("warn" as const)
+          : ("info" as const);
 
     this.emit(level, `${entry.method} ${entry.path} ${entry.statusCode}`, {
       requestId: entry.requestId,
@@ -97,7 +100,11 @@ export class RequestLogger {
 
   // ── Private ────────────────────────────────────────────────────────────
 
-  private emit(level: LogLevel, message: string, meta?: Partial<LogEntry>): void {
+  private emit(
+    level: LogLevel,
+    message: string,
+    meta?: Partial<LogEntry>,
+  ): void {
     if (LEVEL_VALUES[level] < this.minLevel) return;
 
     const entry: LogEntry = {
@@ -108,20 +115,30 @@ export class RequestLogger {
       ...(meta?.sessionId !== undefined ? { sessionId: meta.sessionId } : {}),
       ...(meta?.method !== undefined ? { method: meta.method } : {}),
       ...(meta?.path !== undefined ? { path: meta.path } : {}),
-      ...(meta?.statusCode !== undefined ? { statusCode: meta.statusCode } : {}),
-      ...(meta?.durationMs !== undefined ? { durationMs: meta.durationMs } : {}),
+      ...(meta?.statusCode !== undefined
+        ? { statusCode: meta.statusCode }
+        : {}),
+      ...(meta?.durationMs !== undefined
+        ? { durationMs: meta.durationMs }
+        : {}),
       ...(meta?.error !== undefined ? { error: meta.error } : {}),
       ...(meta?.metadata !== undefined ? { metadata: meta.metadata } : {}),
     };
 
     if (this.pretty) {
-      const color = level === "error" ? "\x1b[31m"
-        : level === "warn" ? "\x1b[33m"
-        : level === "info" ? "\x1b[36m"
-        : "\x1b[90m";
+      const color =
+        level === "error"
+          ? "\x1b[31m"
+          : level === "warn"
+            ? "\x1b[33m"
+            : level === "info"
+              ? "\x1b[36m"
+              : "\x1b[90m";
       const reset = "\x1b[0m";
       const prefix = `${color}[${level.toUpperCase().padEnd(5)}]${reset}`;
-      this.output.write(`${prefix} ${entry.timestamp.slice(11, 23)} ${message}`);
+      this.output.write(
+        `${prefix} ${entry.timestamp.slice(11, 23)} ${message}`,
+      );
       if (entry.durationMs !== undefined) {
         this.output.write(` ${entry.durationMs}ms`);
       }
@@ -130,7 +147,7 @@ export class RequestLogger {
       }
       this.output.write("\n");
     } else {
-      this.output.write(JSON.stringify(entry) + "\n");
+      this.output.write(`${JSON.stringify(entry)}\n`);
     }
   }
 }

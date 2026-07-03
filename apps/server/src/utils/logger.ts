@@ -9,7 +9,11 @@ function formatTimestamp(): string {
   return new Date().toISOString();
 }
 
-function formatLine(level: LogLevel, message: string, ctx?: LogContext): string {
+function formatLine(
+  level: LogLevel,
+  message: string,
+  ctx?: LogContext,
+): string {
   const parts: string[] = [
     `[${formatTimestamp()}]`,
     `[${level.toUpperCase()}]`,

@@ -1,8 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import type { PluginManifest } from "./plugin-manifest";
-import type { PluginRecord } from "./plugin-manifest";
+import { join, resolve } from "node:path";
+import type { PluginManifest, PluginRecord } from "./plugin-manifest";
 import { PluginManifest as PluginManifestSchema } from "./plugin-manifest";
 
 /**
@@ -17,7 +16,8 @@ export class PluginRegistry {
   private readonly registryPath: string;
 
   constructor(pluginsDir?: string) {
-    this.pluginsDir = pluginsDir ?? resolve(homedir(), ".agent-workbench", "plugins");
+    this.pluginsDir =
+      pluginsDir ?? resolve(homedir(), ".agent-workbench", "plugins");
     this.registryPath = join(this.pluginsDir, "plugin.json");
     this.ensureDir();
   }
@@ -35,7 +35,11 @@ export class PluginRegistry {
   }
 
   /** Register a plugin (after installation). */
-  register(manifest: PluginManifest, source: string, installPath: string): PluginRecord {
+  register(
+    manifest: PluginManifest,
+    source: string,
+    installPath: string,
+  ): PluginRecord {
     const records = this.readRegistry();
 
     if (records[manifest.name] !== undefined) {
@@ -117,7 +121,9 @@ export class PluginRegistry {
       return {};
     }
     try {
-      const raw = JSON.parse(readFileSync(this.registryPath, "utf-8")) as unknown;
+      const raw = JSON.parse(
+        readFileSync(this.registryPath, "utf-8"),
+      ) as unknown;
       return raw as Record<string, PluginRecord>;
     } catch {
       return {};

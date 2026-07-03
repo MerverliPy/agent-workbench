@@ -11,13 +11,17 @@
  * Ownership:   packages/tools, packages/diff, packages/storage
  */
 
-import { z } from "zod/v4";
-import { ulid } from "ulid";
 import { revertMutation } from "@agent-workbench/diff";
 import type { ToolDefinition } from "@agent-workbench/protocol";
-import type { RegisteredTool, ToolExecutor, ToolExecutionContext } from "../types";
-import { assertSafePath } from "../path-guard";
+import { ulid } from "ulid";
+import { z } from "zod/v4";
 import type { MutationToolOptions } from "../mutation-context";
+import { assertSafePath } from "../path-guard";
+import type {
+  RegisteredTool,
+  ToolExecutionContext,
+  ToolExecutor,
+} from "../types";
 
 // ── Input / Result schemas ────────────────────────────────────────────────────
 
@@ -59,14 +63,17 @@ const definition: ToolDefinition = {
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 export function createRevertLastChangeTool(
-  options: MutationToolOptions
+  options: MutationToolOptions,
 ): RegisteredTool {
   const executor: ToolExecutor = {
-    async execute(input: unknown, context: ToolExecutionContext): Promise<unknown> {
+    async execute(
+      input: unknown,
+      context: ToolExecutionContext,
+    ): Promise<unknown> {
       const parsed = RevertLastChangeInput.safeParse(input);
       if (!parsed.success) {
         throw new Error(
-          `revert_last_change: invalid input: ${parsed.error.message}`
+          `revert_last_change: invalid input: ${parsed.error.message}`,
         );
       }
       const { path: rawPath } = parsed.data;
@@ -77,19 +84,19 @@ export function createRevertLastChangeTool(
       // Look up the most recent change for this path in the session.
       const change = options.fileChangeRepository.findLatestByPath(
         context.sessionId,
-        resolvedPath
+        resolvedPath,
       );
 
       if (change === undefined) {
         throw new Error(
-          `revert_last_change: no recorded change found for ${rawPath} in this session`
+          `revert_last_change: no recorded change found for ${rawPath} in this session`,
         );
       }
 
       // Prevent reverting a revert (would create confusing loops).
       if (change.changeType === "revert") {
         throw new Error(
-          `revert_last_change: the last recorded change for ${rawPath} is already a revert`
+          `revert_last_change: the last recorded change for ${rawPath} is already a revert`,
         );
       }
 
@@ -101,7 +108,7 @@ export function createRevertLastChangeTool(
           afterHash: change.afterHash,
           patch: change.patch,
         },
-        context.projectRoot
+        context.projectRoot,
       );
 
       if (!result.success) {
@@ -130,7 +137,7 @@ export function createRevertLastChangeTool(
       options.toolCache?.invalidateAffectedByPath(
         context.sessionId,
         context.projectRoot,
-        resolvedPath
+        resolvedPath,
       );
 
       return {

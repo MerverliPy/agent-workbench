@@ -1,12 +1,12 @@
 /// <reference types="bun" />
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { WorkbenchClient } from "@agent-workbench/sdk";
+import type { TestDb } from "../helpers/test-db";
 import { createTestDb } from "../helpers/test-db";
 import { createTestServer } from "../helpers/test-server";
-import type { TestDb } from "../helpers/test-db";
-import { WorkbenchClient } from "@agent-workbench/sdk";
 
 /**
  * Full-stack E2E test validating the complete agent-workbench stack
@@ -26,9 +26,7 @@ describe("Full-stack lifecycle (E2E via SDK)", () => {
 
     server = createTestServer({
       storage: testDb.connection,
-      modelTurns: [
-        { text: "I am the E2E test agent." },
-      ],
+      modelTurns: [{ text: "I am the E2E test agent." }],
     });
 
     serverHandle = Bun.serve({
@@ -43,7 +41,9 @@ describe("Full-stack lifecycle (E2E via SDK)", () => {
   afterAll(() => {
     if (serverHandle) serverHandle.stop(true);
     testDb.cleanup();
-    try { rmSync(projectDir, { recursive: true, force: true }); } catch {}
+    try {
+      rmSync(projectDir, { recursive: true, force: true });
+    } catch {}
   });
 
   it("GET /health returns server status", async () => {

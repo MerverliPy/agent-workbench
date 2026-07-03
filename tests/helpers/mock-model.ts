@@ -1,4 +1,9 @@
-import type { ModelProvider, ModelRequest, ModelResponse, ModelToolCall } from "@agent-workbench/models";
+import type {
+  ModelProvider,
+  ModelRequest,
+  ModelResponse,
+  ModelToolCall,
+} from "@agent-workbench/models";
 
 export interface MockModelTurn {
   /** Tool calls to return on this turn (if any). */

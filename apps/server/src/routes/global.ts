@@ -1,8 +1,12 @@
-import type { Hono } from "hono";
-import { EventRoute, GlobalInfoRoute, HealthRoute } from "@agent-workbench/protocol";
-import { streamSSE } from "hono/streaming";
 import type { EventBus } from "@agent-workbench/events";
+import {
+  EventRoute,
+  GlobalInfoRoute,
+  HealthRoute,
+} from "@agent-workbench/protocol";
 import type { SessionRepository } from "@agent-workbench/storage";
+import type { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 import type { ServerConfig } from "../config";
 import type { ServerAppBindings } from "../context";
 import { metrics } from "../utils/metrics";
@@ -22,7 +26,7 @@ export function registerGlobalRoutes(
     readonly config: ServerConfig;
     readonly eventBus: EventBus;
     readonly sessionRepository?: SessionRepository;
-  }
+  },
 ) {
   app.get(
     HealthRoute.path,
@@ -42,11 +46,14 @@ export function registerGlobalRoutes(
         storage: storageStatus,
         maxBodySizeBytes: 1_000_000,
       };
-    })
+    }),
   );
 
   app.get("/metrics", (ctx) => {
-    metrics.set("active_sessions", options.sessionRepository?.list()?.length ?? 0);
+    metrics.set(
+      "active_sessions",
+      options.sessionRepository?.list()?.length ?? 0,
+    );
     ctx.header("Content-Type", "text/plain; version=0.0.4");
     return ctx.text(metrics.toPrometheus());
   });
@@ -59,8 +66,15 @@ export function registerGlobalRoutes(
       description: options.config.description,
       uptime: Math.floor((Date.now() - options.startedAt) / 1000),
       serverTime: new Date().toISOString(),
-      capabilities: ["health", "info", "sse", "sessions", "messages", "core-runtime"],
-    }))
+      capabilities: [
+        "health",
+        "info",
+        "sse",
+        "sessions",
+        "messages",
+        "core-runtime",
+      ],
+    })),
   );
 
   app.get(EventRoute.path, async (context) => {
@@ -79,7 +93,7 @@ export function registerGlobalRoutes(
         stream
           .write(`data: ${data}\n\n`)
           .catch((err) =>
-            console.error("[sse] Failed to write event to stream", err)
+            console.error("[sse] Failed to write event to stream", err),
           );
       });
 
