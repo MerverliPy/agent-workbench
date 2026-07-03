@@ -1,5 +1,7 @@
 # 18 — Phase Exit Gates
 
+> **⚠️ DEPRECATED — July 2026.** This document tracks exit gates for phases 0–18 only and is 9+ phases behind reality (current: Phase 29). The authoritative source is [`docs/27_PROJECT_ROADMAP.md`](./27_PROJECT_ROADMAP.md). This file is kept for historical reference only. Do not use for current development decisions.
+
 Status: Phase 17 complete; Phase 18 active (mobile web companion UI)
 Document type: agent-ready phase gate checklist
 Scope: required completion criteria before moving between phases
