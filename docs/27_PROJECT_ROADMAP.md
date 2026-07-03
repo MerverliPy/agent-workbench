@@ -1,6 +1,6 @@
 # 27 — Project Roadmap
 
-Status: Phase 27 complete — Phase 29 (model experimentation & eval) in progress
+Status: Phase 29 complete — Phase 30 (enterprise readiness) next
 Document type: Roadmap for Phases 19–30
 Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 
@@ -21,8 +21,8 @@ Phase 25 ✅ complete ███████████████████�
 Phase 26 ✅ complete ██████████████████████  plugin system & extensibility
 Phase 27 ✅ complete ██████████████████████  remote access & collaboration
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
-Phase 29 ▌         ░░░░░░░░░░░░░░░░░░░░  model experimentation & eval
-Phase 30 ░░░░░░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
+Phase 29 ✅ complete ██████████████████████  model experimentation & eval
+Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
 ```
 
 ### Timeline
@@ -284,7 +284,7 @@ These bridges connect agent-workbench with existing developer tooling:
 [ ] GDPR: right to access, right to delete endpoints
 [ ] Supply chain: SBOM generation, dependency vulnerability scanning
 [ ] FIPS 140-2 compliance for cryptographic operations
-[ ] Hermes Agent bridge auto-discovers provider config from ~/.hermes/
+[x] Hermes Agent bridge auto-discovers provider config from ~/.hermes/
 [ ] OpenCode bridge syncs provider registry bidirectionally
 ```
 
@@ -360,5 +360,5 @@ Dependencies: Phase N
 
 ---
 
-*Last updated: 2026-07-03 (Phase 29 in progress — prompt library, playground, ModelComparer committed)*
-*Next review: After Phase 29 completion*
+*Last updated: 2026-07-03 (Phase 29 complete, Phase 30 started — Hermes bridge)*
+*Next review: After Phase 30 completion*

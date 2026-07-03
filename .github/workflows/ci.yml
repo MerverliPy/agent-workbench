@@ -55,6 +55,12 @@ jobs:
             echo "  [typecheck] packages/$pkg"
             (cd packages/$pkg && bun run typecheck) || exit 1
           done
+      - name: Typecheck plugins
+        run: |
+          for plugin in agent-workbench-hermes; do
+            echo "  [typecheck] plugins/$plugin"
+            (cd plugins/$plugin && bun run typecheck) || exit 1
+          done
       - name: Typecheck apps
         run: |
           for app in server tui cli mobile-web dashboard; do

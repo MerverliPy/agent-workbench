@@ -41,7 +41,7 @@ export class CopilotAdapter {
   async call(
     messages: PluginModelMessage[],
     tools?: PluginToolDefinition[],
-    signal?: AbortSignal,
+    signal?: AbortSignal | null,
   ): Promise<PluginModelResponse> {
     const body = this.buildBody(messages, tools, false);
     const headers = this.buildHeaders();
@@ -50,7 +50,7 @@ export class CopilotAdapter {
       method: "POST",
       headers,
       body: JSON.stringify(body),
-      signal,
+      signal: signal ?? null,
     });
 
     if (!response.ok) {
@@ -70,19 +70,17 @@ export class CopilotAdapter {
 
     return {
       content,
-      usage: usage
-        ? {
-            inputTokens: (usage.prompt_tokens as number) ?? 0,
-            outputTokens: (usage.completion_tokens as number) ?? 0,
-          }
-        : undefined,
+      ...(usage ? { usage: {
+        inputTokens: (usage.prompt_tokens as number) ?? 0,
+        outputTokens: (usage.completion_tokens as number) ?? 0,
+      } } : {}),
     };
   }
 
   async *stream(
     messages: PluginModelMessage[],
     tools?: PluginToolDefinition[],
-    signal?: AbortSignal,
+    signal?: AbortSignal | null,
   ): AsyncGenerator<PluginStreamChunk> {
     const body = this.buildBody(messages, tools, true);
     const headers = this.buildHeaders();
@@ -91,7 +89,7 @@ export class CopilotAdapter {
       method: "POST",
       headers,
       body: JSON.stringify(body),
-      signal,
+      signal: signal ?? null,
     });
 
     if (!response.ok) {

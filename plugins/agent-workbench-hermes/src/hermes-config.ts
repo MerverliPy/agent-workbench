@@ -18,9 +18,9 @@ export interface HermesProviderEntry {
   /** Model name (e.g. "deepseek-v4-flash", "kimi-k2.7-code"). */
   readonly model: string;
   /** Base URL from credentials (if available). */
-  readonly baseUrl?: string;
+  readonly baseUrl?: string | undefined;
   /** API key from credentials. */
-  readonly apiKey?: string;
+  readonly apiKey?: string | undefined;
   /** Whether this is the primary (default) provider. */
   readonly isPrimary: boolean;
 }
@@ -135,8 +135,8 @@ function parseConfig(raw: string, auth: AuthFile | null): HermesConfig {
         // Look backwards for the default model
         for (let j = i - 1; j >= 0 && j > i - 10; j--) {
           const prev = lines[j]?.trim();
-          if (prev.startsWith("default:")) {
-            const model = prev.slice("default:".length).trim();
+          if (prev?.startsWith("default:")) {
+            const model = prev!.slice("default:".length).trim();
             if (model) {
               addEntry(entries, provider, model, true, auth);
             }
@@ -169,7 +169,7 @@ function addEntry(
   entries.push({
     provider,
     model,
-    baseUrl: cred?.base_url,
+    ...(cred?.base_url ? { baseUrl: cred.base_url } : {}),
     apiKey: resolveApiKey(cred),
     isPrimary,
   });

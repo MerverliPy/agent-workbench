@@ -40,7 +40,7 @@ export class OpenAIAdapter {
   async call(
     messages: PluginModelMessage[],
     _tools?: PluginToolDefinition[],
-    signal?: AbortSignal,
+    signal?: AbortSignal | null,
   ): Promise<PluginModelResponse> {
     const body = this.buildBody(messages, _tools, false);
 
@@ -51,7 +51,7 @@ export class OpenAIAdapter {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(body),
-      signal,
+      signal: signal ?? null,
     });
 
     if (!response.ok) {
@@ -76,27 +76,25 @@ export class OpenAIAdapter {
 
     return {
       content,
-      toolCalls: toolCallsRaw?.map((tc) => ({
+      ...(toolCallsRaw ? { toolCalls: toolCallsRaw.map((tc) => ({
         id: tc.id as string,
         name: (tc.function as Record<string, unknown>)?.name as string,
         arguments: JSON.parse(
           ((tc.function as Record<string, unknown>)?.arguments as string) ??
             "{}",
         ) as Record<string, unknown>,
-      })),
-      usage: usage
-        ? {
-            inputTokens: (usage.prompt_tokens as number) ?? 0,
-            outputTokens: (usage.completion_tokens as number) ?? 0,
-          }
-        : undefined,
+      })) } : {}),
+      ...(usage ? { usage: {
+        inputTokens: (usage.prompt_tokens as number) ?? 0,
+        outputTokens: (usage.completion_tokens as number) ?? 0,
+      } } : {}),
     };
   }
 
   async *stream(
     messages: PluginModelMessage[],
     _tools?: PluginToolDefinition[],
-    signal?: AbortSignal,
+    signal?: AbortSignal | null,
   ): AsyncGenerator<PluginStreamChunk> {
     const body = this.buildBody(messages, _tools, true);
 
@@ -107,7 +105,7 @@ export class OpenAIAdapter {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(body),
-      signal,
+      signal: signal ?? null,
     });
 
     if (!response.ok) {
