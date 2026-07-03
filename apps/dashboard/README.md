@@ -1,4 +1,4 @@
-# @agent-workbench/dashboard
+# 📊 @agent-workbench/dashboard
 
 Web-based monitoring dashboard for the agent-workbench server. Provides real-time visibility into agent sessions, system metrics, and provider status via SSE-driven live updates.
 
@@ -9,7 +9,6 @@ Web-based monitoring dashboard for the agent-workbench server. Provides real-tim
 cd apps/server && bun run dev
 
 # Dashboard available at http://localhost:8787/dashboard
-# Point your browser to the /dashboard route after starting the server
 ```
 
 ## Features
@@ -19,11 +18,16 @@ cd apps/server && bun run dev
 - **Provider status**: Health checks for all configured model providers
 - **Live updates**: SSE-based real-time data streaming
 
-## Scope
+## Architecture
 
-- Real-time session monitoring
-- System metrics visualization
-- Provider status dashboard
-- SSE-based live updates
+Built with SolidJS + Tailwind CSS. Consumes the typed SDK (`@agent-workbench/sdk`) to connect to the local server. All data flows through SSE event streams — no polling.
+
+## Development
+
+```bash
+cd apps/dashboard && bun run dev     # Dev server with hot reload
+cd apps/dashboard && bun run build   # Production build
+cd apps/dashboard && bun run typecheck
+```
 
 Part of **Phase 25** (observability & production readiness).

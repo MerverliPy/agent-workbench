@@ -131,17 +131,17 @@ Two new E2E tests using mock providers, temp databases, and random ports:
 ## Validation Checklist
 
 ```text
-[ ] GitHub Actions CI pipeline configured and triggers on push to main.
-[ ] Pipeline runs bun test — all tests pass.
-[ ] Pipeline runs bash scripts/test-health.sh — all checks pass.
-[ ] Pipeline runs bun run typecheck in every workspace package.
-[ ] Pipeline runs git diff --check — no whitespace errors.
-[ ] Pipeline reports pass/fail status on PRs.
-[ ] Full-stack E2E test covers: server start → health → provider route → SDK session → model response → shutdown.
-[ ] Streaming E2E test validates: SSE subscription → stream_delta events → stream_complete → final persistence.
-[ ] All E2E tests use mock providers, temp databases, random ports.
-[ ] CI completes within 5 minutes for the full suite.
-[ ] CI requires no secrets, API keys, or network access.
+[x] GitHub Actions CI pipeline configured and triggers on push to main.
+[x] Pipeline runs bun test — all tests pass.
+[x] Pipeline runs bash scripts/test-health.sh — all checks pass.
+[x] Pipeline runs bun run typecheck in every workspace package.
+[x] Pipeline runs git diff --check — no whitespace errors.
+[x] Pipeline reports pass/fail status on PRs.
+[x] Full-stack E2E test covers: server start → health → provider route → SDK session → model response → shutdown.
+[x] Streaming E2E test validates: SSE subscription → stream_delta events → stream_complete → final persistence.
+[x] All E2E tests use mock providers, temp databases, random ports.
+[x] CI completes within 5 minutes for the full suite.
+[x] CI requires no secrets, API keys, or network access.
 ```
 
 ## Notes for Future Agents

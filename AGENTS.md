@@ -46,7 +46,7 @@ Current Phase
 
 Phases 0–26 are complete.
 
-Phase 27 (remote access & collaboration) is complete. Phase 29 (model experimentation & eval) is next. See docs/27_PROJECT_ROADMAP.md for the full roadmap through Phase 30.
+Phase 27 (remote access & collaboration) is complete. Phase 29 (model experimentation & eval) is in progress. See docs/27_PROJECT_ROADMAP.md for the full roadmap through Phase 30.
 
 Protocol Rules
 

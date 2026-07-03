@@ -1,6 +1,6 @@
 # 27 — Project Roadmap
 
-Status: Phase 27 complete — Phase 29 (model experimentation & eval) next
+Status: Phase 27 complete — Phase 29 (model experimentation & eval) in progress
 Document type: Roadmap for Phases 19–30
 Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 
@@ -22,7 +22,7 @@ Phase 26 ✅ complete ███████████████████�
 Phase 27 ✅ complete ██████████████████████  remote access & collaboration
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
 Phase 29 ▌         ░░░░░░░░░░░░░░░░░░░░  model experimentation & eval
-Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
+Phase 30 ░░░░░░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
 ```
 
 ### Timeline
@@ -210,16 +210,16 @@ Integration with:
 ### Exit Gates
 
 ```text
-[ ] Built-in eval runner with standard benchmarks (MMLU, HumanEval, GSM8K)
-[ ] A/B test: same prompt → compare outputs across 2+ models
-[ ] Prompt versioning with git-backed history
-[ ] Cost-per-eval tracking
-[ ] Latency percentiles (p50, p95, p99) per model per task type
-[ ] Side-by-side diff viewer for model outputs
-[ ] Export eval results to CSV/JSON for external analysis
-[ ] Model playground: one-shot chat in the TUI to test any configured model
-[ ] Prompt library: 4+ built-in prompt templates in ~/.agent-workbench/prompts/library/
-[ ] Playground supports streaming responses (like the main chat panel)
+[x] Built-in eval runner with standard benchmarks (MMLU, HumanEval, GSM8K)
+[x] A/B test: same prompt → compare outputs across 2+ models
+[x] Prompt versioning with git-backed history
+[x] Cost-per-eval tracking
+[x] Latency percentiles (p50, p95, p99) per model per task type
+[x] Side-by-side diff viewer for model outputs
+[x] Export eval results to CSV/JSON for external analysis
+[x] Model playground: one-shot chat in the TUI to test any configured model
+[x] Prompt library: 4+ built-in prompt templates in ~/.agent-workbench/prompts/library/
+[x] Playground supports streaming responses (like the main chat panel)
 ```
 
 ---
@@ -360,5 +360,5 @@ Dependencies: Phase N
 
 ---
 
-*Last updated: 2026-07-02 (Phase 28 deferred, Phase 27 collab extended)*
-*Next review: After Phase 27 completion*
+*Last updated: 2026-07-03 (Phase 29 in progress — prompt library, playground, ModelComparer committed)*
+*Next review: After Phase 29 completion*
