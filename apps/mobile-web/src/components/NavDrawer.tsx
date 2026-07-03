@@ -1,7 +1,12 @@
 import type { JSX } from "solid-js";
-import { Show, For, createSignal } from "solid-js";
-import { drawerOpen, setDrawerOpen, activePanel, selectPanel } from "../state/app";
+import { createSignal, For, Show } from "solid-js";
 import type { PanelId } from "../state/app";
+import {
+  activePanel,
+  drawerOpen,
+  selectPanel,
+  setDrawerOpen,
+} from "../state/app";
 
 interface PanelItem {
   id: PanelId;
@@ -11,40 +16,110 @@ interface PanelItem {
 /* Lucide-style SVG icons — no emoji, consistent sizing */
 const SVG_ICONS: Record<PanelId, JSX.Element> = {
   chat: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
   files: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   ),
   git: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" />
-      <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9" /><path d="M12 12v3" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="18" r="3" />
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="18" cy="6" r="3" />
+      <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9" />
+      <path d="M12 12v3" />
     </svg>
   ),
   sessions: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="9" y1="21" x2="9" y2="9" />
     </svg>
   ),
   activity: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
     </svg>
   ),
   settings: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
   help: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   ),
 };
@@ -68,7 +143,7 @@ export function NavDrawer(): JSX.Element {
   // ── Swipe-to-close on the drawer panel ────────────────────────────
   function handleDrawerTouchStart(e: TouchEvent): void {
     if (e.touches.length === 1) {
-      setTouchStartX(e.touches[0]!.clientX);
+      setTouchStartX(e.touches[0]?.clientX);
     }
   }
 
@@ -76,7 +151,7 @@ export function NavDrawer(): JSX.Element {
     const startX = touchStartX();
     if (startX === null || e.touches.length !== 1) return;
 
-    const currentX = e.touches[0]!.clientX;
+    const currentX = e.touches[0]?.clientX;
     const deltaX = currentX - startX;
 
     // Swipe left on the drawer → close
@@ -93,8 +168,8 @@ export function NavDrawer(): JSX.Element {
   // ── Swipe-to-open from left edge ──────────────────────────────────
 
   function handleEdgeTouchStart(e: TouchEvent): void {
-    if (e.touches.length === 1 && e.touches[0]!.clientX < 30) {
-      setTouchStartX(e.touches[0]!.clientX);
+    if (e.touches.length === 1 && e.touches[0]?.clientX < 30) {
+      setTouchStartX(e.touches[0]?.clientX);
     }
   }
 
@@ -102,7 +177,7 @@ export function NavDrawer(): JSX.Element {
     const startX = touchStartX();
     if (startX === null || e.touches.length !== 1) return;
 
-    const currentX = e.touches[0]!.clientX;
+    const currentX = e.touches[0]?.clientX;
     const deltaX = currentX - startX;
 
     // Swipe right from left edge → open
@@ -151,13 +226,23 @@ export function NavDrawer(): JSX.Element {
         onTouchEnd={handleDrawerTouchEnd}
       >
         <div class="flex items-center justify-between px-4 h-11 border-b border-slate-700 safe-top">
-          <span class="text-sm font-semibold text-slate-300">agent-workbench</span>
+          <span class="text-sm font-semibold text-slate-300">
+            agent-workbench
+          </span>
           <button
             class="w-11 h-11 flex items-center justify-center rounded-lg active:bg-slate-700 text-slate-400"
             onClick={() => setDrawerOpen(false)}
             aria-label="Close menu"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>

@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 
 /**
  * Tracks online/offline status for the mobile-web PWA.
@@ -11,8 +11,12 @@ export function initOfflineDetection(): void {
   if (_listenersInitialized) return;
   _listenersInitialized = true;
 
-  const handleOnline = (): void => { setIsOnline(true); };
-  const handleOffline = (): void => { setIsOnline(false); };
+  const handleOnline = (): void => {
+    setIsOnline(true);
+  };
+  const handleOffline = (): void => {
+    setIsOnline(false);
+  };
 
   window.addEventListener("online", handleOnline);
   window.addEventListener("offline", handleOffline);

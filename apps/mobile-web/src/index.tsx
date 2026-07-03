@@ -1,7 +1,7 @@
 import { render } from "solid-js/web";
 import { App } from "./App";
-import { registerServiceWorker } from "./lib/pwa";
 import { initOfflineDetection } from "./lib/offline";
+import { registerServiceWorker } from "./lib/pwa";
 import "./styles/index.css";
 
 const root = document.getElementById("root");

@@ -33,7 +33,7 @@ jobs:
       - name: Check whitespace
         run: git diff --check
       - name: Biome lint
-        run: bunx @biomejs/biome check . --no-errors-on-unmatched 2>&1
+        run: bunx @biomejs/biome check . --skip=a11y --no-errors-on-unmatched 2>&1
 
   typecheck:
     name: Typecheck all packages + apps

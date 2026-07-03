@@ -23,7 +23,8 @@ body {
 }
 
 /* Allow text selection in input/textarea */
-input, textarea {
+input,
+textarea {
   -webkit-user-select: text;
   user-select: text;
 }
@@ -57,8 +58,14 @@ input, textarea {
 }
 
 @keyframes panelSlideIn {
-  from { opacity: 0; transform: translateX(16px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ── Landscape orientation support ──────────────────────────────────────── */
@@ -68,7 +75,10 @@ input, textarea {
   .panel-enter {
     animation-duration: 100ms;
   }
-  button, input, textarea, select {
+  button,
+  input,
+  textarea,
+  select {
     font-size: 14px; /* Prevent iOS zoom on focus */
   }
   .nav-drawer-panel {
@@ -100,8 +110,13 @@ input, textarea {
 
 /* Streaming pulse */
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .streaming-dot {
@@ -110,14 +125,26 @@ input, textarea {
 
 /* Bounce animation (typing indicator) */
 @keyframes bounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-6px); }
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
 }
 
 /* Fade in (scroll-to-bottom button) */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
@@ -134,9 +161,15 @@ input, textarea {
   margin: 0.5em 0 0.25em;
   line-height: 1.3;
 }
-.markdown-body h1 { font-size: 1.2em; }
-.markdown-body h2 { font-size: 1.1em; }
-.markdown-body h3 { font-size: 1.05em; }
+.markdown-body h1 {
+  font-size: 1.2em;
+}
+.markdown-body h2 {
+  font-size: 1.1em;
+}
+.markdown-body h3 {
+  font-size: 1.05em;
+}
 
 .markdown-body p {
   margin: 0.25em 0;
@@ -157,7 +190,8 @@ input, textarea {
   padding: 0.1em 0.35em;
   border-radius: 3px;
   font-size: 0.9em;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 .markdown-body pre {

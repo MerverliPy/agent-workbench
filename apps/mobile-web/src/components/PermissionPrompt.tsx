@@ -1,12 +1,12 @@
 import type { JSX } from "solid-js";
-import { Show, createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, Show } from "solid-js";
+import { getClient } from "../lib/sdk";
 import {
   pendingPermissionRequest,
   permissionModalOpen,
-  setPermissionModalOpen,
   setPendingPermissionRequest,
+  setPermissionModalOpen,
 } from "../state/app";
-import { getClient } from "../lib/sdk";
 
 /**
  * Request notification permission once on mount (if supported and not
@@ -102,14 +102,14 @@ export function PermissionPrompt(): JSX.Element {
             <div class="bg-slate-700/50 rounded-lg px-3 py-2">
               <span class="text-xs text-slate-400 block mb-0.5">Tool</span>
               <span class="text-sm font-medium text-white">
-                {req()!.toolName}
+                {req()?.toolName}
               </span>
             </div>
-            <Show when={req()!.targetPaths?.length}>
+            <Show when={req()?.targetPaths?.length}>
               <div class="bg-slate-700/50 rounded-lg px-3 py-2">
                 <span class="text-xs text-slate-400 block mb-0.5">Target</span>
                 <span class="text-sm font-mono text-slate-200 break-all">
-                  {req()!.targetPaths?.join(", ")}
+                  {req()?.targetPaths?.join(", ")}
                 </span>
               </div>
             </Show>
@@ -117,14 +117,14 @@ export function PermissionPrompt(): JSX.Element {
               <span class="text-xs text-slate-400 block mb-0.5">Risk</span>
               <span
                 class={`text-sm font-medium ${
-                  req()!.riskLevel === "high"
+                  req()?.riskLevel === "high"
                     ? "text-red-400"
-                    : req()!.riskLevel === "medium"
+                    : req()?.riskLevel === "medium"
                       ? "text-yellow-400"
                       : "text-green-400"
                 }`}
               >
-                {req()!.riskLevel ?? "unknown"}
+                {req()?.riskLevel ?? "unknown"}
               </span>
             </div>
           </div>

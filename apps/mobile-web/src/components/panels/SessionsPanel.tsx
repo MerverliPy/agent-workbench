@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { createSignal, onMount, For, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
 import { getClient } from "../../lib/sdk";
 import { selectPanel, setSelectedSessionId } from "../../state/app";
 import { ListSkeleton } from "../LoadingSkeleton";
@@ -90,12 +90,22 @@ export function SessionsPanel(): JSX.Element {
           {(session) => (
             <button
               class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 active:bg-slate-700/50 border-b border-slate-800 transition-colors"
-              onClick={() => { setSelectedSessionId(session.id); selectPanel("chat"); }}
+              onClick={() => {
+                setSelectedSessionId(session.id);
+                selectPanel("chat");
+              }}
             >
-              <span class={`w-2 h-2 rounded-full ${session.isActive ? "bg-green-500" : "bg-slate-600"}`} />
+              <span
+                class={`w-2 h-2 rounded-full ${session.isActive ? "bg-green-500" : "bg-slate-600"}`}
+              />
               <div class="flex-1 text-left">
-                <span class="text-sm text-slate-200 block">{session.title}</span>
-                <span class="text-xs text-slate-500">{session.messageCount} message{session.messageCount !== 1 ? "s" : ""}</span>
+                <span class="text-sm text-slate-200 block">
+                  {session.title}
+                </span>
+                <span class="text-xs text-slate-500">
+                  {session.messageCount} message
+                  {session.messageCount !== 1 ? "s" : ""}
+                </span>
               </div>
             </button>
           )}

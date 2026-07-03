@@ -22,7 +22,8 @@ export function getSettings(): ConnectionSettings {
     return {
       serverUrl: parsed.serverUrl ?? DEFAULTS.serverUrl,
       autoConnect: parsed.autoConnect ?? DEFAULTS.autoConnect,
-      reconnectIntervalMs: parsed.reconnectIntervalMs ?? DEFAULTS.reconnectIntervalMs,
+      reconnectIntervalMs:
+        parsed.reconnectIntervalMs ?? DEFAULTS.reconnectIntervalMs,
       preferredAgent: parsed.preferredAgent ?? DEFAULTS.preferredAgent,
     };
   } catch {
@@ -30,7 +31,9 @@ export function getSettings(): ConnectionSettings {
   }
 }
 
-export function saveSettings(settings: Partial<ConnectionSettings>): ConnectionSettings {
+export function saveSettings(
+  settings: Partial<ConnectionSettings>,
+): ConnectionSettings {
   const current = getSettings();
   const updated = { ...current, ...settings };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));

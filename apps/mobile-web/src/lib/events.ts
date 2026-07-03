@@ -1,11 +1,20 @@
 import type { EventEnvelope } from "@agent-workbench/protocol";
-import type { PermissionRequest } from "@agent-workbench/protocol";
 
 // Event handler type — mirrors patterns from apps/tui/src/App.tsx
 export type EventRouter = (event: EventEnvelope) => void;
 
 // Category mapping for Activity Log
-export type EventCategory = "tool" | "permission" | "file" | "shell" | "error" | "agent" | "stream" | "session" | "plan" | "other";
+export type EventCategory =
+  | "tool"
+  | "permission"
+  | "file"
+  | "shell"
+  | "error"
+  | "agent"
+  | "stream"
+  | "session"
+  | "plan"
+  | "other";
 
 const CATEGORY_MAP: Record<string, EventCategory> = {
   "message.created": "stream",

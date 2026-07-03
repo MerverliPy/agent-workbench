@@ -1,12 +1,22 @@
+import type {
+  AgentListItem,
+  PermissionRequest,
+} from "@agent-workbench/protocol";
 import { createSignal } from "solid-js";
-import type { PermissionRequest, AgentListItem } from "@agent-workbench/protocol";
 
 // ── Connection state ──────────────────────────────────────────────────────
 
-export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error";
+export type ConnectionStatus =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error";
 
-export const [connectionStatus, setConnectionStatus] = createSignal<ConnectionStatus>("disconnected");
-export const [connectionError, setConnectionError] = createSignal<string | null>(null);
+export const [connectionStatus, setConnectionStatus] =
+  createSignal<ConnectionStatus>("disconnected");
+export const [connectionError, setConnectionError] = createSignal<
+  string | null
+>(null);
 
 // ── Message state ──────────────────────────────────────────────────────────
 
@@ -35,7 +45,9 @@ export function appendSystemNotice(text: string): void {
 // ── Streaming state ────────────────────────────────────────────────────────
 
 export const [streamingContent, setStreamingContent] = createSignal<string>("");
-export const [streamingMessageId, setStreamingMessageId] = createSignal<string | null>(null);
+export const [streamingMessageId, setStreamingMessageId] = createSignal<
+  string | null
+>(null);
 export const [isStreaming, setIsStreaming] = createSignal<boolean>(false);
 
 export function beginStreaming(id: string): void {
@@ -72,17 +84,29 @@ export function cancelStreaming(): void {
 
 // ── Permission state ───────────────────────────────────────────────────────
 
-export const [pendingPermissionRequest, setPendingPermissionRequest] = createSignal<PermissionRequest | null>(null);
-export const [permissionModalOpen, setPermissionModalOpen] = createSignal(false);
+export const [pendingPermissionRequest, setPendingPermissionRequest] =
+  createSignal<PermissionRequest | null>(null);
+export const [permissionModalOpen, setPermissionModalOpen] =
+  createSignal(false);
 
 // ── Agent state ────────────────────────────────────────────────────────────
 
-export const [currentAgentId, setCurrentAgentId] = createSignal<string>("build");
-export const [availableAgents, setAvailableAgents] = createSignal<AgentListItem[]>([]);
+export const [currentAgentId, setCurrentAgentId] =
+  createSignal<string>("build");
+export const [availableAgents, setAvailableAgents] = createSignal<
+  AgentListItem[]
+>([]);
 
 // ── Panel state ────────────────────────────────────────────────────────────
 
-export type PanelId = "chat" | "files" | "git" | "sessions" | "activity" | "settings" | "help";
+export type PanelId =
+  | "chat"
+  | "files"
+  | "git"
+  | "sessions"
+  | "activity"
+  | "settings"
+  | "help";
 
 export const [activePanel, setActivePanel] = createSignal<PanelId>("chat");
 
@@ -109,7 +133,9 @@ export interface ActivityEntry {
   readonly summary: string;
 }
 
-export const [activityEntries, setActivityEntries] = createSignal<ActivityEntry[]>([]);
+export const [activityEntries, setActivityEntries] = createSignal<
+  ActivityEntry[]
+>([]);
 
 export function appendActivity(entry: ActivityEntry): void {
   setActivityEntries((prev) => {
@@ -121,7 +147,9 @@ export function appendActivity(entry: ActivityEntry): void {
 // ── File browser state ─────────────────────────────────────────────────────
 
 export const [browserPath, setBrowserPath] = createSignal<string>("/");
-export const [browserEntries, setBrowserEntries] = createSignal<Array<{ name: string; isDir: boolean; size: number }>>([]);
+export const [browserEntries, setBrowserEntries] = createSignal<
+  Array<{ name: string; isDir: boolean; size: number }>
+>([]);
 
 // ── Git state ──────────────────────────────────────────────────────────────
 
@@ -131,5 +159,9 @@ export const [gitCommits, setGitCommits] = createSignal<string>("");
 
 // ── Session list ───────────────────────────────────────────────────────────
 
-export const [sessionList, setSessionList] = createSignal<Array<{ id: string; name: string; messageCount: number; active: boolean }>>([]);
-export const [selectedSessionId, setSelectedSessionId] = createSignal<string | null>(null);
+export const [sessionList, setSessionList] = createSignal<
+  Array<{ id: string; name: string; messageCount: number; active: boolean }>
+>([]);
+export const [selectedSessionId, setSelectedSessionId] = createSignal<
+  string | null
+>(null);

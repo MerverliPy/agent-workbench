@@ -8,7 +8,9 @@ export function HelpPanel(): JSX.Element {
   function generateQR(data: string): void {
     // Simple QR code using Google Charts API (no dependency needed)
     const encoded = encodeURIComponent(data);
-    setQrData(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`);
+    setQrData(
+      `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`,
+    );
   }
 
   onMount(() => {
@@ -25,20 +27,55 @@ export function HelpPanel(): JSX.Element {
       <div class="px-4 py-4 space-y-5">
         {/* Connection Guide */}
         <div>
-          <h3 class="text-sm font-medium text-slate-200 mb-2">🔗 Connecting to Your Server</h3>
+          <h3 class="text-sm font-medium text-slate-200 mb-2">
+            🔗 Connecting to Your Server
+          </h3>
           <ol class="text-sm text-slate-400 space-y-2 list-decimal list-inside">
-            <li>Make sure the agent-workbench server is running: <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">cd apps/server && bun run dev</code></li>
-            <li><strong>Same machine:</strong> Use <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">http://localhost:3000</code></li>
-            <li><strong>Tailscale:</strong> Install Tailscale on both devices, use the server's Tailscale IP: <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">http://100.x.x.x:3000</code></li>
-            <li><strong>LAN:</strong> Start server with <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">HOST=0.0.0.0</code> and use your machine's LAN IP</li>
-            <li><strong>ngrok:</strong> Run <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">ngrok http 3000</code> and connect via the HTTPS URL</li>
+            <li>
+              Make sure the agent-workbench server is running:{" "}
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">
+                cd apps/server && bun run dev
+              </code>
+            </li>
+            <li>
+              <strong>Same machine:</strong> Use{" "}
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">
+                http://localhost:3000
+              </code>
+            </li>
+            <li>
+              <strong>Tailscale:</strong> Install Tailscale on both devices, use
+              the server's Tailscale IP:{" "}
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">
+                http://100.x.x.x:3000
+              </code>
+            </li>
+            <li>
+              <strong>LAN:</strong> Start server with{" "}
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">
+                HOST=0.0.0.0
+              </code>{" "}
+              and use your machine's LAN IP
+            </li>
+            <li>
+              <strong>ngrok:</strong> Run{" "}
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-blue-400">
+                ngrok http 3000
+              </code>{" "}
+              and connect via the HTTPS URL
+            </li>
           </ol>
         </div>
 
         {/* QR Code */}
         <div>
-          <h3 class="text-sm font-medium text-slate-200 mb-2">📱 QR Code (Server URL)</h3>
-          <p class="text-xs text-slate-500 mb-2">Scan with your phone's camera to quickly enter the server URL in Settings</p>
+          <h3 class="text-sm font-medium text-slate-200 mb-2">
+            📱 QR Code (Server URL)
+          </h3>
+          <p class="text-xs text-slate-500 mb-2">
+            Scan with your phone's camera to quickly enter the server URL in
+            Settings
+          </p>
           {qrData() && (
             <img
               src={qrData()!}

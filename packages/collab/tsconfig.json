@@ -5,11 +5,7 @@
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
-    "types": [
-      "bun"
-    ]
+    "types": ["bun"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

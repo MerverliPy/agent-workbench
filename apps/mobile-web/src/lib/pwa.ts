@@ -2,7 +2,8 @@ import { createSignal } from "solid-js";
 
 // PWA install prompt state (Chrome/Edge only — iOS uses manual "Add to Home Screen")
 const [installReady, setInstallReady] = createSignal(false);
-const [deferredPrompt, setDeferredPrompt] = createSignal<BeforeInstallPromptEvent | null>(null);
+const [deferredPrompt, setDeferredPrompt] =
+  createSignal<BeforeInstallPromptEvent | null>(null);
 
 /** Reactive signal: true when the browser fires beforeinstallprompt */
 export function useInstallReady(): () => boolean {
@@ -48,7 +49,10 @@ export function registerServiceWorker(): void {
         const newWorker = registration.installing;
         if (!newWorker) return;
         newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
             console.log("[pwa] Update available — will activate on reload");
           }
         });

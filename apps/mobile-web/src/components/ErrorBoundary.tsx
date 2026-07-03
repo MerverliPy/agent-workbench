@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { onMount, onCleanup, createSignal } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 
 interface ErrorBoundaryProps {
   fallback?: (error: Error, retry: () => void) => JSX.Element;

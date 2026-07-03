@@ -69,10 +69,7 @@ export function notifyPermissionRequest(
 /**
  * Show a notification for an error event while backgrounded.
  */
-export function notifyError(
-  summary: string,
-  details?: string,
-): boolean {
+export function notifyError(summary: string, details?: string): boolean {
   if (!("Notification" in window)) return false;
   if (Notification.permission !== "granted") return false;
   if (document.visibilityState !== "hidden") return false;

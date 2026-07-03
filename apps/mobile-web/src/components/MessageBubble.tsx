@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js";
 import { marked } from "marked";
+import type { JSX } from "solid-js";
 
 // Configure marked for safe rendering (no HTML in input)
 marked.setOptions({
@@ -62,7 +62,9 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
             innerHTML={renderMarkdown(content)}
           />
         )}
-        <p class="text-[10px] mt-1 opacity-50 text-right">{formatTime(createdAt)}</p>
+        <p class="text-[10px] mt-1 opacity-50 text-right">
+          {formatTime(createdAt)}
+        </p>
       </div>
     </div>
   );

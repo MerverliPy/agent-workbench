@@ -1,8 +1,8 @@
 import type { JSX } from "solid-js";
 import { createSignal, onMount } from "solid-js";
-import { getClient, reconnectClient } from "../../lib/sdk";
-import { getSettings, saveSettings, resetSettings } from "../../lib/settings";
-import { setConnectionStatus, setConnectionError, setCurrentAgentId } from "../../state/app";
+import { reconnectClient } from "../../lib/sdk";
+import { getSettings, resetSettings, saveSettings } from "../../lib/settings";
+import { setCurrentAgentId } from "../../state/app";
 
 type Theme = "dark" | "light" | "system";
 
@@ -11,7 +11,8 @@ const THEME_KEY = "agent-workbench-theme";
 function getStoredTheme(): Theme {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    if (stored === "dark" || stored === "light" || stored === "system") return stored;
+    if (stored === "dark" || stored === "light" || stored === "system")
+      return stored;
   } catch {}
   return "dark";
 }
@@ -21,7 +22,9 @@ function applyTheme(theme: Theme): void {
   root.classList.remove("dark", "light");
 
   if (theme === "system") {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     root.classList.add(prefersDark ? "dark" : "light");
   } else {
     root.classList.add(theme);
@@ -77,7 +80,9 @@ export function SettingsPanel(): JSX.Element {
       await client.health.check();
       setTestResult("✓ Connected successfully");
     } catch (err) {
-      setTestResult(`✕ ${err instanceof Error ? err.message : "Connection failed"}`);
+      setTestResult(
+        `✕ ${err instanceof Error ? err.message : "Connection failed"}`,
+      );
     } finally {
       setTesting(false);
     }
@@ -123,7 +128,9 @@ export function SettingsPanel(): JSX.Element {
             </button>
           </div>
           {testResult() && (
-            <p class={`text-xs mt-1.5 ${testResult()!.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>
+            <p
+              class={`text-xs mt-1.5 ${testResult()?.startsWith("✓") ? "text-green-400" : "text-red-400"}`}
+            >
               {testResult()}
             </p>
           )}
@@ -142,7 +149,11 @@ export function SettingsPanel(): JSX.Element {
                 }`}
                 onClick={() => handleThemeChange(t)}
               >
-                {t === "dark" ? "🌙 Dark" : t === "light" ? "☀️ Light" : "💻 System"}
+                {t === "dark"
+                  ? "🌙 Dark"
+                  : t === "light"
+                    ? "☀️ Light"
+                    : "💻 System"}
               </button>
             ))}
           </div>
@@ -160,28 +171,40 @@ export function SettingsPanel(): JSX.Element {
             }`}
             onClick={() => setAutoConnect(!autoConnect())}
           >
-            <div class={`w-5 h-5 bg-white rounded-full transform transition-transform ${
-              autoConnect() ? "translate-x-6" : "translate-x-0.5"
-            }`} />
+            <div
+              class={`w-5 h-5 bg-white rounded-full transform transition-transform ${
+                autoConnect() ? "translate-x-6" : "translate-x-0.5"
+              }`}
+            />
           </button>
         </div>
 
         {/* Agent */}
         <div>
-          <label class="text-xs text-slate-400 block mb-1.5">Default Agent</label>
+          <label class="text-xs text-slate-400 block mb-1.5">
+            Default Agent
+          </label>
           <div class="flex gap-2">
             <button
               class={`flex-1 py-2 rounded-lg text-sm transition-colors ${
-                agent() === "build" ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400"
+                agent() === "build"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-400"
               }`}
               onClick={() => setAgent("build")}
-            >Build</button>
+            >
+              Build
+            </button>
             <button
               class={`flex-1 py-2 rounded-lg text-sm transition-colors ${
-                agent() === "plan" ? "bg-purple-600 text-white" : "bg-slate-800 text-slate-400"
+                agent() === "plan"
+                  ? "bg-purple-600 text-white"
+                  : "bg-slate-800 text-slate-400"
               }`}
               onClick={() => setAgent("plan")}
-            >Plan</button>
+            >
+              Plan
+            </button>
           </div>
         </div>
 
@@ -190,11 +213,15 @@ export function SettingsPanel(): JSX.Element {
           <button
             class="w-full py-3 bg-blue-600 text-white text-sm font-medium rounded-xl active:bg-blue-700 transition-colors min-h-[44px]"
             onClick={handleSave}
-          >Save Settings</button>
+          >
+            Save Settings
+          </button>
           <button
             class="w-full py-3 bg-slate-700 text-slate-400 text-sm rounded-xl active:bg-slate-600 transition-colors min-h-[44px]"
             onClick={handleReset}
-          >Reset to Defaults</button>
+          >
+            Reset to Defaults
+          </button>
         </div>
       </div>
     </div>

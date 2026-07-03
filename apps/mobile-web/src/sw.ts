@@ -16,7 +16,7 @@ self.addEventListener("install", (event) => {
       return cache.addAll(APP_SHELL_URLS).catch((err) => {
         console.warn("[sw] Pre-cache failed for some assets:", err);
       });
-    })
+    }),
   );
   // Activate immediately — don't wait for old tabs to close
   self.skipWaiting();
@@ -27,9 +27,9 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((names) => {
       return Promise.all(
-        names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
+        names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)),
       );
-    })
+    }),
   );
   // Take control of all clients immediately
   self.clients.claim();
@@ -44,7 +44,12 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   // API calls — network first, fall back to cache
-  if (url.pathname.startsWith("/api/") || url.pathname.match(/^\/(session|file|git|tool|health|info|event|permission|provider|agent|config|message|plan)/)) {
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.pathname.match(
+      /^\/(session|file|git|tool|health|info|event|permission|provider|agent|config|message|plan)/,
+    )
+  ) {
     event.respondWith(networkFirst(request));
     return;
   }

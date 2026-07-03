@@ -1,7 +1,7 @@
-import type { JSX } from "solid-js";
-import { createSignal, onMount, For, Show } from "solid-js";
-import { getClient } from "../../lib/sdk";
 import { ApiError } from "@agent-workbench/sdk";
+import type { JSX } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
+import { getClient } from "../../lib/sdk";
 import { LoadingSkeleton } from "../LoadingSkeleton";
 
 interface FileEntry {
@@ -21,7 +21,7 @@ function parentPath(path: string): string {
   if (path === "/") return "/";
   const parts = path.split("/").filter(Boolean);
   parts.pop();
-  return "/" + parts.join("/");
+  return `/${parts.join("/")}`;
 }
 
 function joinPath(base: string, name: string): string {
@@ -81,7 +81,9 @@ export function FileBrowserPanel(): JSX.Element {
       const client = getClient();
       const result = await client.files.read({ path: filePath, limit: 200 });
       setPreviewFile(filePath);
-      setPreviewContent(typeof result === "string" ? result : JSON.stringify(result));
+      setPreviewContent(
+        typeof result === "string" ? result : JSON.stringify(result),
+      );
     } catch (err) {
       setError(formatFileError(err));
     }
@@ -111,7 +113,15 @@ export function FileBrowserPanel(): JSX.Element {
           onClick={navigateUp}
           aria-label="Go up"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
@@ -134,16 +144,28 @@ export function FileBrowserPanel(): JSX.Element {
             {(entry) => (
               <button
                 class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 active:bg-slate-700/50 border-b border-slate-800 transition-colors min-h-[44px]"
-                onClick={() => entry.isDir ? navigateTo(entry.name) : openFile(joinPath(currentPath(), entry.name))}
+                onClick={() =>
+                  entry.isDir
+                    ? navigateTo(entry.name)
+                    : openFile(joinPath(currentPath(), entry.name))
+                }
               >
                 <span class="text-base">{entry.isDir ? "📁" : "📄"}</span>
-                <span class="flex-1 text-sm text-left text-slate-200 truncate">{entry.name}</span>
-                {!entry.isDir && entry.size > 0 && <span class="text-xs text-slate-500">{formatSize(entry.size)}</span>}
+                <span class="flex-1 text-sm text-left text-slate-200 truncate">
+                  {entry.name}
+                </span>
+                {!entry.isDir && entry.size > 0 && (
+                  <span class="text-xs text-slate-500">
+                    {formatSize(entry.size)}
+                  </span>
+                )}
               </button>
             )}
           </For>
           {entries().length === 0 && (
-            <div class="px-4 py-8 text-center text-sm text-slate-500">Empty directory</div>
+            <div class="px-4 py-8 text-center text-sm text-slate-500">
+              Empty directory
+            </div>
           )}
         </div>
       </Show>
@@ -151,10 +173,15 @@ export function FileBrowserPanel(): JSX.Element {
       <Show when={previewFile()}>
         <div class="border-t border-slate-700 bg-slate-900">
           <div class="flex items-center justify-between px-3 py-1.5 bg-slate-800">
-            <span class="text-xs font-mono text-slate-400 truncate">{previewFile()}</span>
+            <span class="text-xs font-mono text-slate-400 truncate">
+              {previewFile()}
+            </span>
             <button
               class="text-xs text-slate-500 active:text-slate-300"
-              onClick={() => { setPreviewFile(null); setPreviewContent(""); }}
+              onClick={() => {
+                setPreviewFile(null);
+                setPreviewContent("");
+              }}
             >
               Close
             </button>

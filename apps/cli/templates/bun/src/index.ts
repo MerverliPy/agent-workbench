@@ -1,4 +1,4 @@
-import { serve } from "bun";
+export {};
 
 console.log("Hello from Bun!");
 

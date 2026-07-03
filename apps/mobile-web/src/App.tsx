@@ -1,35 +1,37 @@
-import type { JSX } from "solid-js";
-import { onMount, onCleanup, Show } from "solid-js";
-import { getClient, reconnectClient } from "./lib/sdk";
-import type { EventEnvelope } from "@agent-workbench/protocol";
-import type { PermissionRequest, AgentListItem } from "@agent-workbench/protocol";
-import { getSettings } from "./lib/settings";
-import { categorizeEvent, getCategoryIcon } from "./lib/events";
+import type {
+  EventEnvelope,
+  PermissionRequest,
+} from "@agent-workbench/protocol";
 import { ApiError } from "@agent-workbench/sdk";
+import type { JSX } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
+import { ConnectionBar } from "./components/ConnectionBar";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { NavDrawer } from "./components/NavDrawer";
+import { OfflineBanner } from "./components/OfflineBanner";
+import { PermissionPrompt } from "./components/PermissionPrompt";
+import { PanelContainer } from "./components/panels/PanelContainer";
+import { StatusBar } from "./components/StatusBar";
+import { categorizeEvent, getCategoryIcon } from "./lib/events";
+import { reconnectClient } from "./lib/sdk";
+import { getSettings } from "./lib/settings";
 import {
-  setConnectionStatus,
-  setConnectionError,
+  appendActivity,
   appendMessage,
+  appendStreamingDelta,
   appendSystemNotice,
   beginStreaming,
-  appendStreamingDelta,
-  finalizeStreaming,
   cancelStreaming,
-  setPermissionModalOpen,
-  setPendingPermissionRequest,
-  setCurrentAgentId,
-  setAvailableAgents,
-  appendActivity,
-  streamingContent,
+  finalizeStreaming,
   permissionModalOpen,
+  setAvailableAgents,
+  setConnectionError,
+  setConnectionStatus,
+  setCurrentAgentId,
+  setPendingPermissionRequest,
+  setPermissionModalOpen,
+  streamingContent,
 } from "./state/app";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { ConnectionBar } from "./components/ConnectionBar";
-import { OfflineBanner } from "./components/OfflineBanner";
-import { StatusBar } from "./components/StatusBar";
-import { NavDrawer } from "./components/NavDrawer";
-import { PanelContainer } from "./components/panels/PanelContainer";
-import { PermissionPrompt } from "./components/PermissionPrompt";
 
 export function App(): JSX.Element {
   let unsubscribe: (() => void) | null = null;
@@ -74,13 +76,12 @@ export function App(): JSX.Element {
           // Attempt reconnect with exponential backoff if we haven't exhausted retries
           if (sseRetryCount < MAX_SSE_RETRIES) {
             sseRetryCount++;
-            const delay = Math.min(1000 * Math.pow(2, sseRetryCount), 30000);
+            const delay = Math.min(1000 * 2 ** sseRetryCount, 30000);
             setTimeout(connectSse, delay);
           }
         });
       };
       connectSse();
-
     } catch (err: unknown) {
       setConnectionStatus("error");
 
@@ -97,7 +98,7 @@ export function App(): JSX.Element {
       setConnectionError(errorMsg);
 
       appendSystemNotice(
-        `Could not connect to ${settings.serverUrl}. Check your connection settings.`
+        `Could not connect to ${settings.serverUrl}. Check your connection settings.`,
       );
 
       if (settings.autoConnect) {
@@ -157,7 +158,9 @@ export function App(): JSX.Element {
 
     if (type === "model.stream_error") {
       const payload = event.payload as Record<string, unknown>;
-      appendSystemNotice(`Stream error: ${(payload.message as string) ?? "unknown"}`);
+      appendSystemNotice(
+        `Stream error: ${(payload.message as string) ?? "unknown"}`,
+      );
       cancelStreaming();
       return;
     }
@@ -185,7 +188,9 @@ export function App(): JSX.Element {
     if (type === "shell.command_requested") {
       const payload = event.payload as Record<string, unknown>;
       const preview = payload.preview as Record<string, unknown> | undefined;
-      appendSystemNotice(`Shell: ${preview?.normalized ?? "unknown"} (risk: ${preview?.riskLevel ?? "?"})`);
+      appendSystemNotice(
+        `Shell: ${preview?.normalized ?? "unknown"} (risk: ${preview?.riskLevel ?? "?"})`,
+      );
       return;
     }
 
@@ -218,7 +223,9 @@ export function App(): JSX.Element {
     if (type === "plan.proposed") {
       const payload = event.payload as Record<string, unknown>;
       const plan = payload.plan as Record<string, unknown> | undefined;
-      appendSystemNotice(`Plan: ${plan?.summary ?? "proposed"} [${plan?.riskLevel ?? "?"}]`);
+      appendSystemNotice(
+        `Plan: ${plan?.summary ?? "proposed"} [${plan?.riskLevel ?? "?"}]`,
+      );
       return;
     }
 
