@@ -114,12 +114,12 @@ export function GitTreePanel(): JSX.Element {
               <span class="text-base font-medium text-slate-200">
                 {data()?.branch}
               </span>
-              <Show when={data()?.ahead > 0}>
+              <Show when={(data()?.ahead ?? 0) > 0}>
                 <span class="text-xs bg-blue-600/30 text-blue-300 px-1.5 py-0.5 rounded">
                   ↑{data()?.ahead}
                 </span>
               </Show>
-              <Show when={data()?.behind > 0}>
+              <Show when={(data()?.behind ?? 0) > 0}>
                 <span class="text-xs bg-yellow-600/30 text-yellow-300 px-1.5 py-0.5 rounded">
                   ↓{data()?.behind}
                 </span>
@@ -133,7 +133,7 @@ export function GitTreePanel(): JSX.Element {
               <span>
                 <span class="text-green-400">{data()?.stagedFiles}</span> staged
               </span>
-              <Show when={data()?.untrackedFiles > 0}>
+              <Show when={(data()?.untrackedFiles ?? 0) > 0}>
                 <span>
                   <span class="text-red-400">{data()?.untrackedFiles}</span>{" "}
                   untracked

@@ -143,7 +143,7 @@ export function NavDrawer(): JSX.Element {
   // ── Swipe-to-close on the drawer panel ────────────────────────────
   function handleDrawerTouchStart(e: TouchEvent): void {
     if (e.touches.length === 1) {
-      setTouchStartX(e.touches[0]?.clientX);
+      setTouchStartX(e.touches[0]!.clientX);
     }
   }
 
@@ -151,7 +151,7 @@ export function NavDrawer(): JSX.Element {
     const startX = touchStartX();
     if (startX === null || e.touches.length !== 1) return;
 
-    const currentX = e.touches[0]?.clientX;
+    const currentX = e.touches[0]!.clientX;
     const deltaX = currentX - startX;
 
     // Swipe left on the drawer → close
@@ -168,8 +168,8 @@ export function NavDrawer(): JSX.Element {
   // ── Swipe-to-open from left edge ──────────────────────────────────
 
   function handleEdgeTouchStart(e: TouchEvent): void {
-    if (e.touches.length === 1 && e.touches[0]?.clientX < 30) {
-      setTouchStartX(e.touches[0]?.clientX);
+    if (e.touches.length === 1 && e.touches[0]!.clientX < 30) {
+      setTouchStartX(e.touches[0]!.clientX);
     }
   }
 
@@ -177,7 +177,7 @@ export function NavDrawer(): JSX.Element {
     const startX = touchStartX();
     if (startX === null || e.touches.length !== 1) return;
 
-    const currentX = e.touches[0]?.clientX;
+    const currentX = e.touches[0]!.clientX;
     const deltaX = currentX - startX;
 
     // Swipe right from left edge → open
