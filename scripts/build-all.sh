@@ -18,6 +18,10 @@ for pkg in events sdk shell permissions cache planner collab eval; do
   (cd "$ROOT/packages/$pkg" && bun run build 2>&1) || exit 1
 done
 
+# Plugins
+echo "  [build] plugins/agent-workbench-hermes"
+(cd "$ROOT/plugins/agent-workbench-hermes" && bun run build 2>&1) || exit 1
+
 # Level 2: depends on cache, diff, protocol, shell, storage
 echo "  [build] packages/tools"
 (cd "$ROOT/packages/tools" && bun run build 2>&1) || exit 1
