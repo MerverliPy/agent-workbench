@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { RequestLogger } from "@agent-workbench/telemetry";
+import { beforeEach, describe, expect, it } from "bun:test";
 import type { LogEntry } from "@agent-workbench/telemetry";
+import { RequestLogger } from "@agent-workbench/telemetry";
 
 describe("RequestLogger", () => {
   let output: string[];
@@ -26,22 +26,22 @@ describe("RequestLogger", () => {
     logger.debug("starting up", { requestId: "req-1" });
     const entries = parseAll();
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.level).toBe("debug");
-    expect(entries[0]!.message).toBe("starting up");
-    expect(entries[0]!.requestId).toBe("req-1");
+    expect(entries[0]?.level).toBe("debug");
+    expect(entries[0]?.message).toBe("starting up");
+    expect(entries[0]?.requestId).toBe("req-1");
   });
 
   it("logs at info level", () => {
     logger.info("server ready", { sessionId: "sess-1" });
     const entries = parseAll();
-    expect(entries[0]!.level).toBe("info");
-    expect(entries[0]!.sessionId).toBe("sess-1");
+    expect(entries[0]?.level).toBe("info");
+    expect(entries[0]?.sessionId).toBe("sess-1");
   });
 
   it("logs at warn level", () => {
     logger.warn("rate limit approaching");
     const entries = parseAll();
-    expect(entries[0]!.level).toBe("warn");
+    expect(entries[0]?.level).toBe("warn");
   });
 
   it("logs at error level", () => {
@@ -50,9 +50,9 @@ describe("RequestLogger", () => {
       metadata: { host: "localhost", port: 3000 },
     });
     const entries = parseAll();
-    expect(entries[0]!.level).toBe("error");
-    expect(entries[0]!.error).toBe("ECONNREFUSED");
-    expect(entries[0]!.metadata).toEqual({ host: "localhost", port: 3000 });
+    expect(entries[0]?.level).toBe("error");
+    expect(entries[0]?.error).toBe("ECONNREFUSED");
+    expect(entries[0]?.metadata).toEqual({ host: "localhost", port: 3000 });
   });
 
   it("respects minimum log level", () => {
@@ -67,8 +67,8 @@ describe("RequestLogger", () => {
 
     const entries = parseAll();
     expect(entries).toHaveLength(2);
-    expect(entries[0]!.level).toBe("warn");
-    expect(entries[1]!.level).toBe("error");
+    expect(entries[0]?.level).toBe("warn");
+    expect(entries[1]?.level).toBe("error");
   });
 
   it("logs HTTP request completion", () => {
@@ -81,12 +81,12 @@ describe("RequestLogger", () => {
     });
     const entries = parseAll();
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.level).toBe("info");
-    expect(entries[0]!.requestId).toBe("req-42");
-    expect(entries[0]!.method).toBe("POST");
-    expect(entries[0]!.path).toBe("/session/abc/message");
-    expect(entries[0]!.statusCode).toBe(200);
-    expect(entries[0]!.durationMs).toBe(45.2);
+    expect(entries[0]?.level).toBe("info");
+    expect(entries[0]?.requestId).toBe("req-42");
+    expect(entries[0]?.method).toBe("POST");
+    expect(entries[0]?.path).toBe("/session/abc/message");
+    expect(entries[0]?.statusCode).toBe(200);
+    expect(entries[0]?.durationMs).toBe(45.2);
   });
 
   it("classifies 4xx as warn level", () => {
@@ -98,7 +98,7 @@ describe("RequestLogger", () => {
       durationMs: 12,
     });
     const entries = parseAll();
-    expect(entries[0]!.level).toBe("warn");
+    expect(entries[0]?.level).toBe("warn");
   });
 
   it("classifies 5xx as error level", () => {
@@ -111,8 +111,8 @@ describe("RequestLogger", () => {
       error: "Internal server error",
     });
     const entries = parseAll();
-    expect(entries[0]!.level).toBe("error");
-    expect(entries[0]!.error).toBe("Internal server error");
+    expect(entries[0]?.level).toBe("error");
+    expect(entries[0]?.error).toBe("Internal server error");
   });
 
   it("includes session context in log request", () => {
@@ -124,7 +124,7 @@ describe("RequestLogger", () => {
       durationMs: 10,
     });
     const entries = parseAll();
-    expect(entries[0]!.requestId).toBe("req-1");
+    expect(entries[0]?.requestId).toBe("req-1");
   });
 
   it("produces valid JSON log lines by default", () => {
@@ -150,7 +150,7 @@ describe("RequestLogger", () => {
     expect(prettyOutput).toHaveLength(4); // 2 writes per log entry (line + newline)
     // Pretty output should contain ANSI color codes
     expect(prettyOutput[0]).toContain("\x1b[36m"); // cyan for info
-    expect(prettyOutput[0]).toContain("[INFO");     // padded to 5 chars
+    expect(prettyOutput[0]).toContain("[INFO"); // padded to 5 chars
     expect(prettyOutput[2]).toContain("[ERROR");
     expect(prettyOutput[2]).toContain("\x1b[31m"); // red for error
   });
