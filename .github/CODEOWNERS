@@ -1,0 +1,21 @@
+# Global owner
+* @MerverliPy
+
+# GitHub automation and security-sensitive files
+.github/workflows/* @MerverliPy
+.github/dependabot.yml @MerverliPy
+.github/CODEOWNERS @MerverliPy
+SECURITY.md @MerverliPy
+
+# Agent and automation controls
+.ai/* @MerverliPy
+bin/* @MerverliPy
+scripts/* @MerverliPy
+
+# Environment examples and config templates
+*.env.example @MerverliPy
+config/* @MerverliPy
+
+# Security/auth-sensitive source zones
+src/auth/* @MerverliPy
+src/security/* @MerverliPy
