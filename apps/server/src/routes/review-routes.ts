@@ -72,9 +72,9 @@ export function registerReviewRoutes(
         const submittedBy = authContext?.subject ?? "anonymous";
 
         const opts: SubmitReviewOptions = {
-          title: body.title!,
-          diffContent: body.diffContent!,
-          filePath: body.filePath!,
+          title: body.title as string,
+          diffContent: body.diffContent as string,
+          filePath: body.filePath,
           ...(body.description ? { description: body.description } : {}),
         };
 

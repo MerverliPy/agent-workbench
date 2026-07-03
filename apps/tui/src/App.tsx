@@ -511,7 +511,7 @@ export function App(): JSX.Element {
           `Could not connect to server at ${
             (sdk as unknown as { http: { baseUrl: string } }).http?.baseUrl ??
             "http://localhost:3000"
-          }. ` + "Start the server with: cd apps/server && bun run start",
+          }. Start the server with: cd apps/server && bun run start`,
         );
       });
 

@@ -49,8 +49,11 @@ export function registerMarketplaceRoutes(
 ): void {
   const {
     providerMarketplace,
+    // biome-ignore lint/correctness/noUnusedVariables: part of ServerServices destructure contract
     smartRouter,
+    // biome-ignore lint/correctness/noUnusedVariables: part of ServerServices destructure contract
     costTracker,
+    // biome-ignore lint/correctness/noUnusedVariables: part of ServerServices destructure contract
     providerHealthMonitor,
   } = services;
 

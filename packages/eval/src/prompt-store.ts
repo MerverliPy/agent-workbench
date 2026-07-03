@@ -35,6 +35,8 @@ export interface PromptTemplate {
  * as `.prompt.md` files, with git-backed version history.
  */
 export class PromptStore {
+  private baseDir: string;
+
   constructor(baseDir?: string) {
     this.baseDir = baseDir || "~/.agent-workbench/prompts/library";
   }

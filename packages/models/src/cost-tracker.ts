@@ -168,8 +168,8 @@ export class CostTracker {
     const roundedTotal = Math.round(totalCost * 1000000) / 1000000;
 
     return {
-      periodStart: sorted[0]?.timestamp,
-      periodEnd: sorted[sorted.length - 1]?.timestamp,
+      periodStart: sorted[0]?.timestamp ?? "",
+      periodEnd: sorted[sorted.length - 1]?.timestamp ?? "",
       totalCost: roundedTotal,
       totalInputTokens: totalInput,
       totalOutputTokens: totalOutput,

@@ -132,7 +132,7 @@ describe("RequestLogger", () => {
     expect(output).toHaveLength(1);
 
     // Should be valid JSON
-    const parsed = JSON.parse(output[0]!);
+    const parsed = JSON.parse(output[0] as string);
     expect(parsed.level).toBe("info");
     expect(parsed.message).toBe("test message");
     expect(parsed.timestamp).toBeDefined();
@@ -166,7 +166,7 @@ describe("RequestLogger", () => {
       error: "none",
       metadata: { version: "1.0" },
     });
-    const entry = parseAll()[0]!;
+    const entry = parseAll()[0] as RequestLogEntry;
     expect(entry.requestId).toBe("abc");
     expect(entry.sessionId).toBe("sess-1");
     expect(entry.method).toBe("POST");
@@ -179,7 +179,7 @@ describe("RequestLogger", () => {
 
   it("omits undefined optional fields from output", () => {
     logger.info("minimal");
-    const entry = parseAll()[0]!;
+    const entry = parseAll()[0] as RequestLogEntry;
     expect(entry.requestId).toBeUndefined();
     expect(entry.sessionId).toBeUndefined();
     expect(entry.method).toBeUndefined();

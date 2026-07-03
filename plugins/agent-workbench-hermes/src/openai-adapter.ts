@@ -118,7 +118,7 @@ export class OpenAIAdapter {
     }
 
     const reader = response.body?.getReader();
-    if (!reader) throw new Error("[${this.id}] No response body");
+    if (!reader) throw new Error(`[${this.id}] No response body`);
 
     const decoder = new TextDecoder();
     let buffer = "";

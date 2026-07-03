@@ -98,7 +98,9 @@ export function registerPluginRoutes(
       }
 
       // Validate manifest
-      let manifest;
+      let manifest:
+        | import("@agent-workbench/plugin-sdk").PluginManifest
+        | undefined;
       try {
         manifest = pluginRegistry.loadManifest(localPath);
       } catch (err) {

@@ -41,6 +41,7 @@ export function registerMessageRoutes(
       }
 
       // Run the model/tool loop.
+      // biome-ignore lint/suspicious/noImplicitAnyLet: type inferred across multiple code paths
       let result;
       try {
         result = await sessionRunner.run(sessionId, body.content);

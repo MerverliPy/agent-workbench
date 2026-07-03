@@ -436,6 +436,7 @@ export class SessionRunner {
       ledger.recordModelCallStarted(iteration);
       events.publishModelCallStarted(iteration);
 
+      // biome-ignore lint/suspicious/noImplicitAnyLet: type is inferred from usage across multiple paths
       let modelResponse;
       try {
         if (this.modelRouter.supportsStreaming()) {

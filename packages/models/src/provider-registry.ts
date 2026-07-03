@@ -118,7 +118,7 @@ export class ProviderRegistry {
   private tryRegisterExplicitProvider(
     fetchImpl?: typeof fetch,
   ): "registered" | "error" | "none" {
-    let config;
+    let config: ReturnType<typeof parseProviderConfig> | undefined;
     try {
       config = parseProviderConfig();
     } catch {
@@ -406,6 +406,7 @@ function createConfigErrorProvider(message: string): ModelProvider {
     call: async () => {
       throw new ProviderConfigError(message);
     },
+    // biome-ignore lint/correctness/useYield: intentionally always throws
     stream: async function* () {
       throw new ProviderConfigError(message);
     },

@@ -41,29 +41,6 @@ interface OpenAICompletionRequest {
   max_tokens?: number;
 }
 
-interface OpenAICompletionResponse {
-  choices: Array<{
-    message: {
-      role: string;
-      content?: string | null;
-      tool_calls?: Array<{
-        id: string;
-        type: "function";
-        function: {
-          name: string;
-          arguments: string;
-        };
-      }>;
-    };
-    finish_reason: string;
-  }>;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
-
 export class OpenAICompatibleProvider implements ModelProvider {
   private readonly apiKey: string;
   private readonly model: string;
