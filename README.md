@@ -7,7 +7,7 @@
     <a href="package.json"><img src="https://img.shields.io/badge/Bun-%3E%3D1.0-cc00ff?logo=bun" alt="Bun" /></a>
     <a href="tsconfig.base.json"><img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript" alt="TypeScript" /></a>
     <a href="biome.json"><img src="https://img.shields.io/badge/code_style-Biome-60a5fa?logo=biome" alt="Code Style" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/tests-523%20passing-brightgreen" alt="Tests" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/tests-602%20passing-brightgreen" alt="Tests" /></a>
     <a href="#"><img src="https://img.shields.io/badge/packages-20-blue" alt="Packages" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" /></a>
@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–27 complete · **523 tests, 0 failures** · Phase 29 (model eval) next
+> **Status:** Phases 0–27 complete · **602 tests, 0 failures** · Phase 29 (model eval) next
 
 ---
 
@@ -288,7 +288,7 @@ All core systems are implemented and tested:
 
 ## Next Steps
 
-- **Phase 27** (next): Remote access & collaboration — TLS-secured remote access, bearer token auth, session sharing, Tailscale integration
+- **Phase 27** (complete): Remote access & collaboration — TLS-secured remote access, bearer token auth, session sharing, Tailscale integration
 - **Phase 28**: Desktop application (Tauri) — native macOS/Windows/Linux builds, system tray, auto-updates
 - **Phase 29**: Model experimentation & evaluation — A/B testing, built-in evals, prompt versioning
 - **Phase 30**: Enterprise readiness & compliance — SSO, audit compliance, RBAC, air-gapped mode
