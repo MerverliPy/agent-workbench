@@ -45,6 +45,9 @@
     "url": "https://github.com/MerverliPy/agent-workbench/issues"
   },
   "homepage": "https://github.com/MerverliPy/agent-workbench#readme",
+  "overrides": {
+    "drizzle-orm": "^0.45.0"
+  },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",

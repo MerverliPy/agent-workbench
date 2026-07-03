@@ -1,25 +1,31 @@
 // Eval runner — built-in benchmarks (MMLU, HumanEval, GSM8K) + custom eval pipelines
 //
 // Integrates with:
-//   - promptfoo (npm: promptfoo) for prompt-level evaluation
+//   - promptfoo (npm) for prompt-level evaluation
 //   - lm-evaluation-harness (subprocess/Python) for standard benchmarks
 //
-// Design: lightweight orchestration layer. Actual benchmark runs are delegated
+// Design: lightweight orchestration layer. Actual benchmark execution is delegated
 // to external tools. This package manages the lifecycle, caching, and reporting.
 
-import type { EvalBenchmark, EvalBenchmarkId, EvalScore } from "@agent-workbench/protocol";
+import { ulid } from "ulid";
+import { EvalRepository, type EvalRepository as EvalRepositoryType } from "./storage/eval-repository";
+import { MetricsCollector } from "./metrics";
+import type { EvalBenchmarkId } from "@agent-workbench/protocol";
+import { runPromptfooEval, runLmEvalHarnessBenchmark, runCustomEvalScript } from "./integrations";
 
 export interface EvalRunOptions {
   /** Benchmark to run */
   benchmark: EvalBenchmarkId;
-  /** Model configuration string (e.g. "anthropic/claude-sonnet-4") */
+  /** Model identifier (e.g. "claude-sonnet-4") */
   model: string;
-  /** Provider ID (matches @agent-workbench/protocol ProviderProfile) */
+  /** Provider identifier (matches @agent-workbench/protocol ProviderProfile) */
   provider: string;
   /** Optional subset of benchmark items to run (for quick smoke tests) */
   limit?: number;
-  /** Additional custom parameters */
+  /** Model-specific parameters (temperature, max_tokens, etc.) */
   params?: Record<string, unknown>;
+  /** User-provided eval script path (for "custom" benchmark type) */
+  customScript?: string;
 }
 
 export interface EvalResult {
@@ -29,19 +35,96 @@ export interface EvalResult {
   timestamp: string;
   /** The benchmark configuration used */
   options: EvalRunOptions;
-  /** Overall scores */
-  scores: EvalScore[];
-  /** Aggregate metrics */
+  /** Individual task scores */
+  scores: Array<{
+    task: string;
+    score: number;
+    metric: string;
+    itemCount: number;
+  }>;
+  /** Aggregate summary */
   summary: {
     accuracy: number;
     totalItems: number;
     itemsPassed: number;
     durationMs: number;
     costUsd: number;
+    tokensUsed: { input: number; output: number };
+    latencyMs: { p50: number; p95: number; p99: number };
+    errorRate: number;
   };
-  /** Raw output for external analysis */
-  rawOutput?: string;
+  /** Raw output for external analysis (empty string if none) */
+  rawOutput: string;
 }
+
+interface BenchmarkConfig {
+  id: EvalBenchmarkId;
+  name: string;
+  description: string;
+  itemCount: number;
+  categories: string[];
+  requiresPython: boolean;
+}
+
+/** Available benchmarks with metadata */
+const BENCHMARKS: BenchmarkConfig[] = [
+  {
+    id: "mmlu",
+    name: "MMLU (Massive Multitask Language Understanding)",
+    description: "57 subjects across STEM, humanities, and social sciences",
+    itemCount: 14042,
+    categories: ["stem", "humanities", "social_sciences", "other"],
+    requiresPython: true,
+  },
+  {
+    id: "humaneval",
+    name: "HumanEval (Code Generation)",
+    description: "164 hand-written programming problems with functional tests",
+    itemCount: 164,
+    categories: ["code_generation"],
+    requiresPython: true,
+  },
+  {
+    id: "gsm8k",
+    name: "GSM8K (Grade School Math)",
+    description: "8.5K grade-school math word problems",
+    itemCount: 8792,
+    categories: ["math"],
+    requiresPython: true,
+  },
+  {
+    id: "hellaswag",
+    name: "HellaSwag (Commonsense Reasoning)",
+    description: "Commonsense natural language inference",
+    itemCount: 10042,
+    categories: ["reasoning"],
+    requiresPython: true,
+  },
+  {
+    id: "arc",
+    name: "ARC (AI2 Reasoning Challenge)",
+    description: "Grade-school science questions",
+    itemCount: 7787,
+    categories: ["science", "reasoning"],
+    requiresPython: true,
+  },
+  {
+    id: "custom",
+    name: "Custom Eval Script",
+    description: "User-provided evaluation script with JSON I/O",
+    itemCount: 0,
+    categories: ["custom"],
+    requiresPython: false,
+  },
+  {
+    id: "promptfoo",
+    name: "Promptfoo Evaluation",
+    description: "Prompt-level evaluation via promptfoo npm package",
+    itemCount: 0,
+    categories: ["prompt_evaluation"],
+    requiresPython: false,
+  },
+];
 
 /**
  * Evaluates a model against a benchmark.
@@ -50,24 +133,188 @@ export interface EvalResult {
  *   - promptfoo for prompt-level evaluation (npm package)
  *   - lm-evaluation-harness via subprocess for standard benchmarks
  *   - Custom eval scripts for user-defined benchmarks
- *
- * Integration approach per benchmark type (TBD in Phase 29):
- *   - "mmlu" / "humaneval" / "gsm8k": pip install lm-evaluation-harness, subprocess call
- *   - "custom": user-provided eval script, subprocess call with JSON I/O
- *   - "promptfoo": direct import of promptfoo Node.js API
  */
 export class EvalRunner {
-  async run(options: EvalRunOptions): Promise<EvalResult> {
-    // TODO Phase 29: implement runner
-    // - Detect benchmark type
-    // - Dispatch to appropriate integration (promptfoo npm, lm-eval subprocess, custom)
-    // - Collect results
-    // - Compute metrics
-    throw new Error("Not yet implemented — Phase 29 scaffolding");
+  private repo: EvalRepositoryType;
+
+  constructor(db: ConstructorParameters<typeof EvalRepositoryType>[0]) {
+    this.repo = new EvalRepository(db);
   }
 
-  async listBenchmarks(): Promise<EvalBenchmark[]> {
-    // TODO Phase 29: list available benchmarks
-    throw new Error("Not yet implemented — Phase 29 scaffolding");
+  /**
+   * Run a benchmark evaluation against a model.
+   *
+   * The execution strategy depends on benchmark type:
+   *   - mmlu/humaneval/gsm8k/hellaswag/arc → subprocess `python -m lm_eval`
+   *   - promptfoo → direct npm API
+   *   - custom → user-provided script subprocess
+   */
+  async run(options: EvalRunOptions): Promise<EvalResult> {
+    const runId = ulid();
+    const now = new Date().toISOString();
+
+    // Create run record
+    this.repo.createRun({
+      id: runId,
+      benchmarkId: options.benchmark,
+      model: options.model,
+      provider: options.provider,
+      status: "running",
+      createdAt: now,
+      configJson: JSON.stringify(options),
+    });
+
+    const startTime = performance.now();
+
+    try {
+      // Dispatch to appropriate integration
+      const { scores, rawOutput } = await this.executeBenchmark(options);
+
+      const durationMs = performance.now() - startTime;
+
+      // Compute summary metrics
+      const totalItems = scores.reduce((sum, s) => sum + s.itemCount, 0);
+      const itemsPassed = scores.reduce(
+        (sum, s) => sum + Math.round(s.score * s.itemCount),
+        0,
+      );
+
+      const accuracy = totalItems > 0 ? itemsPassed / totalItems : 0;
+
+      const metrics = new MetricsCollector(this.repo);
+      const costUsd = metrics.computeCostPerEval(
+        options.model,
+        options.limit ?? totalItems,
+        0, // approximate; real tracking in Phase 29.3
+      );
+
+      const result: EvalResult = {
+        id: runId,
+        timestamp: now,
+        options,
+        scores,
+        summary: {
+          accuracy,
+          totalItems,
+          itemsPassed,
+          durationMs,
+          costUsd,
+          tokensUsed: { input: 0, output: 0 },
+          latencyMs: { p50: 0, p95: 0, p99: 0 },
+          errorRate: 0,
+        },
+        rawOutput,
+      };
+
+      // Persist scores
+      this.repo.createScores(
+        scores.map((s) => ({
+          id: ulid(),
+          runId,
+          task: s.task,
+          score: s.score,
+          metric: s.metric,
+          itemCount: s.itemCount,
+        })),
+      );
+
+      // Persist aggregated metrics
+      this.repo.upsertMetrics({
+        runId,
+        accuracy,
+        totalItems,
+        itemsPassed,
+        durationMs,
+        costUsd,
+        tokensInput: 0,
+        tokensOutput: 0,
+        latencyP50Ms: 0,
+        latencyP95Ms: 0,
+        latencyP99Ms: 0,
+        errorRate: 0,
+      });
+
+      // Mark run as completed
+      this.repo.updateRunStatus(runId, "completed", new Date().toISOString());
+
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      this.repo.updateRunStatus(runId, "failed", new Date().toISOString(), errorMessage);
+      throw err;
+    }
+  }
+
+  /** Execute a benchmark by dispatching to the appropriate integration */
+  private async executeBenchmark(
+    options: EvalRunOptions,
+  ): Promise<{ scores: EvalResult["scores"]; rawOutput: string }> {
+    switch (options.benchmark) {
+      case "mmlu":
+      case "humaneval":
+      case "gsm8k":
+      case "hellaswag":
+      case "arc":
+        return this.runLmEvalHarness(options);
+      case "promptfoo":
+        return this.runPromptfoo(options);
+      case "custom":
+        return this.runCustomScript(options);
+      default:
+        throw new Error(`Unknown benchmark: ${options.benchmark}`);
+    }
+  }
+
+  /**
+   * Run benchmark via lm-evaluation-harness subprocess.
+   * Requires `pip install lm-eval[all]` to be installed.
+   *
+   * CLI command shape:
+   *   python -m lm_eval --model openai-completions --model_args model=<name> --tasks <benchmark> --output_path <tmp> --log_samples
+   *
+   * Implementation note: The lm-eval harness runs the model through its own
+   * API calls, so we pass the model name. For self-hosted providers, we
+   * configure a custom OpenAI-compatible endpoint via model_args.
+   */
+  private async runLmEvalHarness(
+    options: EvalRunOptions,
+  ): Promise<{ scores: EvalResult["scores"]; rawOutput: string }> {
+    const result = await runLmEvalHarnessBenchmark(options, {});
+    return { scores: result.scores, rawOutput: result.rawOutput };
+  }
+
+  /**
+   * Run prompt-level evaluation via promptfoo npm package.
+   */
+  private async runPromptfoo(
+    options: EvalRunOptions,
+  ): Promise<{ scores: EvalResult["scores"]; rawOutput: string }> {
+    const result = await runPromptfooEval(options, {
+      prompts: options.params?.prompts as string[] ?? ["Test prompt"],
+      systemPrompt: (options.params?.systemPrompt as string) ?? "",
+      ...(options.params?.assertions ? { assertions: options.params.assertions as any[] } : {}),
+      ...(options.limit ? { repeats: options.limit } : {}),
+    });
+    return { scores: result.scores, rawOutput: result.rawOutput };
+  }
+
+  /**
+   * Run a custom user-provided eval script.
+   */
+  private async runCustomScript(
+    options: EvalRunOptions,
+  ): Promise<{ scores: EvalResult["scores"]; rawOutput: string }> {
+    const result = await runCustomEvalScript(options, this.repo);
+    return { scores: result.scores, rawOutput: result.rawOutput };
+  }
+
+  /** List all available benchmarks */
+  listBenchmarks(): BenchmarkConfig[] {
+    return BENCHMARKS;
+  }
+
+  /** Get the repository for advanced queries */
+  getRepository(): EvalRepositoryType {
+    return this.repo;
   }
 }

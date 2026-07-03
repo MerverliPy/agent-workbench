@@ -18,5 +18,30 @@ export { PromptStore, type PromptTemplate, type PromptVersion } from "./prompt-s
 // One-shot model playground
 export { ModelPlayground, type PlaygroundConfig, type PlaygroundResult } from "./playground";
 
-// Re-export protocol types needed by consumers
+// Storage — eval tables and repository
+export {
+  EvalRepository,
+  evalRuns,
+  evalScores,
+  evalMetrics,
+  playgroundRuns,
+  comparisonRuns,
+  comparisonResults,
+} from "./storage";
+export type {
+  EvalRunRow,
+  EvalRunInsert,
+  EvalScoreRow,
+  EvalScoreInsert,
+  EvalMetricsRow,
+  EvalMetricsInsert,
+  PlaygroundRunRow,
+  PlaygroundRunInsert,
+  ComparisonRunRow,
+  ComparisonRunInsert,
+  ComparisonResultRow,
+  ComparisonResultInsert,
+} from "./storage/eval-repository";
+
+// Re-export protocol types consumed by this package
 export type { EvalBenchmark, EvalBenchmarkId, EvalScore } from "@agent-workbench/protocol";
