@@ -1,21 +1,12 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
   "files": {
-    "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/dist/",
-      "!**/build/",
-      "!**/coverage/",
-      "!**/node_modules/",
-      "!**/.hermes/",
-      "!**/.opencode/",
-      "!**/apps/**/*/dist/",
-      "!**/apps/**/*/build/",
-      "!**/apps/cli/templates/",
-      "!**/tools/",
-      "!**/plugins/"
-    ]
+    "ignoreUnknown": false
+  },
+  "vcs": {
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "enabled": true
   },
   "formatter": {
     "enabled": true,
