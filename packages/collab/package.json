@@ -17,9 +17,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*",
-    "@agent-workbench/storage": "workspace:*",
-    "@agent-workbench/events": "workspace:*",
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/storage": "*",
+    "@agent-workbench/events": "*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

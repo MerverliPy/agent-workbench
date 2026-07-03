@@ -7,7 +7,7 @@
     <a href="package.json"><img src="https://img.shields.io/badge/Bun-%3E%3D1.0-cc00ff?logo=bun" alt="Bun" /></a>
     <a href="tsconfig.base.json"><img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript" alt="TypeScript" /></a>
     <a href="biome.json"><img src="https://img.shields.io/badge/code_style-Biome-60a5fa?logo=biome" alt="Code Style" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/tests-602%20passing-brightgreen" alt="Tests" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/tests-604%20passing-brightgreen" alt="Tests" /></a>
     <a href="#"><img src="https://img.shields.io/badge/packages-20-blue" alt="Packages" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" /></a>
@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–27 complete · **602 tests, 0 failures** · Phase 29 (model eval) next
+> **Status:** Phases 0–27 complete · **604 tests, 0 failures** · Phase 29 (model eval) in progress
 
 ---
 
@@ -71,7 +71,7 @@ bun install
 # Build all workspace packages
 bash scripts/build-all.sh
 
-# Run the full test suite (523 tests, all passing)
+# Run the full test suite (604 tests, all passing)
 bun test
 
 # Start the server (Terminal 1)
@@ -254,7 +254,7 @@ All core systems are implemented and tested:
 - ✅ **Multi-session & workspaces** — side-by-side sessions, workspace management, bulk operations
 - ✅ **Observability** (packages/telemetry) — OpenTelemetry tracing, Prometheus metrics, error reporting, audit log
 - ✅ **Plugin system** (packages/plugin-sdk) — tool, provider, hook, and panel extension points; CLI management; sandbox permissions
-- ✅ **Automated testing** — 523 tests (unit, integration, e2e)
+- ✅ **Automated testing** — 604 tests (unit, integration, e2e)
 - ✅ **CI/CD pipeline** — GitHub Actions with static check + typecheck + tests + E2E
 
 ---
@@ -319,7 +319,7 @@ When continuing this project via an AI agent:
 
 ```bash
 # Full test suite
-bun test                           # 523 tests, 0 failures, 1495 expect() calls
+bun test                           # 604 tests, 0 failures, 1686 expect() calls
 
 # Build everything
 bash scripts/build-all.sh

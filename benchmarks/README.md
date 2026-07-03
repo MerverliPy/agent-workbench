@@ -1,23 +1,34 @@
-# Benchmarks for agent-workbench
-#
-# Run with: bun vitest bench --reporter=verbose
-# (Requires vitest — not a dependency yet)
+# Benchmarks
 
-## Server benchmarks (planned)
+Performance benchmarks for agent-workbench packages and apps.
+
+## Running
+
+```bash
+# Run the benchmark suite
+bun run benchmarks/benchmark-runner.ts
+```
+
+## What's Benchmarked
+
+### Build & Type System
+- Build time per package (`tsc`)
+- Typecheck time per package
+- Bundle size analysis
+
+### Runtime
 - Server startup time
 - Session creation throughput
-- Message submission latency (10, 100, 1000 messages)
-- Concurrent session handling (10, 50 simulataneous)
+- Message submission latency
 
-## TUI benchmarks (planned)
-- Render time for 100+ message timeline
-- Command palette search latency (1000 entries)
-- Panel switch latency
+### TUI
+- Render time for large timelines
+- Command palette search latency
 
-## SDK benchmarks (planned)
-- Session list with 100+ sessions
-- Stream throughput for long model responses
+### Permission Engine
+- Policy evaluation with many rules
+- Plan evaluation with many steps
 
-## Permission engine benchmarks (planned)
-- Policy evaluation with 100+ rules
-- Plan evaluation with 50+ steps
+## Adding Benchmarks
+
+Add new benchmark suites in `benchmarks/tools/`. Each suite should export a `run()` function that returns a `BenchmarkResult`.

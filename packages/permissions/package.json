@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/protocol": "workspace:*",
+    "@agent-workbench/protocol": "*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

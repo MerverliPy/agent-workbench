@@ -17,16 +17,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-workbench/diff": "workspace:*",
-    "@agent-workbench/protocol": "workspace:*",
-    "@agent-workbench/storage": "workspace:*",
-    "@agent-workbench/events": "workspace:*",
-    "@agent-workbench/tools": "workspace:*",
-    "@agent-workbench/models": "workspace:*",
-    "@agent-workbench/permissions": "workspace:*",
-    "@agent-workbench/shell": "workspace:*",
-    "@agent-workbench/tokens": "workspace:*",
-    "@agent-workbench/planner": "workspace:*",
+    "@agent-workbench/diff": "*",
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/storage": "*",
+    "@agent-workbench/events": "*",
+    "@agent-workbench/tools": "*",
+    "@agent-workbench/models": "*",
+    "@agent-workbench/permissions": "*",
+    "@agent-workbench/shell": "*",
+    "@agent-workbench/tokens": "*",
+    "@agent-workbench/planner": "*",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

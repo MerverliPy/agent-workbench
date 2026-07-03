@@ -1,27 +1,28 @@
 # ⚙️ @agent-workbench/config
 
-[![Status](https://img.shields.io/badge/status-scaffold-yellow)]()
+[![Status](https://img.shields.io/badge/status-stable-blue)]()
 [![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
 
-Layered config loading, resolution, validation, and secret references.
+Layered configuration loading, resolution, validation, and environment variable management for agent-workbench.
 
 ## Status
 
-**Scaffold** — Phase 1. Package structure only. No runtime implementation yet.
+**Stable** — Provides configuration primitives used across the monorepo for server, client, and plugin configuration.
 
-## Purpose
+## What's Here
 
-Will provide layered configuration loading, resolution, validation, and secret reference handling.
+- Layered config loading (defaults → env vars → config file → CLI flags)
+- Schema validation via Zod
+- Secret reference resolution
+- Config reload/change detection
 
-## Current Rules
+## Usage
 
-- This package is scaffold-only.
-- `src/.gitkeep` exists only to preserve the folder.
-- No runtime implementation logic has been added.
-- Do not add implementation code until the phase checklist allows it.
+```ts
+import { loadConfig } from "@agent-workbench/config";
+const config = loadConfig();
+```
 
 ## Boundary
 
-Does **not** own: model provider config (handled in `packages/models`), server config, storage, runtime orchestration.
-
-👉 See [`docs/03_BACKEND_FRONTEND_BOUNDARY.md`](../docs/03_BACKEND_FRONTEND_BOUNDARY.md), [`docs/18_PHASE_EXIT_GATES.md`](../docs/18_PHASE_EXIT_GATES.md)
+Does **not** own: model provider configuration (packages/models), server-specific config, storage config, or runtime orchestration.
