@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "agent-workbench",
+      "dependencies": {
+        "drizzle-orm": "^0.45.2",
+      },
       "devDependencies": {
         "husky": "^9.1.7",
         "lint-staged": "^17.0.8",
@@ -175,7 +178,7 @@
         "@agent-workbench/events": "workspace:*",
         "@agent-workbench/protocol": "workspace:*",
         "@agent-workbench/storage": "workspace:*",
-        "drizzle-orm": "^0.38.0",
+        "drizzle-orm": "^0.45.2",
         "promptfoo": "^0.121.17",
         "ulid": "^2.3.0",
       },
