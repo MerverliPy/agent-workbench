@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import { createEffect, createSignal, For, Show } from "solid-js";
-import { isStreaming, messages, streamingContent } from "../state/app";
+import { inputText, isStreaming, messages, setInputText, streamingContent } from "../state/app";
 import { MessageBubble } from "./MessageBubble";
 import { StreamingIndicator } from "./StreamingIndicator";
 
@@ -105,18 +105,14 @@ export function ChatView(): JSX.Element {
 /** Empty state shown when there are no messages. */
 function EmptyState(): JSX.Element {
   function fillPrompt(text: string): void {
-    const textarea = document.querySelector(
-      'textarea[placeholder="Type a message..."]',
-    ) as HTMLTextAreaElement | null;
-    if (textarea) {
-      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        "value",
-      )?.set;
-      nativeInputValueSetter?.call(textarea, text);
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-      textarea.focus();
-    }
+    setInputText(text);
+    // Focus the textarea after setting the value
+    queueMicrotask(() => {
+      const textarea = document.querySelector<HTMLTextAreaElement>(
+        'textarea[placeholder="Type a message..."]',
+      );
+      textarea?.focus();
+    });
   }
 
   return (

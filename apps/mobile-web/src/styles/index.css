@@ -12,7 +12,7 @@
   --color-accent-green: #22c55e;
   --color-accent-red: #ef4444;
   --color-accent-blue: #3b82f6;
-  --color-accent-purple: #a855f7;
+  --color-accent-teal: #2dd4bf;
 }
 
 body {
@@ -109,6 +109,20 @@ textarea {
 }
 
 /* Streaming pulse */
+@keyframes connection-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-connection-pulse {
+  animation: connection-pulse 2s ease-in-out infinite;
+}
+
 @keyframes pulse-dot {
   0%,
   100% {
@@ -123,16 +137,20 @@ textarea {
   animation: pulse-dot 1s ease-in-out infinite;
 }
 
-/* Bounce animation (typing indicator) */
-@keyframes bounce {
+/* Bounce animation (typing indicator) — 1.4s total, 7px dot */
+@keyframes streaming-bounce {
   0%,
   60%,
   100% {
     transform: translateY(0);
   }
   30% {
-    transform: translateY(-6px);
+    transform: translateY(-7px);
   }
+}
+
+.animate-streaming-bounce {
+  animation: streaming-bounce 1.4s ease-in-out infinite;
 }
 
 /* Fade in (scroll-to-bottom button) */

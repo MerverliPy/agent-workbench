@@ -1,23 +1,28 @@
 import type { JSX } from "solid-js";
-import { createSignal, Show } from "solid-js";
+import { Show, createSignal } from "solid-js";
 import { getClient } from "../lib/sdk";
 import {
   appendMessage,
+  inputText,
   selectedSessionId,
+  setInputText,
   setSelectedSessionId,
 } from "../state/app";
 
 export function PromptInput(): JSX.Element {
-  const [text, setText] = createSignal("");
   const [submitting, setSubmitting] = createSignal(false);
+  // Non-reactive guard prevents double-fire on mobile tap spam
+  let submittingRef = false;
 
   async function submit(): Promise<void> {
-    const content = text().trim();
-    if (!content || submitting()) return;
+    const content = inputText().trim();
+    // Check both reactive signal AND non-reactive ref for iOS double-tap safety
+    if (!content || submitting() || submittingRef) return;
 
+    submittingRef = true;
     setSubmitting(true);
     const messageText = content;
-    setText("");
+    setInputText("");
 
     // Append user message immediately
     appendMessage({
@@ -66,6 +71,7 @@ export function PromptInput(): JSX.Element {
         createdAt: new Date().toISOString(),
       });
     } finally {
+      submittingRef = false;
       setSubmitting(false);
     }
   }
@@ -82,7 +88,7 @@ export function PromptInput(): JSX.Element {
     el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
   }
 
-  const hasText = () => text().trim().length > 0;
+  const hasText = () => inputText().trim().length > 0;
 
   return (
     <div class="flex-shrink-0 bg-slate-900 border-t border-slate-700 safe-bottom">
@@ -135,9 +141,9 @@ export function PromptInput(): JSX.Element {
           class="flex-1 bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-blue-500/50 min-h-[40px] max-h-32 transition-shadow"
           placeholder="Type a message..."
           rows={1}
-          value={text()}
+          value={inputText()}
           onInput={(e) => {
-            setText((e.target as HTMLTextAreaElement).value);
+            setInputText((e.target as HTMLTextAreaElement).value);
             autoResize(e.target as HTMLTextAreaElement);
           }}
           onKeyDown={handleKeyDown}

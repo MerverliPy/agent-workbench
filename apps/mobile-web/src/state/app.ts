@@ -30,7 +30,11 @@ export interface DisplayMessage {
 export const [messages, setMessages] = createSignal<DisplayMessage[]>([]);
 
 export function appendMessage(msg: DisplayMessage): void {
-  setMessages((prev) => [...prev, msg]);
+  setMessages((prev) => {
+    // Deduplicate: skip if message with same ID already exists
+    if (prev.some((m) => m.id === msg.id)) return prev;
+    return [...prev, msg];
+  });
 }
 
 export function appendSystemNotice(text: string): void {
@@ -156,6 +160,10 @@ export const [browserEntries, setBrowserEntries] = createSignal<
 export const [gitBranch, setGitBranch] = createSignal<string>("");
 export const [gitStatus, setGitStatus] = createSignal<string>("");
 export const [gitCommits, setGitCommits] = createSignal<string>("");
+
+// ── Input text (shared so ChatView suggestions can set it) ─────────────────
+
+export const [inputText, setInputText] = createSignal<string>("");
 
 // ── Session list ───────────────────────────────────────────────────────────
 

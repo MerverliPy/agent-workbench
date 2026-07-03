@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import type { Hono } from "hono";
 import type { ServerAppBindings } from "../context";
 import { ApiError } from "../errors";
@@ -92,10 +92,20 @@ export function registerGitRoutes(app: Hono<ServerAppBindings>) {
 }
 
 function runGit(args: string): string {
-  return execSync(`git ${args}`, {
+  // Split args string into array to avoid shell interpretation of % characters
+  // (e.g. git log --format=%H|%s|%an would be eaten by /bin/sh otherwise)
+  const argList = args.split(/\s+/).filter(Boolean);
+  const result = spawnSync("git", argList, {
     encoding: "utf-8",
     timeout: 5000,
     maxBuffer: 1024 * 1024,
     stdio: ["ignore", "pipe", "pipe"],
   });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(
+      `Command failed: git ${args}\n${result.stderr?.trim() || result.stdout?.trim() || `exit code ${result.status}`}`,
+    );
+  }
+  return result.stdout ?? "";
 }
