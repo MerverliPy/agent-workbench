@@ -7,10 +7,14 @@
  *
  * Templates: typescript, bun
  */
-import { PluginRegistry } from "@agent-workbench/plugin-sdk";
-import { existsSync, mkdirSync, readdirSync, cpSync, writeFileSync } from "node:fs";
+
+import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  type PluginManifest,
+  PluginRegistry,
+} from "@agent-workbench/plugin-sdk";
 
 function printUsage(): void {
   console.log(`agent-workbench — CLI for managing agent-workbench
@@ -37,7 +41,10 @@ Examples:
 `);
 }
 
-async function handlePluginCommand(subcommand: string, args: string[]): Promise<number> {
+async function handlePluginCommand(
+  subcommand: string,
+  args: string[],
+): Promise<number> {
   const registry = new PluginRegistry();
 
   switch (subcommand) {
@@ -57,18 +64,26 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
     case "install": {
       const source = args[0];
       if (!source) {
-        console.error("Error: 'install' requires a source argument (e.g. 'local:/path/to/plugin')");
+        console.error(
+          "Error: 'install' requires a source argument (e.g. 'local:/path/to/plugin')",
+        );
         return 1;
       }
 
       if (source.startsWith("npm:") || source.startsWith("git:")) {
-        console.error("Error: npm/git plugin installation is not yet supported. Use 'local:' source.");
+        console.error(
+          "Error: npm/git plugin installation is not yet supported. Use 'local:' source.",
+        );
         return 1;
       }
 
       if (!source.startsWith("local:")) {
-        console.error("Error: source must use 'local:', 'npm:', or 'git:' prefix");
-        console.error("Example: agent-workbench plugin install local:~/my-plugin");
+        console.error(
+          "Error: source must use 'local:', 'npm:', or 'git:' prefix",
+        );
+        console.error(
+          "Example: agent-workbench plugin install local:~/my-plugin",
+        );
         return 1;
       }
 
@@ -85,11 +100,13 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
         return 1;
       }
 
-      let manifest;
+      let manifest: PluginManifest | undefined;
       try {
         manifest = registry.loadManifest(localPath);
       } catch (err) {
-        console.error(`Error: Invalid plugin manifest — ${err instanceof Error ? err.message : String(err)}`);
+        console.error(
+          `Error: Invalid plugin manifest — ${err instanceof Error ? err.message : String(err)}`,
+        );
         return 1;
       }
 
@@ -103,7 +120,9 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
       cpSync(localPath, installDir, { recursive: true });
 
       const record = registry.register(manifest, source, installDir);
-      console.log(`Installed: ${record.name}@${record.version} (${record.source})`);
+      console.log(
+        `Installed: ${record.name}@${record.version} (${record.source})`,
+      );
       console.log(`Location: ${record.installPath}`);
       return 0;
     }
@@ -118,7 +137,9 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
         const updated = registry.enable(name);
         console.log(`Enabled: ${updated.name}@${updated.version}`);
       } catch (err) {
-        console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
         return 1;
       }
       return 0;
@@ -134,7 +155,9 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
         const updated = registry.disable(name);
         console.log(`Disabled: ${updated.name}@${updated.version}`);
       } catch (err) {
-        console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
         return 1;
       }
       return 0;
@@ -174,7 +197,10 @@ async function handlePluginCommand(subcommand: string, args: string[]): Promise<
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
-async function handleInitCommand(template: string, outputPath: string): Promise<number> {
+async function handleInitCommand(
+  template: string,
+  outputPath: string,
+): Promise<number> {
   const __dirname = resolve(fileURLToPath(import.meta.url), "..");
   const templatesDir = resolve(__dirname, "..", "templates");
 
@@ -186,7 +212,9 @@ async function handleInitCommand(template: string, outputPath: string): Promise<
   const templateDir = availableTemplates[template];
   if (!templateDir) {
     console.error(`Error: Unknown template "${template}".`);
-    console.error(`  Available templates: ${Object.keys(availableTemplates).join(", ")}`);
+    console.error(
+      `  Available templates: ${Object.keys(availableTemplates).join(", ")}`,
+    );
     return 1;
   }
 
@@ -229,17 +257,23 @@ async function main(): Promise<number> {
 
   switch (command) {
     case "plugin":
-    case "plugins":
-      if (subArgs.length === 0) {
-        console.error("Error: 'plugin' requires a subcommand (list, install, enable, disable, uninstall)");
+    case "plugins": {
+      const subcommand = subArgs[0];
+      if (!subcommand) {
+        console.error(
+          "Error: 'plugin' requires a subcommand (list, install, enable, disable, uninstall)",
+        );
         return 1;
       }
-      return handlePluginCommand(subArgs[0]!, subArgs.slice(1));
+      return handlePluginCommand(subcommand, subArgs.slice(1));
+    }
 
     case "init": {
       const tmpl = subArgs[0];
       if (!tmpl) {
-        console.error("Error: 'init' requires a template name (typescript, bun)");
+        console.error(
+          "Error: 'init' requires a template name (typescript, bun)",
+        );
         return 1;
       }
       const path = subArgs[1] ?? ".";

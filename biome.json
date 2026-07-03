@@ -1,7 +1,21 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": [
+      "**",
+      "!**/dist/",
+      "!**/build/",
+      "!**/coverage/",
+      "!**/node_modules/",
+      "!**/.hermes/",
+      "!**/.opencode/",
+      "!**/apps/**/*/dist/",
+      "!**/apps/**/*/build/",
+      "!**/apps/cli/templates/",
+      "!**/tools/",
+      "!**/plugins/"
+    ]
   },
   "formatter": {
     "enabled": true,

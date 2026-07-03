@@ -1,5 +1,5 @@
-import { createSignal, onMount, For, Show, createResource } from "solid-js";
 import type { JSX } from "solid-js";
+import { createResource, createSignal, For, onMount, Show } from "solid-js";
 import type { DashboardData } from "./types";
 
 const DEFAULT_SERVER = "http://localhost:3000";
@@ -91,7 +91,9 @@ export function App(): JSX.Element {
               <input
                 type="checkbox"
                 checked={autoRefresh()}
-                onChange={(e) => setAutoRefresh((e.target as HTMLInputElement).checked)}
+                onChange={(e) =>
+                  setAutoRefresh((e.target as HTMLInputElement).checked)
+                }
                 class="accent-blue-500"
               />
               Auto
@@ -103,15 +105,19 @@ export function App(): JSX.Element {
       <main class="max-w-7xl mx-auto p-6">
         <Show when={dashboard.error}>
           <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6 text-red-300">
-            <strong>Connection Error:</strong> {dashboard.error?.message ?? "Unknown error"}
+            <strong>Connection Error:</strong>{" "}
+            {dashboard.error?.message ?? "Unknown error"}
             <p class="text-sm mt-1 text-red-400">
-              Make sure the agent-workbench server is running and {serverUrl()} is correct.
+              Make sure the agent-workbench server is running and {serverUrl()}{" "}
+              is correct.
             </p>
           </div>
         </Show>
 
         <Show when={dashboard.loading && !dashboard()}>
-          <div class="text-slate-400 text-center py-12">Loading dashboard data...</div>
+          <div class="text-slate-400 text-center py-12">
+            Loading dashboard data...
+          </div>
         </Show>
 
         <Show when={dashboard()}>
@@ -151,7 +157,9 @@ export function App(): JSX.Element {
                         class={`rounded-lg px-4 py-3 text-center ${statusColors[status] ?? "bg-slate-500/20 text-slate-400"}`}
                       >
                         <div class="text-2xl font-bold">{count}</div>
-                        <div class="text-xs uppercase tracking-wide mt-1">{status}</div>
+                        <div class="text-xs uppercase tracking-wide mt-1">
+                          {status}
+                        </div>
                       </div>
                     )}
                   </For>
@@ -164,7 +172,9 @@ export function App(): JSX.Element {
                 <Show
                   when={Object.keys(d().spans.latencyByOperation).length > 0}
                   fallback={
-                    <p class="text-slate-500 text-sm">No span data available yet.</p>
+                    <p class="text-slate-500 text-sm">
+                      No span data available yet.
+                    </p>
                   }
                 >
                   <div class="overflow-x-auto">
@@ -179,13 +189,17 @@ export function App(): JSX.Element {
                         </tr>
                       </thead>
                       <tbody>
-                        <For each={Object.entries(d().spans.latencyByOperation)}>
+                        <For
+                          each={Object.entries(d().spans.latencyByOperation)}
+                        >
                           {([name, stats]) => (
                             <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
                               <td class="py-2 pr-4 text-slate-200 font-mono text-xs">
                                 {name}
                               </td>
-                              <td class="py-2 pr-4 text-slate-400">{stats.count}</td>
+                              <td class="py-2 pr-4 text-slate-400">
+                                {stats.count}
+                              </td>
                               <td class="py-2 pr-4">
                                 <LatencyBadge ms={stats.p50} />
                               </td>
@@ -210,7 +224,9 @@ export function App(): JSX.Element {
                 <Show
                   when={d().costs.daily.length > 0}
                   fallback={
-                    <p class="text-slate-500 text-sm">No cost data recorded yet.</p>
+                    <p class="text-slate-500 text-sm">
+                      No cost data recorded yet.
+                    </p>
                   }
                 >
                   <div class="overflow-x-auto">
@@ -225,15 +241,17 @@ export function App(): JSX.Element {
                         <For each={d().costs.daily}>
                           {(entry) => (
                             <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
-                              <td class="py-2 pr-4 text-slate-200">{entry.date}</td>
+                              <td class="py-2 pr-4 text-slate-200">
+                                {entry.date}
+                              </td>
                               <td class="py-2 pr-4">
                                 <span
                                   class={
                                     entry.cost > 1
                                       ? "text-amber-300"
                                       : entry.cost > 0.1
-                                      ? "text-yellow-300"
-                                      : "text-emerald-300"
+                                        ? "text-yellow-300"
+                                        : "text-emerald-300"
                                   }
                                 >
                                   {formatCost(entry.cost)}
@@ -271,7 +289,9 @@ function SummaryCard(props: {
     <div
       class={`border-l-4 rounded-r-lg px-4 py-3 ${colorClasses[props.color] ?? "border-l-slate-500 bg-slate-500/5"}`}
     >
-      <div class="text-xs text-slate-400 uppercase tracking-wide">{props.label}</div>
+      <div class="text-xs text-slate-400 uppercase tracking-wide">
+        {props.label}
+      </div>
       <div class="text-2xl font-bold mt-1">{props.value}</div>
     </div>
   );
@@ -283,12 +303,12 @@ function LatencyBadge(props: { ms: number }): JSX.Element {
     ms < 10
       ? "text-emerald-400"
       : ms < 100
-      ? "text-green-400"
-      : ms < 500
-      ? "text-yellow-400"
-      : ms < 2000
-      ? "text-amber-400"
-      : "text-red-400";
+        ? "text-green-400"
+        : ms < 500
+          ? "text-yellow-400"
+          : ms < 2000
+            ? "text-amber-400"
+            : "text-red-400";
 
   return <span class={`font-mono text-xs ${color}`}>{formatMs(ms)}</span>;
 }

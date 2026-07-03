@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { Tracer } from "@agent-workbench/telemetry";
 
 describe("Tracer", () => {
@@ -22,8 +22,8 @@ describe("Tracer", () => {
     expect(result).toBe(42);
     expect(tracer.size).toBe(1);
     const spans = tracer.getSpans();
-    expect(spans[0]!.status).toBe("ok");
-    expect(spans[0]!.name).toBe("test-op");
+    expect(spans[0]?.status).toBe("ok");
+    expect(spans[0]?.name).toBe("test-op");
   });
 
   it("records error status when handler throws", async () => {
@@ -33,8 +33,8 @@ describe("Tracer", () => {
     await expect(errPromise).rejects.toThrow("boom");
     expect(tracer.size).toBe(1);
     const spans = tracer.getSpans();
-    expect(spans[0]!.status).toBe("error");
-    expect(spans[0]!.error).toBe("boom");
+    expect(spans[0]?.status).toBe("error");
+    expect(spans[0]?.error).toBe("boom");
   });
 
   it("computes duration on completed spans", async () => {
@@ -53,7 +53,7 @@ describe("Tracer", () => {
 
   it("records parent span relationships", () => {
     tracer.startSpan({ name: "parent" });
-    const child = tracer.startSpan({
+    const _child = tracer.startSpan({
       name: "child",
       parentSpanId: "parent-id",
     });
@@ -65,7 +65,7 @@ describe("Tracer", () => {
   it("records attributes on spans", async () => {
     await tracer.trace(
       { name: "attributed-op", attributes: { userId: "u1", cost: 0.05 } },
-      async () => {}
+      async () => {},
     );
     const span = tracer.getSpans()[0];
     expect(span?.attributes).toEqual({ userId: "u1", cost: 0.05 });
@@ -78,7 +78,7 @@ describe("Tracer", () => {
     const recent = tracer.getRecentSpans(5);
     expect(recent).toHaveLength(5);
     // Most recent first
-    expect(recent[0]!.name).toBe("op-9");
+    expect(recent[0]?.name).toBe("op-9");
   });
 
   it("getRecentSpans filters by name", async () => {
@@ -98,7 +98,7 @@ describe("Tracer", () => {
     await tracer.trace({ name: "second" }, async () => {});
 
     const allSpans = tracer.getSpans();
-    const traceId = allSpans[0]!.traceId;
+    const traceId = allSpans[0]?.traceId;
     const filtered = tracer.getTrace(traceId);
     expect(filtered.length).toBeGreaterThanOrEqual(1);
     for (const s of filtered) {

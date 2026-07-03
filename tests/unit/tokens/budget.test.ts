@@ -1,5 +1,5 @@
 /// <reference types="bun" />
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { calculateBudget, truncateToolOutput } from "@agent-workbench/tokens";
 
 describe("calculateBudget", () => {
@@ -61,9 +61,7 @@ describe("calculateBudget", () => {
 
   it("includes message token counts when available", () => {
     const result = calculateBudget({
-      messages: [
-        { role: "user", contentLength: 100, tokenCount: 500 },
-      ],
+      messages: [{ role: "user", contentLength: 100, tokenCount: 500 }],
     });
     expect(result.used).toBe(500);
   });
@@ -102,9 +100,7 @@ describe("calculateBudget", () => {
     const without = calculateBudget({ messages: [] });
     const withResults = calculateBudget({
       messages: [],
-      pendingToolResults: [
-        { name: "read", resultSize: 5000 },
-      ],
+      pendingToolResults: [{ name: "read", resultSize: 5000 }],
     });
     expect(withResults.used).toBeGreaterThan(without.used);
   });
