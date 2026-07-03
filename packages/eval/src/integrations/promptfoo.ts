@@ -92,8 +92,18 @@ export async function runPromptfooEval(
 
     const durationMs = performance.now() - startTime;
 
-    // Extract scores from promptfoo results
-    const scores = extractPromptfooScores(evalResult, durationMs);
+    // Extract scores, token usage, and latencies from promptfoo results
+    const { scores, tokenUsage, latencies } = extractPromptfooMetrics(evalResult);
+
+    const totalInput = tokenUsage.reduce((s, t) => s + t.input, 0);
+    const totalOutput = tokenUsage.reduce((s, t) => s + t.output, 0);
+    const sortedLatencies = [...latencies].sort((a, b) => a - b);
+
+    const computeP = (pct: number): number => {
+      if (sortedLatencies.length === 0) return 0;
+      const idx = Math.ceil((pct / 100) * sortedLatencies.length) - 1;
+      return sortedLatencies[Math.max(0, idx)] ?? 0;
+    };
 
     return {
       id: runId,
@@ -105,9 +115,13 @@ export async function runPromptfooEval(
         totalItems: scores.reduce((sum, s) => sum + s.itemCount, 0),
         itemsPassed: scores.filter((s) => s.score >= 0.5).length,
         durationMs,
-        costUsd: 0, // token tracking in Phase 29.3
-        tokensUsed: { input: 0, output: 0 },
-        latencyMs: { p50: 0, p95: 0, p99: 0 },
+        costUsd: computeCostEstimate(options.model, totalInput, totalOutput),
+        tokensUsed: { input: totalInput, output: totalOutput, total: totalInput + totalOutput },
+        latencyMs: {
+          p50: computeP(50),
+          p95: computeP(95),
+          p99: computeP(99),
+        },
         errorRate: 0,
       },
       rawOutput: JSON.stringify(evalResult, null, 2),
@@ -118,20 +132,40 @@ export async function runPromptfooEval(
   }
 }
 
-/** Extract and normalize scores from a promptfoo Eval result */
-function extractPromptfooScores(evalResult: any, durationMs: number): EvalResult["scores"] {
+/** Extract scores, token usage, and per-item latencies from a promptfoo Eval result */
+function extractPromptfooMetrics(
+  evalResult: any,
+): { scores: EvalResult["scores"]; tokenUsage: Array<{ input: number; output: number }>; latencies: number[] } {
   const scores: EvalResult["scores"] = [];
+  const tokenUsage: Array<{ input: number; output: number }> = [];
+  const latencies: number[] = [];
+
   if (evalResult?.results) {
     for (const result of evalResult.results) {
       const score = typeof result.score === "number" ? result.score : 0;
       scores.push({
         task: result.description ?? result.prompt?.raw ?? "unknown",
-        score: typeof result.score === "number" ? Math.max(0, Math.min(1, result.score)) : 0,
+        score: Math.max(0, Math.min(1, score)),
         metric: result.assertion?.type ?? "pass",
         itemCount: result.test?.count ?? 1,
       });
+
+      // Extract token usage from provider response
+      const provResp = result.providerResponse;
+      if (provResp?.tokenUsage) {
+        tokenUsage.push({
+          input: provResp.tokenUsage.input ?? 0,
+          output: provResp.tokenUsage.output ?? 0,
+        });
+      }
+
+      // Extract per-item latency
+      if (typeof result.latencyMs === "number" && result.latencyMs > 0) {
+        latencies.push(result.latencyMs);
+      }
     }
   }
+
   if (scores.length === 0) {
     scores.push({
       task: "aggregate",
@@ -140,7 +174,43 @@ function extractPromptfooScores(evalResult: any, durationMs: number): EvalResult
       itemCount: 1,
     });
   }
-  return scores;
+
+  // Estimate tokens from prompt length if no real data
+  if (tokenUsage.length === 0 && evalResult?.results) {
+    for (const result of evalResult.results) {
+      const promptText = result.prompt?.raw ?? "";
+      const outputText = result.output ?? "";
+      tokenUsage.push({
+        input: Math.ceil(promptText.length / 4),
+        output: Math.ceil(outputText.length / 4),
+      });
+    }
+  }
+
+  return { scores, tokenUsage, latencies };
+}
+
+/** Estimate cost for a model based on token usage */
+function computeCostEstimate(model: string, inputTokens: number, outputTokens: number): number {
+  // Known pricing per 1K tokens (USD)
+  const pricing: Record<string, { in: number; out: number }> = {
+    "gpt-4o": { in: 0.0025, out: 0.01 },
+    "gpt-4o-mini": { in: 0.00015, out: 0.0006 },
+    "claude-sonnet-4": { in: 0.003, out: 0.015 },
+    "claude-haiku-3-5": { in: 0.0008, out: 0.004 },
+    "claude-opus-4": { in: 0.015, out: 0.075 },
+    "deepseek-v4": { in: 0.0005, out: 0.002 },
+    "deepseek-v4-flash": { in: 0.0001, out: 0.0005 },
+    "gemini-2.5-pro": { in: 0.00125, out: 0.005 },
+    "gemini-2.5-flash": { in: 0.000075, out: 0.0003 },
+  };
+
+  // Try exact match, then prefix match, then fallback to GPT-4o pricing
+  const p = pricing[model]
+    ?? Object.entries(pricing).find(([k]) => model.startsWith(k))?.[1]
+    ?? { in: 0.0025, out: 0.01 };
+
+  return (inputTokens / 1000) * p.in + (outputTokens / 1000) * p.out;
 }
 
 /**
@@ -168,7 +238,7 @@ function createFallbackResult(options: EvalRunOptions, reason: string): EvalResu
       itemsPassed: 0,
       durationMs: 0,
       costUsd: 0,
-      tokensUsed: { input: 0, output: 0 },
+      tokensUsed: { input: 0, output: 0, total: 0 },
       latencyMs: { p50: 0, p95: 0, p99: 0 },
       errorRate: 1,
     },

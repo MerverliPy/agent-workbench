@@ -18,6 +18,9 @@ export { PromptStore, type PromptTemplate, type PromptVersion } from "./prompt-s
 // One-shot model playground
 export { ModelPlayground, type PlaygroundConfig, type PlaygroundResult } from "./playground";
 
+// Results export (CSV/JSON)
+export { ResultsExporter, type ExportOptions, type ExportFormat } from "./export";
+
 // Storage — eval tables and repository
 export {
   EvalRepository,
@@ -28,6 +31,7 @@ export {
   comparisonRuns,
   comparisonResults,
 } from "./storage";
+
 export type {
   EvalRunRow,
   EvalRunInsert,

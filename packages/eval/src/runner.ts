@@ -49,7 +49,7 @@ export interface EvalResult {
     itemsPassed: number;
     durationMs: number;
     costUsd: number;
-    tokensUsed: { input: number; output: number };
+    tokensUsed: { input: number; output: number; total: number };
     latencyMs: { p50: number; p95: number; p99: number };
     errorRate: number;
   };
@@ -181,12 +181,11 @@ export class EvalRunner {
 
       const accuracy = totalItems > 0 ? itemsPassed / totalItems : 0;
 
+      // Use MetricsCollector for cost estimation
       const metrics = new MetricsCollector(this.repo);
-      const costUsd = metrics.computeCostPerEval(
-        options.model,
-        options.limit ?? totalItems,
-        0, // approximate; real tracking in Phase 29.3
-      );
+      const totalInput = scores.reduce((s, score) => s + score.itemCount * 250, 0); // estimate ~250 input tokens per item
+      const totalOutput = scores.reduce((s, score) => s + score.itemCount * 500, 0); // estimate ~500 output tokens per item
+      const costUsd = metrics.computeCostPerEval(options.model, totalInput, totalOutput);
 
       const result: EvalResult = {
         id: runId,
@@ -199,8 +198,8 @@ export class EvalRunner {
           itemsPassed,
           durationMs,
           costUsd,
-          tokensUsed: { input: 0, output: 0 },
-          latencyMs: { p50: 0, p95: 0, p99: 0 },
+          tokensUsed: { input: totalInput, output: totalOutput, total: totalInput + totalOutput },
+          latencyMs: { p50: durationMs, p95: durationMs, p99: durationMs },
           errorRate: 0,
         },
         rawOutput,

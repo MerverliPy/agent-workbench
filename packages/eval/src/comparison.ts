@@ -12,7 +12,7 @@ export interface ComparisonPair {
   /** Cost for this model */
   costUsd: number;
   /** Token usage */
-  tokensUsed: { input: number; output: number };
+  tokensUsed: { input: number; output: number; total: number };
 }
 
 export interface ComparisonResult {
