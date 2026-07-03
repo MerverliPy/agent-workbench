@@ -76,18 +76,26 @@ export class OpenAIAdapter {
 
     return {
       content,
-      ...(toolCallsRaw ? { toolCalls: toolCallsRaw.map((tc) => ({
-        id: tc.id as string,
-        name: (tc.function as Record<string, unknown>)?.name as string,
-        arguments: JSON.parse(
-          ((tc.function as Record<string, unknown>)?.arguments as string) ??
-            "{}",
-        ) as Record<string, unknown>,
-      })) } : {}),
-      ...(usage ? { usage: {
-        inputTokens: (usage.prompt_tokens as number) ?? 0,
-        outputTokens: (usage.completion_tokens as number) ?? 0,
-      } } : {}),
+      ...(toolCallsRaw
+        ? {
+            toolCalls: toolCallsRaw.map((tc) => ({
+              id: tc.id as string,
+              name: (tc.function as Record<string, unknown>)?.name as string,
+              arguments: JSON.parse(
+                ((tc.function as Record<string, unknown>)
+                  ?.arguments as string) ?? "{}",
+              ) as Record<string, unknown>,
+            })),
+          }
+        : {}),
+      ...(usage
+        ? {
+            usage: {
+              inputTokens: (usage.prompt_tokens as number) ?? 0,
+              outputTokens: (usage.completion_tokens as number) ?? 0,
+            },
+          }
+        : {}),
     };
   }
 

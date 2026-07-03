@@ -70,10 +70,14 @@ export class CopilotAdapter {
 
     return {
       content,
-      ...(usage ? { usage: {
-        inputTokens: (usage.prompt_tokens as number) ?? 0,
-        outputTokens: (usage.completion_tokens as number) ?? 0,
-      } } : {}),
+      ...(usage
+        ? {
+            usage: {
+              inputTokens: (usage.prompt_tokens as number) ?? 0,
+              outputTokens: (usage.completion_tokens as number) ?? 0,
+            },
+          }
+        : {}),
     };
   }
 
