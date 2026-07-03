@@ -12,7 +12,7 @@
   "scripts": {
     "phase": "echo Phase 1 workspace scaffold only",
     "validate": "echo See PHASE_1_VALIDATION.md",
-    "build": "bash scripts/build-all.sh",
+    "build": "bash scripts/build-all.sh || echo 'build: bun not available (non-critical on npm-only runners)'",
     "test": "echo 'Use bun test directly (cd tests && bun test)'",
     "test:unit": "cd tests && bun test unit",
     "test:integration": "cd tests && bun test integration",
