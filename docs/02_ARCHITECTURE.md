@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready architecture guide  
 Scope: system architecture, package responsibilities, data flows, phase ownership
 

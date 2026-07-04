@@ -17,6 +17,8 @@ export interface TokenRecord {
   readonly createdAt: string;
   /** Scopes granted to this token. */
   readonly scopes: readonly string[];
+  /** Optional RBAC role assigned to this token. */
+  readonly role?: string;
 }
 
 /**

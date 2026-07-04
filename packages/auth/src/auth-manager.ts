@@ -8,6 +8,10 @@
 import { SessionToken } from "./session-tokens";
 import type { TokenRecord } from "./token-store";
 import { InMemoryTokenStore } from "./token-store";
+import { resolveRole, roleHasScope } from "./rbac";
+import type { Role } from "./rbac";
+import type { MiddlewareHandler } from "hono";
+import type { Context } from "hono";
 
 // ── Defaults ───────────────────────────────────────────────────────────────
 
@@ -59,15 +63,17 @@ export class AuthManager {
   generateToken(
     label: string,
     scopes?: string[],
+    role?: string,
   ): { token: string; expiresAt: string } | null {
     if (!this.sessionToken) return null;
-    const result = this.sessionToken.generate(label, scopes);
+    const result = this.sessionToken.generate(label, scopes, role);
     this.store.set({
       token: result.token,
       label,
       expiresAt: result.expiresAt,
       createdAt: new Date().toISOString(),
       scopes: scopes ?? ["*"],
+      ...(role ? { role } : {}),
     });
     return result;
   }
@@ -75,7 +81,7 @@ export class AuthManager {
   /** Validate a bearer token. Returns the token label if valid, null otherwise. */
   validateToken(
     token: string,
-  ): { label: string; expiresAt: string; scopes: readonly string[] } | null {
+  ): { label: string; expiresAt: string; scopes: readonly string[]; role?: string } | null {
     if (!this.sessionToken) return null;
 
     // Check the store first (fast path)
@@ -85,6 +91,7 @@ export class AuthManager {
         label: record.label,
         expiresAt: record.expiresAt,
         scopes: record.scopes,
+        ...(record.role ? { role: record.role } : {}),
       };
     }
 
@@ -99,12 +106,14 @@ export class AuthManager {
       expiresAt: new Date(payload.exp).toISOString(),
       createdAt: new Date(payload.iat).toISOString(),
       scopes: payload.scopes,
+      ...(payload.role ? { role: payload.role } : {}),
     });
 
     return {
       label: payload.sub,
       expiresAt: new Date(payload.exp).toISOString(),
       scopes: payload.scopes,
+      ...(payload.role ? { role: payload.role } : {}),
     };
   }
 
@@ -121,6 +130,84 @@ export class AuthManager {
   /** Get the shared secret (for token endpoint auth). */
   getSharedSecret(): string | null {
     return process.env[ENV_SECRET] ?? null;
+  }
+
+  /**
+   * Get the RBAC role for a validated token.
+   * Returns null if auth is disabled or token is invalid.
+   */
+  getUserRole(token: string): Role | null {
+    const result = this.validateToken(token);
+    if (!result) return null;
+    return resolveRole(result.role ?? null);
+  }
+
+  /**
+   * Create Hono middleware that requires a minimum role.
+   * The middleware extracts the bearer token, validates it,
+   * looks up the user's role, and returns 403 if the role
+   * lacks the required scopes.
+   *
+   * If auth is globally disabled, the middleware passes through.
+   */
+  requireRole(requiredScopes: string[]): MiddlewareHandler {
+    return async (c: Context, next) => {
+      if (!this.enabled) {
+        await next();
+        return;
+      }
+
+      // Extract bearer token
+      const authHeader = c.req.header("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        c.status(401);
+        return c.json({
+          error: "Unauthorized",
+          message:
+            "Missing or invalid Authorization header. Use: Authorization: Bearer ***",
+          recoverable: true,
+          status: 401 as const,
+        });
+      }
+
+      const token = authHeader.slice("Bearer ".length).trim();
+      if (!token) {
+        c.status(401);
+        return c.json({
+          error: "Unauthorized",
+          message: "Bearer token is empty.",
+          recoverable: true,
+          status: 401 as const,
+        });
+      }
+
+      // Validate token and get role
+      const result = this.validateToken(token);
+      if (!result) {
+        c.status(401);
+        return c.json({
+          error: "Unauthorized",
+          message: "Invalid or expired token.",
+          recoverable: true,
+          status: 401 as const,
+        });
+      }
+
+      // Check role-based permissions
+      const role = resolveRole(result.role ?? null);
+      const authorized = requiredScopes.some((s) => roleHasScope(role, [s]));
+      if (!authorized) {
+        c.status(403);
+        return c.json({
+          error: "Forbidden",
+          message: `Insufficient permissions. Role "${role}" is not authorized for this action. Required scopes: ${requiredScopes.join(", ")}`,
+          recoverable: false,
+          status: 403 as const,
+        });
+      }
+
+      await next();
+    };
   }
 
   /** Check the health of the auth system. */

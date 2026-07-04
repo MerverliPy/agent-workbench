@@ -1,6 +1,6 @@
 # 08 — Data Model Plan
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready data model plan  
 Scope: local persistence, SQLite/Drizzle tables, ledgers, retention, privacy, and data ownership
 

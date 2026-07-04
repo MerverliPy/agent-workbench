@@ -35,3 +35,27 @@ export { defaultScopes, hasScope, Scope, scopeMatches } from "./scopes";
 export { SessionToken, type SessionTokenConfig } from "./session-tokens";
 export { TlsConfig, type TlsConfigOptions } from "./tls-config";
 export { InMemoryTokenStore, type TokenRecord } from "./token-store";
+// Phase 30: RBAC
+export type { Role } from "./rbac";
+export {
+  ENV_DEFAULT_ROLE,
+  ENV_RBAC_ENABLED,
+  ROLES,
+  getRoleScopes,
+  isValidRole,
+  resolveRole,
+  roleHasScope,
+} from "./rbac";
+export {
+  rbacMiddleware,
+  type RbacMiddlewareOptions,
+} from "./rbac-middleware";
+// Phase 30: SSO
+export { SsoManager } from "./sso";
+export type {
+  SsoConfig,
+  OidcConfig,
+  SamlConfig,
+  SsoUser,
+  SsoValidationResult,
+} from "./sso";

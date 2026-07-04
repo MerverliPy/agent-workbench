@@ -1,6 +1,6 @@
 # 06 — Security Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready security model  
 Scope: local server security, secrets, tool safety, shell safety, file safety, auditability
 

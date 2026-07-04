@@ -1,6 +1,6 @@
 # 09 — Agent Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready agent model  
 Scope: primary agents, permissions, prompts, lifecycle, selection, future subagents
 

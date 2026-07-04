@@ -21,6 +21,7 @@
     "test:repeat": "bash scripts/test-repeat.sh",
     "test:health": "bash scripts/test-health.sh",
     "coverage": "bun test --coverage",
+    "typecheck": "for d in packages/* apps/* plugins/*; do [ -f \"$d/package.json\" ] && [ -f \"$d/tsconfig.json\" ] && (echo \"📦 $d\" && cd \"$d\" && bun run typecheck) || true; done",
     "prepare": "husky || true",
     "postinstall": "ln -sf ../../../packages/telemetry tests/node_modules/@agent-workbench/telemetry 2>/dev/null; ln -sf ../../../packages/plugin-sdk tests/node_modules/@agent-workbench/plugin-sdk 2>/dev/null; true"
   },

@@ -20,6 +20,10 @@
     "./session-tokens": {
       "types": "./dist/session-tokens.d.ts",
       "default": "./dist/session-tokens.js"
+    },
+    "./rbac-middleware": {
+      "types": "./dist/rbac-middleware.d.ts",
+      "default": "./dist/rbac-middleware.js"
     }
   },
   "main": "dist/index.js",
@@ -30,6 +34,7 @@
   },
   "dependencies": {
     "@agent-workbench/protocol": "*",
+    "jose": "^6.0.0",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

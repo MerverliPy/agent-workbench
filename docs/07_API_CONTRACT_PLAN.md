@@ -1,6 +1,6 @@
 # 07 — API Contract Plan
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready API contract plan  
 Scope: schema-first API design, route groups, event stream, SDK contract, validation rules
 

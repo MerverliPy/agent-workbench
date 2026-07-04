@@ -1,6 +1,6 @@
 # 05 — Permission Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready permission model  
 Scope: safety posture, decisions, policies, risk classes, approval flow
 

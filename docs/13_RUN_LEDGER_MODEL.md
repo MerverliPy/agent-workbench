@@ -1,6 +1,6 @@
 # 13 — Run Ledger Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready run ledger model  
 Scope: audit events, categories, persistence, UI panel, redaction, query model
 

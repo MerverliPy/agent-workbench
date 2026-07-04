@@ -1,6 +1,6 @@
 # 01 — Tech Stack Decision
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready stack decision  
 Scope: selected technologies, rejected alternatives, implementation implications
 

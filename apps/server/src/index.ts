@@ -1,4 +1,4 @@
-import { AuthManager, TlsConfig } from "@agent-workbench/auth";
+import { AuthManager, SsoManager, TlsConfig } from "@agent-workbench/auth";
 import { ToolCache } from "@agent-workbench/cache";
 import {
   PresenceManager,
@@ -170,6 +170,27 @@ if (pluginLoadResult.loaded > 0 || pluginLoadResult.failed > 0) {
   );
 }
 
+// ── OpenCode bidirectional sync ──────────────────────────────────────────────
+try {
+  // Dynamic require — avoids TypeScript module resolution issues with
+  // cross-package imports outside this package's include tree.
+  const syncPath = new URL(
+    "../../plugins/agent-workbench-opencode/dist/opencode-sync.js",
+    import.meta.url,
+  ).pathname;
+  const syncModule: any = await import(syncPath);
+  const { startOpenCodeWatcher } = syncModule;
+  const cleanup = startOpenCodeWatcher(providerRegistry);
+  logger.info("OpenCode sync watcher started — monitoring ~/.config/opencode/opencode.jsonc");
+
+  process.on("SIGTERM", () => cleanup());
+  process.on("SIGINT", () => cleanup());
+} catch (err) {
+  logger.warn(
+    `OpenCode sync not available: ${err instanceof Error ? err.message : String(err)}`,
+  );
+}
+
 // ── Phase 27: Auth ─────────────────────────────────────────────────────────
 const authManager = new AuthManager();
 if (authManager.isEnabled) {
@@ -256,6 +277,7 @@ const app = createApp({
     toolCallRepository,
     pluginRegistry,
     auth: authManager,
+    sso: new SsoManager(),
     sharedSessionManager,
     shareManager,
     presenceManager,

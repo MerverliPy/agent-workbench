@@ -1,32 +1,42 @@
-name: OpenCode Agent
+# OpenCode Agent — DISABLED
+#
+# This workflow was a no-op placeholder that detected /opencode or /oc comments
+# but never actually invoked OpenCode. It has been disabled because:
+#   - It always triggered but did nothing (noise)
+#   - Secrets and approval rules were never configured
+#   - Wire up properly when OpenCode GitHub integration is ready
+#
+# To re-enable:
+#   1. Configure secrets (API keys, tokens)
+#   2. Set up approval rules
+#   3. Uncomment the workflow below
+#   4. Add the actual OpenCode invocation step
 
-on:
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  actions: read
-
-jobs:
-  opencode:
-    if: contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Show request
-        run: |
-          echo "OpenCode trigger detected."
-          echo "${{ github.event.comment.body }}"
-
-      - name: Placeholder for OpenCode GitHub integration
-        run: |
-          echo "Install/configure OpenCode GitHub integration here."
-          echo "Do not enable autonomous write behavior until secrets and approval rules are configured."
+# name: OpenCode Agent
+#
+# on:
+#   issue_comment:
+#     types: [created]
+#   pull_request_review_comment:
+#     types: [created]
+#
+# permissions:
+#   contents: write
+#   pull-requests: write
+#   issues: write
+#   actions: read
+#
+# jobs:
+#   opencode:
+#     if: contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')
+#     runs-on: ubuntu-latest
+#
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#       - name: Install OpenCode
+#         run: npm install -g opencode
+#       - name: Run OpenCode
+#         run: opencode --comment "${{ github.event.comment.body }}"
+#         env:
+#           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}

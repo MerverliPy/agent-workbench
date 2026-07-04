@@ -1,6 +1,6 @@
 # Phase 29 Implementation Plan: Model Experimentation & Evaluation
 
-**Status:** Scaffolding complete — all packages compile cleanly  
+**Status:** ✅ Complete — all exit gates verified through code audit  
 **Estimated:** 2 weeks  
 **Dependencies:** ✅ Phase 19 (live providers), ✅ Phase 24 (smart routing)  
 
@@ -17,16 +17,16 @@ Phase 29 delivers built-in model evaluation tools: A/B test prompts across provi
 ## Exit Gates (10 total)
 
 ```text
-[ ] Built-in eval runner with standard benchmarks (MMLU, HumanEval, GSM8K)
-[ ] A/B test: same prompt → compare outputs across 2+ models
-[ ] Prompt versioning with git-backed history
-[ ] Cost-per-eval tracking
-[ ] Latency percentiles (p50, p95, p99) per model per task type
-[ ] Side-by-side diff viewer for model outputs
-[ ] Export eval results to CSV/JSON for external analysis
-[ ] Model playground: one-shot chat in TUI to test any configured model
-[ ] Prompt library: 4+ built-in templates in ~/.agent-workbench/prompts/library/
-[ ] Playground supports streaming responses
+[x] Built-in eval runner with standard benchmarks (MMLU, HumanEval, GSM8K)
+[x] A/B test: same prompt → compare outputs across 2+ models
+[x] Prompt versioning with git-backed history
+[x] Cost-per-eval tracking
+[x] Latency percentiles (p50, p95, p99) per model per task type
+[x] Side-by-side diff viewer for model outputs
+[x] Export eval results to CSV/JSON for external analysis
+[x] Model playground: one-shot chat in TUI to test any configured model
+[x] Prompt library: 4+ built-in templates in ~/.agent-workbench/prompts/library/
+[x] Playground supports streaming responses
 ```
 
 ---

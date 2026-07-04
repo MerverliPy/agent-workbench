@@ -1,13 +1,15 @@
-import { authMiddleware } from "@agent-workbench/auth";
+import { authMiddleware, rbacMiddleware, ENV_RBAC_ENABLED, SsoManager } from "@agent-workbench/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { ServerConfig } from "./config";
 import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
+import { complianceHeadersMiddleware } from "./middleware/compliance-headers";
 import { handleAppError } from "./middleware/error-handler";
 import { metricsMiddleware } from "./middleware/metrics-middleware";
 import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { requestIdMiddleware } from "./middleware/request-id";
+import { ssoMiddleware } from "./middleware/sso-middleware";
 import { tracingMiddleware } from "./middleware/tracing";
 import { registerAgentRoutes } from "./routes/agent-routes";
 import { registerAuthRoutes } from "./routes/auth-routes";
@@ -26,6 +28,7 @@ import { registerProviderRoutes } from "./routes/provider-routes";
 import { registerReviewRoutes } from "./routes/review-routes";
 import { registerSessionRoutes } from "./routes/session-routes";
 import { registerShareRoutes } from "./routes/share-routes";
+import { registerSsoRoutes } from "./routes/sso-routes";
 import { registerTokenHealthRoutes } from "./routes/token-health-routes";
 import { registerWorkspaceRoutes } from "./routes/workspace-routes";
 
@@ -42,6 +45,8 @@ export function createApp(options: CreateAppOptions) {
 
   app.use("*", requestIdMiddleware);
   app.use("*", rateLimitMiddleware());
+  app.use("*", complianceHeadersMiddleware());
+  app.use("*", ssoMiddleware({ sso: options.services.sso }));
   app.use("*", metricsMiddleware(metricsExporter));
   app.use("*", tracingMiddleware(tracer));
   app.use(
@@ -90,7 +95,22 @@ export function createApp(options: CreateAppOptions) {
     );
   }
 
+  // Phase 30: Role-Based Access Control — optional role enforcement
+  // gated behind AGENT_WORKBENCH_RBAC_ENABLED env var.
+  const rbacEnabled = process.env[ENV_RBAC_ENABLED] === "true" || process.env[ENV_RBAC_ENABLED] === "1";
+  if (rbacEnabled && options.services.auth.isEnabled) {
+    app.use(
+      "/admin/*",
+      rbacMiddleware({
+        auth: options.services.auth,
+        requiredScopes: ["admin"],
+        excludePaths: [],
+      }),
+    );
+  }
+
   registerAuthRoutes(app, { auth: options.services.auth });
+  registerSsoRoutes(app, { sso: options.services.sso });
   registerCollabRoutes(app, options.services);
   registerShareRoutes(app, options.services);
   registerReviewRoutes(app, options.services);

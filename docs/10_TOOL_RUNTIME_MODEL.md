@@ -1,6 +1,6 @@
 # 10 — Tool Runtime Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready tool runtime model  
 Scope: tool registry, execution lifecycle, permissions, result handling, read-only first, mutation later
 

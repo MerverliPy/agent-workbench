@@ -9,3 +9,4 @@ export { sessions } from "./sessions";
 export { summaries } from "./summaries";
 export { toolCalls } from "./tool-calls";
 export { workspaces } from "./workspaces";
+export { auditEntries } from "./audit-entries";

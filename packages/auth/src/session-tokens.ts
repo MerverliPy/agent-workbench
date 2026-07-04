@@ -37,6 +37,7 @@ interface TokenPayload {
   readonly iat: number; // Issued-at (unix ms)
   readonly exp: number; // Expires (unix ms)
   readonly scopes: readonly string[];
+  readonly role?: string; // RBAC role
 }
 
 // ── SessionToken ───────────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ export class SessionToken {
   generate(
     label: string,
     scopes: string[] = ["*"],
+    role?: string,
   ): { token: string; expiresAt: string } {
     const now = Date.now();
     const payload: TokenPayload = {
@@ -68,6 +70,7 @@ export class SessionToken {
       iat: now,
       exp: now + this.ttlMs,
       scopes,
+      ...(role ? { role } : {}),
     };
 
     const encoded = this.encodePayload(payload);

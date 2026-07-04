@@ -35,8 +35,13 @@ describe("ProviderRegistry — misconfigured OpenAI provider", () => {
     // Ensure no provider env is set by default
     delete process.env.AGENT_WORKBENCH_PROVIDER;
     delete process.env.OPENAI_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     delete process.env.AGENT_WORKBENCH_MODEL;
     delete process.env.OPENAI_BASE_URL;
+    delete process.env.ANTHROPIC_BASE_URL;
+    delete process.env.OPENROUTER_BASE_URL;
+    delete process.env.OLLAMA_BASE_URL;
   });
 
   afterEach(() => {

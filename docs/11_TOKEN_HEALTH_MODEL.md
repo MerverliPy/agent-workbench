@@ -1,6 +1,6 @@
 # 11 — Token Health Model
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready token-health model  
 Scope: context budgets, truncation, summarization, compaction, relevance ranking, UI visibility
 

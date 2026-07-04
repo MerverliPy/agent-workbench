@@ -27,7 +27,25 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
           no-cache: false
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
+      - name: SBOM generation
+        run: |
+          bunx @cyclonedx/bom -o sbom.json --short-PURLs 2>/dev/null || echo "⚠️ SBOM generation skipped (npm bin)"
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.os }}
+          path: sbom.json
+          retention-days: 30
       - name: Run test-health
         run: bash scripts/test-health.sh
       - name: Check whitespace
@@ -46,6 +64,15 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
           no-cache: false
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh
@@ -57,9 +84,13 @@ jobs:
           done
       - name: Typecheck plugins
         run: |
-          for plugin in agent-workbench-hermes; do
-            echo "  [typecheck] plugins/$plugin"
-            (cd plugins/$plugin && bun run typecheck) || exit 1
+          for plugin in agent-workbench-hermes agent-workbench-github agent-workbench-opencode; do
+            if [ -f "plugins/$plugin/package.json" ] && [ -f "plugins/$plugin/tsconfig.json" ]; then
+              echo "  [typecheck] plugins/$plugin"
+              (cd plugins/$plugin && bun run typecheck) || exit 1
+            else
+              echo "  [skip] plugins/$plugin (no tsconfig)"
+            fi
           done
       - name: Typecheck apps
         run: |
@@ -82,6 +113,15 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
           no-cache: false
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh
@@ -110,6 +150,15 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
           no-cache: false
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh

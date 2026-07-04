@@ -92,6 +92,8 @@ export interface ServerServices {
   readonly presenceManager: PresenceManager;
   // Phase 27: collaborative code review
   readonly reviewQueue: ReviewQueue;
+  // Phase 30: SSO / OIDC
+  readonly sso: import("@agent-workbench/auth").SsoManager;
 }
 
 export type ServerAppBindings = {

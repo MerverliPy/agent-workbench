@@ -1,6 +1,6 @@
 # 03 — Backend / Frontend Boundary
 
-Status: Phase 0 — Planning Docs  
+Status: ⚠️ Historical reference — content superseded by docs/27_PROJECT_ROADMAP.md and live code.  
 Document type: agent-ready boundary contract  
 Scope: TUI, SDK, server, core, permissions, storage, events
 

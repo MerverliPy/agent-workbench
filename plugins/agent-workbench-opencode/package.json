@@ -1,0 +1,30 @@
+{
+  "name": "@agent-workbench/opencode-bridge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode Bridge — reads OpenCode config and exposes its active model as an agent-workbench provider",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./opencode-sync": {
+      "types": "./dist/opencode-sync.d.ts",
+      "default": "./dist/opencode-sync.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-workbench/plugin-sdk": "*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/node": "^26.1.0"
+  }
+}

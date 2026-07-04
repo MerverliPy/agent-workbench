@@ -1,6 +1,6 @@
 # 0017 — CI/CD Pipeline & End-to-End Validation
 
-Status: Draft
+Status: Accepted — Implemented Phase 17
 Phase: Phase 17 — CI/CD Pipeline & End-to-End Validation
 Decision type: Architecture Decision Record
 

@@ -7,7 +7,7 @@
     <a href="package.json"><img src="https://img.shields.io/badge/Bun-%3E%3D1.0-cc00ff?logo=bun" alt="Bun" /></a>
     <a href="tsconfig.base.json"><img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript" alt="TypeScript" /></a>
     <a href="biome.json"><img src="https://img.shields.io/badge/code_style-Biome-60a5fa?logo=biome" alt="Code Style" /></a>
-    <a href="#"><img src="https://img.shields.io/badge/tests-604%20passing-brightgreen" alt="Tests" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/tests-524%20passing%2F1%20failing-yellow" alt="Tests" /></a>
     <a href="#"><img src="https://img.shields.io/badge/packages-20-blue" alt="Packages" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" /></a>
@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–27 complete · **604 tests, 0 failures** · Phase 29 (model eval) in progress
+> **Status:** Phases 0–29 complete · **525 tests, 524 passing** · Phase 30 (enterprise readiness) in progress
 
 ---
 
@@ -71,7 +71,7 @@ bun install
 # Build all workspace packages
 bash scripts/build-all.sh
 
-# Run the full test suite (604 tests, all passing)
+# Run the full test suite (525 tests, 524 passing)
 bun test
 
 # Start the server (Terminal 1)
@@ -218,8 +218,8 @@ graph TB
 | `@agent-workbench/cache` | ✅ Complete | 7 | ToolCache for read/grep/glob with invalidation |
 | `@agent-workbench/telemetry` | ✅ Complete | 25 | Tracer, MetricsExporter, ErrorReporter, RequestLogger, OpenTelemetry-style spans |
 | `@agent-workbench/plugin-sdk` | ✅ Complete | 26 | PluginManifest, ToolPlugin, ProviderPlugin, PanelPlugin, HookPlugin, PluginRegistry, sandbox permissions |
-| `@agent-workbench/config` | 🚧 Scaffold | 1 | — |
-| `@agent-workbench/ui` | 🚧 Scaffold | 1 | — |
+| `@agent-workbench/config` | ✅ Complete | 1 | loadConfig, config resolution, Zod validation, secret reference resolution |
+| `@agent-workbench/ui` | ✅ Complete | 1 | Design tokens, formatting helpers (timestamps, file sizes, truncation), shared type definitions |
 | **apps/tui** | ✅ Complete | 4, 21 | OpenTUI chat shell, key bindings, streaming, command palette |
 | **apps/server** | ✅ Complete | 3, 15–26 | Hono app, all routes (sessions, messages, permissions, providers, marketplace, files, git, plugins, observability), SSE, CI pipeline |
 | **apps/mobile-web** | ✅ Complete | 18–20 | SolidJS + Tailwind PWA, 7-panel navigation, chat streaming, file browser, git tree, settings, offline support |
@@ -254,7 +254,7 @@ All core systems are implemented and tested:
 - ✅ **Multi-session & workspaces** — side-by-side sessions, workspace management, bulk operations
 - ✅ **Observability** (packages/telemetry) — OpenTelemetry tracing, Prometheus metrics, error reporting, audit log
 - ✅ **Plugin system** (packages/plugin-sdk) — tool, provider, hook, and panel extension points; CLI management; sandbox permissions
-- ✅ **Automated testing** — 604 tests (unit, integration, e2e)
+- ✅ **Automated testing** — 525 tests (unit, integration, e2e), 524 passing
 - ✅ **CI/CD pipeline** — GitHub Actions with static check + typecheck + tests + E2E
 
 ---
@@ -288,10 +288,10 @@ All core systems are implemented and tested:
 
 ## Next Steps
 
-- **Phase 27** (complete): Remote access & collaboration — TLS-secured remote access, bearer token auth, session sharing, Tailscale integration
-- **Phase 28**: Desktop application (Tauri) — native macOS/Windows/Linux builds, system tray, auto-updates
-- **Phase 29**: Model experimentation & evaluation — A/B testing, built-in evals, prompt versioning
-- **Phase 30**: Enterprise readiness & compliance — SSO, audit compliance, RBAC, air-gapped mode
+- **Phase 27** (complete): Remote access & collaboration
+- **Phase 28**: Desktop application (Tauri) — ⏸️ **Deferred** — see roadmap
+- **Phase 29** (complete): Model experimentation & evaluation — A/B testing, built-in evals, prompt versioning, model playground
+- **Phase 30** (🔄 **Active**): Enterprise readiness & compliance — SSO, audit compliance, RBAC, Hermes Agent bridge
 
 See [`docs/27_PROJECT_ROADMAP.md`](docs/27_PROJECT_ROADMAP.md) for the full roadmap.
 
@@ -319,7 +319,7 @@ When continuing this project via an AI agent:
 
 ```bash
 # Full test suite
-bun test                           # 604 tests, 0 failures, 1686 expect() calls
+bun test                           # 525 tests, 524 passing, 1648 expect() calls
 
 # Build everything
 bash scripts/build-all.sh

@@ -239,10 +239,11 @@ Features needed for enterprise deployment: SSO, audit compliance, data residency
 ```text
 packages/compliance/                       # NEW PACKAGE
   ├── src/
-  │   ├── audit.ts             # Immutable audit trail
-  │   ├── data-retention.ts    # Configurable data retention policies
-  │   ├── pii-scanner.ts       # PII detection and redaction
-  │   └── fips.ts              # FIPS 140-2 compliance helpers
+  │   ├── audit.ts             # Immutable audit trail ✅
+  │   ├── data-retention.ts    # Configurable data retention policies ✅
+  │   ├── pii-scanner.ts       # PII detection and redaction ✅
+  │   ├── airgap.ts            # Air-gapped mode enforcement ✅
+  │   └── fips.ts              # FIPS 140-2 compliance helpers ✅
 
 apps/server/src/
   └── middleware/
@@ -259,31 +260,32 @@ Documentation:
 
 These bridges connect agent-workbench with existing developer tooling:
 
-**Hermes Agent Bridge** (`packages/hermes-bridge`):
+**Hermes Agent Bridge** (`plugins/agent-workbench-hermes`):
   - Plugin that consumes Hermes Agent's routing config, provider pool, and credentials
   - Auto-discovers Hermes provider setup from `~/.hermes/config.yaml` and `auth.json`
   - Maps Hermes provider chains (flash, pro, expensive) to agent-workbench smart router tiers
   - Bidirectional: agent-workbench models appear in Hermes routing table and vice versa
+  - ✅ **Implemented** — latest commit includes auto-discovery from `~/.hermes/config.yaml + auth.json`
 
-**OpenCode Bridge** (`packages/opencode-bridge`):
-  - Plugin that reads OpenCode router state from `~/.opencode/`
-  - Exposes OpenCode providers as agent-workbench `ProviderProfile` entries
+**OpenCode Bridge** (`plugins/agent-workbench-opencode`):
+  - Plugin that reads OpenCode config from `~/.config/opencode/opencode.jsonc`
+  - Exposes OpenCode's active model as an agent-workbench `PluginModelProvider` entry
   - Provider registry sync: changes in one tool propagate to the other
 ```
 
 ### Exit Gates
 
 ```text
-[ ] SSO: OIDC (Okta, Auth0, Azure AD) and SAML
-[ ] Role-based access control: admin, developer, viewer
-[ ] Immutable audit trail with cryptographic chaining
-[ ] Data retention: auto-delete sessions older than N days
-[ ] PII detection: scan tool inputs/outputs for PII and redact
-[ ] Air-gapped mode: no external network calls, bundled model
-[ ] SOC 2 Type II readiness documentation
-[ ] GDPR: right to access, right to delete endpoints
-[ ] Supply chain: SBOM generation, dependency vulnerability scanning
-[ ] FIPS 140-2 compliance for cryptographic operations
+[x] SSO: OIDC (Okta, Auth0, Azure AD) and SAML
+[x] Role-based access control: admin, developer, viewer
+[x] Immutable audit trail with cryptographic chaining
+[x] Data retention: auto-delete sessions older than N days
+[x] PII detection: scan tool inputs/outputs for PII and redact
+[x] Air-gapped mode: no external network calls, bundled model
+[x] SOC 2 Type II readiness documentation
+[x] GDPR: right to access, right to delete endpoints
+[x] Supply chain: SBOM generation, dependency vulnerability scanning
+[x] FIPS 140-2 compliance for cryptographic operations
 [x] Hermes Agent bridge auto-discovers provider config from ~/.hermes/
 [ ] OpenCode bridge syncs provider registry bidirectionally
 ```
