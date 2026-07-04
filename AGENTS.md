@@ -24,6 +24,9 @@ Architecture Boundaries
 
 * apps/tui: thin client only.
 * apps/server: local HTTP/SSE control plane.
+* apps/cli: CLI entrypoint, plugin lifecycle management, project scaffolding.
+* apps/dashboard: observability dashboard (SolidJS + Tailwind, connects via SDK).
+* apps/mobile-web: mobile web companion (SolidJS + Tailwind + PWA, connects via SDK).
 * packages/core: agent runtime orchestration.
 * packages/protocol: Zod schemas, route contracts, shared protocol types.
 * packages/sdk: typed client for protocol/API/SSE.
@@ -37,8 +40,15 @@ Architecture Boundaries
 * packages/cache: read/grep/glob cache.
 * packages/planner: execution planning before mutation.
 * packages/ui: shared UI primitives only.
+* packages/models: provider model definitions, smart routing, provider registry.
+* packages/auth: bearer token auth, TLS certificate generation, session tokens.
+* packages/collab: session sharing, review queue, presence management.
+* packages/eval: model evaluation framework, prompt library, comparison runner.
+* packages/telemetry: OpenTelemetry tracing, Prometheus metrics, error reporting.
+* packages/plugin-sdk: plugin extension interfaces (tool, provider, hook, panel).
+* packages/config: layered config loading from env, files, and CLI args.
 
-TUI may import packages/sdk, packages/protocol, packages/events, and packages/ui.
+TUI may import packages/sdk, packages/protocol, packages/events, packages/ui, and packages/eval.
 
 TUI must not import runtime authority packages directly: core, tools, shell, storage, permissions/internal, or models/internal.
 

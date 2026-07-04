@@ -16,6 +16,7 @@ scripts/* @MerverliPy
 *.env.example @MerverliPy
 config/* @MerverliPy
 
-# Security/auth-sensitive source zones
-src/auth/* @MerverliPy
-src/security/* @MerverliPy
+# Security/auth-sensitive packages
+packages/auth/* @MerverliPy
+packages/permissions/* @MerverliPy
+packages/storage/* @MerverliPy

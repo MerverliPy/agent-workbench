@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/) conventions.
 
 ---
 
+## [Phase 29.5] — 2026-07-03
+
+### Added
+- **TUI Playground panel** (`apps/tui`): interactive prompt editor with live provider comparison
+- **Model Comparison panel** (`apps/tui`): side-by-side output comparison across providers
+- **Prompt Library** (`packages/eval`): saved prompts with tags, search, and versioning
+- **DESIGN.md**: comprehensive design system spec for mobile-web and dashboard UI (color tokens, typography, components, accessibility)
+- **AI Mobile Command Center integrations**: mobile-friendly agent orchestration interfaces
+
+### Fixed
+- **CVE-2026-39356**: drizzle-orm bumped to 0.45.2 across all workspace packages
+- **Web UI regression fixes**: NavDrawer, GitTreePanel typecheck errors
+- **SessionSidebar type error**: guarded by items.length check
+- **Biome lint fixes**: import sort, ChatView unused import resolution
+- **Biome config cleanup**: remaining TypeScript type errors resolved for clean CI
+
+---
+
 ## [Phase 29] — 2026-07-02
 
 ### Added

@@ -37,6 +37,12 @@ graph TB
         CACHE[packages/cache<br/>Read/Grep/Glob Cache]
         MODELS[packages/models<br/>Provider Adapters]
         EVT[packages/events<br/>Event Bus]
+        AUTH[packages/auth<br/>Bearer Tokens + TLS]
+        COLLAB[packages/collab<br/>Session Sharing]
+        EVAL[packages/eval<br/>Model Evaluation]
+        TELE[packages/telemetry<br/>OpenTelemetry]
+        PLUGIN[packages/plugin-sdk<br/>Plugin Interfaces]
+        CONFIG[packages/config<br/>Layered Config]
     end
 
     TERM --> TUI
@@ -74,11 +80,11 @@ Tokens = context-health control
 
 ## 4. Target Package Model
 
-Future implementation should use this structure after Phase 0:
-
 ```text
 apps/
 ├─ cli/
+├─ dashboard/
+├─ mobile-web/
 ├─ server/
 └─ tui/
 
@@ -97,10 +103,13 @@ packages/
 ├─ tokens/
 ├─ cache/
 ├─ planner/
-└─ ui/
+├─ ui/
+├─ auth/
+├─ collab/
+├─ eval/
+├─ telemetry/
+└─ plugin-sdk/
 ```
-
-Do not create these folders during Phase 0. They are target architecture only until Phase 1.
 
 ## 5. Application Layers
 

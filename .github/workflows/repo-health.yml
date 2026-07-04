@@ -13,20 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Repo inventory
         run: |
-          find . -maxdepth 3 -type f | sort | sed 's#^\./##' | head -300
+          find . -maxdepth 3 -type f | sort | sed 's#^\\./##' | head -300
 
-      - name: Node checks
-        if: hashFiles('package.json') != ''
+      - name: Bun checks
+        if: hashFiles('bun.lock') != ''
         run: |
-          npm ci || npm install
-          npm run lint --if-present
-          npm run typecheck --if-present
-          npm test --if-present
-          npm run build --if-present
+          bun install --frozen-lockfile
+          bun run typecheck --if-present
+          bun test --if-present
+          bun run build --if-present
 
       - name: Python checks
         if: hashFiles('requirements.txt', 'pyproject.toml') != ''

@@ -115,7 +115,7 @@ This project follows a **phase-based development** model (currently 0–26 compl
 1. Fork the repo and create a branch from `main`
 2. Make your changes following the architecture boundaries
 3. Run tests: `bun test`
-4. Ensure all 523 tests pass
+4. Ensure all 602 tests pass
 5. Ensure `bash scripts/build-all.sh` completes cleanly
 6. Submit a pull request
 
@@ -133,7 +133,7 @@ See [`AGENTS.md`](./AGENTS.md) for the agent-specific workflow, which includes:
 ## Testing
 
 ```bash
-# Full test suite (523 tests, 0 failures)
+# Full test suite (602 tests, 0 failures)
 bun test
 
 # Per-category
@@ -161,7 +161,7 @@ bash scripts/build-all.sh
 
 ## Pull Request Process
 
-1. Ensure all 523 tests pass and CI is green
+1. Ensure all 602 tests pass and CI is green
 2. Update README and package-level docs if your change affects public API
 3. Update phase checklists if your change completes a phase exit gate
 4. Include a clear PR description referencing the relevant docs/decisions
