@@ -1,6 +1,6 @@
 # 27 — Project Roadmap
 
-Status: Phase 29 complete — Phase 30 (enterprise readiness) next
+Status: Phase 30 complete — planning next phase
 Document type: Roadmap for Phases 19–30
 Supersedes: incremental updates in docs/04_IMPLEMENTATION_PHASE_CHECKLIST.md
 
@@ -22,7 +22,7 @@ Phase 26 ✅ complete ███████████████████�
 Phase 27 ✅ complete ██████████████████████  remote access & collaboration
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
 Phase 29 ✅ complete ██████████████████████  model experimentation & eval
-Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
+Phase 30 ✅ complete ██████████████████████  enterprise readiness & compliance
 ```
 
 ### Timeline
@@ -362,5 +362,5 @@ Dependencies: Phase N
 
 ---
 
-*Last updated: 2026-07-03 (Phase 29 complete, Phase 30 started — Hermes bridge)*
-*Next review: After Phase 30 completion*
+*Last updated: 2026-07-03 (Phase 30 complete, all exit gates delivered)*
+*Next review: Before formalizing next phase*

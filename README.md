@@ -16,7 +16,7 @@
 
 ---
 
-> **Status:** Phases 0–29 complete · **525 tests, 524 passing** · Phase 30 (enterprise readiness) in progress
+> **Status:** Phases 0–30 complete · **606+ tests, all passing** · Phase 31+ planning
 
 ---
 
@@ -291,7 +291,7 @@ All core systems are implemented and tested:
 - **Phase 27** (complete): Remote access & collaboration
 - **Phase 28**: Desktop application (Tauri) — ⏸️ **Deferred** — see roadmap
 - **Phase 29** (complete): Model experimentation & evaluation — A/B testing, built-in evals, prompt versioning, model playground
-- **Phase 30** (🔄 **Active**): Enterprise readiness & compliance — SSO, audit compliance, RBAC, Hermes Agent bridge
+- **Phase 30** (✅ complete): Enterprise readiness & compliance — SSO, RBAC, PII, audit, FIPS, airgap, Hermes/OpenCode bridges
 
 See [`docs/27_PROJECT_ROADMAP.md`](docs/27_PROJECT_ROADMAP.md) for the full roadmap.
 
