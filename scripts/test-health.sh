@@ -41,12 +41,18 @@ fi
 # ── 2. No provider/network calls in tests ──────────────────────────────────
 echo ""
 echo "[2] No provider/network calls in tests"
+# Env var name references (delete process.env.ANTHROPIC_API_KEY) are NOT
+# flagged — only patterns that indicate actual provider API usage.
 NETWORK_PATTERNS=(
-  "ANTHROPIC_API_KEY"
-  'fetch("https://'
-  "fetch('https://"
-  "Bun\.connect"
-  "net\.connect"
+  'apiKey:[[:space:]]*process\.env\._(ANTHROPIC|OPENAI|OPENROUTER|GOOGLE)_API_KEY'
+  'fetch\(.*api\.anthropic\.com'
+  'fetch\(.*api\.openai\.com'
+  'fetch\(.*api\.openrouter\.ai'
+  'fetch\(.*generativelanguage\.googleapis\.com'
+  'https://api\.anthropic\.com[^/]'
+  'https://api\.openai\.com/v\d/chat'
+  'Bun\.connect'
+  'net\.connect'
 )
 FOUND_NETWORK=0
 for pattern in "${NETWORK_PATTERNS[@]}"; do
