@@ -32,15 +32,15 @@ export {
   type AuthMiddlewareOptions,
   authMiddleware,
 } from "./auth-middleware";
-export { Scope, defaultScopes, hasScope, scopeMatches } from "./scopes";
-export type { ScopeValue } from "./scopes";
+export type { Role } from "./roles";
 export {
   getRoleFromScopes,
   getScopesForRole,
   hasRole,
   listRoles,
 } from "./roles";
-export type { Role } from "./roles";
+export type { ScopeValue } from "./scopes";
+export { defaultScopes, hasScope, Scope, scopeMatches } from "./scopes";
 export { SessionToken, type SessionTokenConfig } from "./session-tokens";
 export { TlsConfig, type TlsConfigOptions } from "./tls-config";
 export { InMemoryTokenStore, type TokenRecord } from "./token-store";

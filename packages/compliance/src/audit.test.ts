@@ -1,7 +1,7 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import type { AuditEntry } from "./audit";
 import { AuditTrail, computeHash } from "./audit";
 import { applyRetention, mergeEntries } from "./data-retention";
-import type { AuditEntry } from "./audit";
 
 describe("AuditTrail", () => {
   it("starts empty", () => {
@@ -38,7 +38,11 @@ describe("AuditTrail", () => {
   it("verify() returns valid for an intact chain", () => {
     const trail = new AuditTrail();
     trail.append({ actor: "user-1", action: "login" });
-    trail.append({ actor: "agent-1", action: "tool.executed", resource: "read_file" });
+    trail.append({
+      actor: "agent-1",
+      action: "tool.executed",
+      resource: "read_file",
+    });
     trail.append({ actor: "system", action: "compaction.suggested" });
 
     const result = trail.verify();
@@ -236,11 +240,32 @@ describe("Data retention", () => {
 describe("mergeEntries", () => {
   it("deduplicates by id", () => {
     const a: AuditEntry[] = [
-      { id: "1", timestamp: "2025-01-01T00:00:00Z", actor: "u", action: "login", previousHash: "", hash: "a" },
+      {
+        id: "1",
+        timestamp: "2025-01-01T00:00:00Z",
+        actor: "u",
+        action: "login",
+        previousHash: "",
+        hash: "a",
+      },
     ];
     const b: AuditEntry[] = [
-      { id: "1", timestamp: "2025-01-01T00:00:00Z", actor: "u", action: "login", previousHash: "", hash: "a" },
-      { id: "2", timestamp: "2025-01-02T00:00:00Z", actor: "a", action: "tool", previousHash: "a", hash: "b" },
+      {
+        id: "1",
+        timestamp: "2025-01-01T00:00:00Z",
+        actor: "u",
+        action: "login",
+        previousHash: "",
+        hash: "a",
+      },
+      {
+        id: "2",
+        timestamp: "2025-01-02T00:00:00Z",
+        actor: "a",
+        action: "tool",
+        previousHash: "a",
+        hash: "b",
+      },
     ];
 
     const merged = mergeEntries(a, b);
@@ -249,10 +274,24 @@ describe("mergeEntries", () => {
 
   it("sorts by timestamp", () => {
     const a: AuditEntry[] = [
-      { id: "2", timestamp: "2025-03-01T00:00:00Z", actor: "u", action: "b", previousHash: "a", hash: "b" },
+      {
+        id: "2",
+        timestamp: "2025-03-01T00:00:00Z",
+        actor: "u",
+        action: "b",
+        previousHash: "a",
+        hash: "b",
+      },
     ];
     const b: AuditEntry[] = [
-      { id: "1", timestamp: "2025-01-01T00:00:00Z", actor: "u", action: "a", previousHash: "", hash: "a" },
+      {
+        id: "1",
+        timestamp: "2025-01-01T00:00:00Z",
+        actor: "u",
+        action: "a",
+        previousHash: "",
+        hash: "a",
+      },
     ];
 
     const merged = mergeEntries(a, b);

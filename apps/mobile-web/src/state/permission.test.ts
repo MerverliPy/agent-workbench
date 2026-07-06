@@ -1,12 +1,18 @@
 // @ts-nocheck
-import { describe, it, expect } from "bun:test";
-import { readFileSync } from "fs";
-import path from "path";
+import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const STATE_PATH = path.resolve(import.meta.dirname, "./app.ts");
 const APP_PATH = path.resolve(import.meta.dirname, "../App.tsx");
-const TOOLBAR_PATH = path.resolve(import.meta.dirname, "../components/TopBar.tsx");
-const APPROVAL_CARD_PATH = path.resolve(import.meta.dirname, "../components/cards/ApprovalCard.tsx");
+const TOOLBAR_PATH = path.resolve(
+  import.meta.dirname,
+  "../components/TopBar.tsx",
+);
+const APPROVAL_CARD_PATH = path.resolve(
+  import.meta.dirname,
+  "../components/cards/ApprovalCard.tsx",
+);
 
 const stateApp = readFileSync(STATE_PATH, "utf-8");
 const appTsx = readFileSync(APP_PATH, "utf-8");

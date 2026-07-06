@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { describe, it, expect } from "bun:test";
-import { readFileSync } from "fs";
-import path from "path";
+import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const CSS_PATH = path.resolve(import.meta.dirname, "index.css");
 const css = readFileSync(CSS_PATH, "utf-8");

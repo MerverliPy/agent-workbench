@@ -33,8 +33,14 @@ const DEFAULT_CSP_STYLE_SRC = ["'self'", "'unsafe-inline'"];
  * Build the Content-Security-Policy string from the config.
  */
 function buildCsp(config: ComplianceHeadersConfig): string {
-  const connectSrc = [...DEFAULT_CSP_CONNECT_SRC, ...(config.extraConnectSrc ?? [])];
-  const scriptSrc = [...DEFAULT_CSP_SCRIPT_SRC, ...(config.extraScriptSrc ?? [])];
+  const connectSrc = [
+    ...DEFAULT_CSP_CONNECT_SRC,
+    ...(config.extraConnectSrc ?? []),
+  ];
+  const scriptSrc = [
+    ...DEFAULT_CSP_SCRIPT_SRC,
+    ...(config.extraScriptSrc ?? []),
+  ];
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     "connect-src": connectSrc,

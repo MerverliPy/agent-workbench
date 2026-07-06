@@ -20,12 +20,12 @@
  * - Plugin requires "filesystemRead: true" to read config files
  */
 
-import { opencodeAvailable, readOpenCodeConfig } from "./opencode-config";
 import type {
   PluginModelMessage,
-  PluginModelResponse,
   PluginModelProvider,
+  PluginModelResponse,
 } from "@agent-workbench/plugin-sdk";
+import { opencodeAvailable, readOpenCodeConfig } from "./opencode-config";
 
 // ── Minimum OpenAI-compatible provider adapter ─────────────────────────────
 

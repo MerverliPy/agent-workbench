@@ -151,7 +151,7 @@ export function updateCardData(
 ): void {
   setMessages((prev) => {
     const m = prev.find((x) => x.cardId === cardId);
-    if (!m || !m.cardData) return prev;
+    if (!m?.cardData) return prev;
     const clone = JSON.parse(JSON.stringify(m.cardData)) as CardDataType;
     updater(clone);
     return prev.map((x) =>
@@ -180,7 +180,8 @@ export const [streamingMessageId, setStreamingMessageId] = createSignal<
 export const [isStreaming, setIsStreaming] = createSignal<boolean>(false);
 
 // Thinking indicator (run.started / run.completed toggle)
-export const [thinkingIndicator, setThinkingIndicator] = createSignal<boolean>(false);
+export const [thinkingIndicator, setThinkingIndicator] =
+  createSignal<boolean>(false);
 
 export function beginStreaming(id: string): void {
   setStreamingMessageId(id);
@@ -222,8 +223,7 @@ export const [permissionModalOpen, setPermissionModalOpen] =
   createSignal(false);
 
 // Pending approval count (for topbar badge)
-export const [pendingApprovalCount, setPendingApprovalCount] =
-  createSignal(0);
+export const [pendingApprovalCount, setPendingApprovalCount] = createSignal(0);
 export const [fallbackMode, setFallbackMode] = createSignal(false);
 
 // Increment/decrement helpers for stacking
@@ -255,7 +255,8 @@ export type PanelId =
 export type WorkspaceSubTab = "files" | "git" | "sessions";
 
 export const [activePanel, setActivePanel] = createSignal<PanelId>("chat");
-export const [workspaceSubTab, setWorkspaceSubTab] = createSignal<WorkspaceSubTab>("files");
+export const [workspaceSubTab, setWorkspaceSubTab] =
+  createSignal<WorkspaceSubTab>("files");
 
 // ── Drawer state ───────────────────────────────────────────────────────────
 

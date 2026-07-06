@@ -1,6 +1,6 @@
-import type { JSX } from "solid-js";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import type { JSX } from "solid-js";
 import type { SummaryCardData } from "../../state/app";
 
 interface SummaryCardProps {
@@ -12,7 +12,10 @@ function renderMarkdown(text: string): string {
     const raw = marked.parse(text) as string;
     return DOMPurify.sanitize(raw);
   } catch {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 }
 
@@ -26,7 +29,10 @@ export function SummaryCard(props: SummaryCardProps): JSX.Element {
         class="flex items-center gap-1.5 mb-2.5"
         style="font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent);"
       >
-        <span class="w-2 h-2 rounded-full shrink-0" style="background: var(--muted);" />
+        <span
+          class="w-2 h-2 rounded-full shrink-0"
+          style="background: var(--muted);"
+        />
         Final
       </div>
 
@@ -37,7 +43,9 @@ export function SummaryCard(props: SummaryCardProps): JSX.Element {
           props.data.content
             ? renderMarkdown(props.data.content)
             : props.data.items
-              ? "<ul>" + props.data.items.map((i) => "<li>" + i + "</li>").join("") + "</ul>"
+              ? "<ul>" +
+                props.data.items.map((i) => `<li>${i}</li>`).join("") +
+                "</ul>"
               : ""
         }
       />

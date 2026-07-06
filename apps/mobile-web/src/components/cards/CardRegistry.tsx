@@ -23,7 +23,13 @@ interface CardRegistryProps {
 
 export function CardRegistry(props: CardRegistryProps): JSX.Element {
   return (
-    <Switch fallback={<div class="text-xs" style="color: var(--muted);">Unknown card type: {props.cardType}</div>}>
+    <Switch
+      fallback={
+        <div class="text-xs" style="color: var(--muted);">
+          Unknown card type: {props.cardType}
+        </div>
+      }
+    >
       <Match when={props.cardType === "plan"}>
         <PlanCard data={props.cardData as PlanCardData} />
       </Match>

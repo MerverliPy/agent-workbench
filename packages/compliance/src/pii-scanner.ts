@@ -138,7 +138,8 @@ const BUILT_IN_PATTERNS: PiiPattern[] = [
     id: "api-key-generic",
     label: "API key / secret token",
     category: "api-key",
-    regex: /(?:api[_-]?key|secret|token|password|auth)[_-]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]{16,64}['"]?/gi,
+    regex:
+      /(?:api[_-]?key|secret|token|password|auth)[_-]?\s*[:=]\s*['"]?[a-zA-Z0-9_-]{16,64}['"]?/gi,
     defaultMode: "redact",
     confidence: 0.85,
   },
@@ -146,7 +147,7 @@ const BUILT_IN_PATTERNS: PiiPattern[] = [
     id: "bearer-token",
     label: "Bearer authorization token",
     category: "api-key",
-    regex: /Bearer\s+[a-zA-Z0-9_\-]{20,}/g,
+    regex: /Bearer\s+[a-zA-Z0-9_-]{20,}/g,
     defaultMode: "redact",
     confidence: 0.95,
   },
@@ -154,7 +155,7 @@ const BUILT_IN_PATTERNS: PiiPattern[] = [
     id: "url-credentials",
     label: "URL with embedded credentials",
     category: "url-credential",
-    regex: /https?:\/\/[^:\/\s]+:[^@\s]+@/g,
+    regex: /https?:\/\/[^:/\s]+:[^@\s]+@/g,
     defaultMode: "redact",
     confidence: 0.9,
   },
@@ -230,8 +231,8 @@ export class PiiScanner {
       // Reset lastIndex for global regex
       pattern.regex.lastIndex = 0;
 
-      let m: RegExpExecArray | null;
-      while ((m = pattern.regex.exec(input)) !== null) {
+      let m = pattern.regex.exec(input);
+      while (m !== null) {
         matches.push({
           patternId: pattern.id,
           category: pattern.category,
@@ -239,6 +240,7 @@ export class PiiScanner {
           index: m.index,
           confidence: pattern.confidence,
         });
+        m = pattern.regex.exec(input);
       }
     }
 
@@ -248,9 +250,7 @@ export class PiiScanner {
     const aboveThreshold = matches.filter(
       (m) => m.confidence >= this.minConfidence,
     );
-    const categories = [
-      ...new Set(aboveThreshold.map((m) => m.category)),
-    ];
+    const categories = [...new Set(aboveThreshold.map((m) => m.category))];
 
     return {
       matches,
@@ -276,13 +276,20 @@ export class PiiScanner {
     );
 
     // Build replacement list with right-to-left ordering
-    const replacements: Array<{ index: number; length: number; replacement: string }> = [];
+    const replacements: Array<{
+      index: number;
+      length: number;
+      replacement: string;
+    }> = [];
 
     for (const match of applicable) {
       const pattern = this.patterns.find((p) => p.id === match.patternId);
       if (!pattern) continue;
 
-      const mode = modeOverride ?? this.modeOverrides[match.patternId] ?? pattern.defaultMode;
+      const mode =
+        modeOverride ??
+        this.modeOverrides[match.patternId] ??
+        pattern.defaultMode;
       const replacement = redact(match.value, mode);
 
       replacements.push({
@@ -297,7 +304,10 @@ export class PiiScanner {
 
     let result = input;
     for (const r of replacements) {
-      result = result.slice(0, r.index) + r.replacement + result.slice(r.index + r.length);
+      result =
+        result.slice(0, r.index) +
+        r.replacement +
+        result.slice(r.index + r.length);
     }
 
     const categories = [...new Set(applicable.map((m) => m.category))];

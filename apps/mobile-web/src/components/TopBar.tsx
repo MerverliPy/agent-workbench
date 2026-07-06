@@ -122,9 +122,7 @@ export function TopBar(): JSX.Element {
       </button>
 
       {/* Workspace name */}
-      <span
-        class="text-[14px] font-semibold tracking-[-0.005em] truncate flex-1 min-w-0"
-      >
+      <span class="text-[14px] font-semibold tracking-[-0.005em] truncate flex-1 min-w-0">
         Hermes Audit Workspace
       </span>
 
@@ -168,10 +166,7 @@ export function TopBar(): JSX.Element {
         title={connectionError() ?? ""}
       >
         <span class={`w-2 h-2 rounded-full ${statusColor()}`} />
-        <span
-          class="text-[12px] font-mono"
-          style="color: var(--muted);"
-        >
+        <span class="text-[12px] font-mono" style="color: var(--muted);">
           {statusLabel()}
         </span>
       </div>
@@ -208,13 +203,17 @@ function computeErrorLabel(error: string | null): string {
   if (msg.includes("timed out") || msg.includes("cancelled"))
     return "Request timed out";
   if (msg.includes("cors")) return "CORS blocked";
-  if (msg.includes("401") || msg.includes("unauthorized")) return "Unauthorized";
+  if (msg.includes("401") || msg.includes("unauthorized"))
+    return "Unauthorized";
   if (msg.includes("403") || msg.includes("forbidden")) return "Forbidden";
-  if (msg.includes("404") || msg.includes("not found")) return "Route not found";
+  if (msg.includes("404") || msg.includes("not found"))
+    return "Route not found";
   if (msg.includes("500") || msg.includes("internal")) return "Server error";
-  if (msg.includes("501") || msg.includes("not implemented")) return "Not implemented";
+  if (msg.includes("501") || msg.includes("not implemented"))
+    return "Not implemented";
   if (msg.includes("502") || msg.includes("bad gateway")) return "Bad gateway";
-  if (msg.includes("503") || msg.includes("unavailable")) return "Service unavailable";
+  if (msg.includes("503") || msg.includes("unavailable"))
+    return "Service unavailable";
   const statusMatch = error.match(/\b(\d{3})\b/);
   if (statusMatch) return `HTTP ${statusMatch[1]}`;
   return "Error";

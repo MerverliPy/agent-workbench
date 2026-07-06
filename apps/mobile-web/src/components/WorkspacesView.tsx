@@ -1,12 +1,11 @@
 import type { JSX } from "solid-js";
 import { For, lazy, Match, Switch } from "solid-js";
-import {
-  workspaceSubTab,
-  setWorkspaceSubTab,
-} from "../state/app";
+import { setWorkspaceSubTab, workspaceSubTab } from "../state/app";
 
 const FileBrowserPanel = lazy(() =>
-  import("./panels/FileBrowserPanel").then((m) => ({ default: m.FileBrowserPanel })),
+  import("./panels/FileBrowserPanel").then((m) => ({
+    default: m.FileBrowserPanel,
+  })),
 );
 const GitTreePanel = lazy(() =>
   import("./panels/GitTreePanel").then((m) => ({ default: m.GitTreePanel })),

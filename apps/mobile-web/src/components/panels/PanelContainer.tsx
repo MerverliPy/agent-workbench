@@ -44,7 +44,10 @@ export function PanelContainer(): JSX.Element {
           <SettingsPanel />
         </Match>
         <Match when={activePanel() === "help"}>
-          <div class="flex flex-col h-full panel-enter items-center justify-center" style="color: var(--muted); font-size: 14px;">
+          <div
+            class="flex flex-col h-full panel-enter items-center justify-center"
+            style="color: var(--muted); font-size: 14px;"
+          >
             Help — accessible via the hamburger menu
           </div>
         </Match>

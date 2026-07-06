@@ -1,15 +1,23 @@
 // @ts-nocheck
-import { describe, it, expect } from "bun:test";
-import { readFileSync } from "fs";
-import path from "path";
+import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const CARDS_DIR = path.resolve(import.meta.dirname);
 
 describe("Card components", () => {
-  const files = ["PlanCard.tsx", "ToolActivityCard.tsx", "DiffCard.tsx", "TerminalCard.tsx", "ApprovalCard.tsx", "SummaryCard.tsx", "CardRegistry.tsx"];
+  const files = [
+    "PlanCard.tsx",
+    "ToolActivityCard.tsx",
+    "DiffCard.tsx",
+    "TerminalCard.tsx",
+    "ApprovalCard.tsx",
+    "SummaryCard.tsx",
+    "CardRegistry.tsx",
+  ];
 
   for (const file of files) {
-    it(file + " exists and exports a component", () => {
+    it(`${file} exists and exports a component`, () => {
       const filePath = path.join(CARDS_DIR, file);
       const content = readFileSync(filePath, "utf-8");
       expect(content).toBeTruthy();
@@ -23,9 +31,18 @@ describe("Card components", () => {
 
 describe("Card components — lifecycle state strings", () => {
   const planCard = readFileSync(path.join(CARDS_DIR, "PlanCard.tsx"), "utf-8");
-  const toolCard = readFileSync(path.join(CARDS_DIR, "ToolActivityCard.tsx"), "utf-8");
-  const terminalCard = readFileSync(path.join(CARDS_DIR, "TerminalCard.tsx"), "utf-8");
-  const approvalCard = readFileSync(path.join(CARDS_DIR, "ApprovalCard.tsx"), "utf-8");
+  const toolCard = readFileSync(
+    path.join(CARDS_DIR, "ToolActivityCard.tsx"),
+    "utf-8",
+  );
+  const terminalCard = readFileSync(
+    path.join(CARDS_DIR, "TerminalCard.tsx"),
+    "utf-8",
+  );
+  const approvalCard = readFileSync(
+    path.join(CARDS_DIR, "ApprovalCard.tsx"),
+    "utf-8",
+  );
 
   it("PlanCard handles step status variants", () => {
     expect(planCard).toContain('"completed"');
@@ -55,11 +72,23 @@ describe("Card components — lifecycle state strings", () => {
 
 describe("Card components — visual elements", () => {
   const planCard = readFileSync(path.join(CARDS_DIR, "PlanCard.tsx"), "utf-8");
-  const toolCard = readFileSync(path.join(CARDS_DIR, "ToolActivityCard.tsx"), "utf-8");
+  const toolCard = readFileSync(
+    path.join(CARDS_DIR, "ToolActivityCard.tsx"),
+    "utf-8",
+  );
   const diffCard = readFileSync(path.join(CARDS_DIR, "DiffCard.tsx"), "utf-8");
-  const terminalCard = readFileSync(path.join(CARDS_DIR, "TerminalCard.tsx"), "utf-8");
-  const approvalCard = readFileSync(path.join(CARDS_DIR, "ApprovalCard.tsx"), "utf-8");
-  const summaryCard = readFileSync(path.join(CARDS_DIR, "SummaryCard.tsx"), "utf-8");
+  const terminalCard = readFileSync(
+    path.join(CARDS_DIR, "TerminalCard.tsx"),
+    "utf-8",
+  );
+  const approvalCard = readFileSync(
+    path.join(CARDS_DIR, "ApprovalCard.tsx"),
+    "utf-8",
+  );
+  const summaryCard = readFileSync(
+    path.join(CARDS_DIR, "SummaryCard.tsx"),
+    "utf-8",
+  );
 
   it("PlanCard has collapsible header", () => {
     expect(planCard).toContain("aria-expanded");

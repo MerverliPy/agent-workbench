@@ -8,7 +8,7 @@
  * required role/scopes for a given route.
  */
 
-import { Scope, hasScope } from "./scopes";
+import { Scope } from "./scopes";
 
 // ── Role definitions ────────────────────────────────────────────────────────
 

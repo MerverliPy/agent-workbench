@@ -1,5 +1,10 @@
-import { describe, it, expect } from "bun:test";
-import { hasRole, getScopesForRole, getRoleFromScopes, listRoles } from "./roles";
+import { describe, expect, it } from "bun:test";
+import {
+  getRoleFromScopes,
+  getScopesForRole,
+  hasRole,
+  listRoles,
+} from "./roles";
 import { Scope } from "./scopes";
 
 describe("RBAC roles", () => {

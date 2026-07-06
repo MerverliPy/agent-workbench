@@ -80,7 +80,9 @@ export class AuditTrail {
    * Verify the integrity of the entire chain.
    * Returns `{ valid: true }` or `{ valid: false, message, brokenIndex }`.
    */
-  verify(): { valid: true } | { valid: false; message: string; brokenIndex: number } {
+  verify():
+    | { valid: true }
+    | { valid: false; message: string; brokenIndex: number } {
     for (let i = 0; i < this.entries.length; i++) {
       const entry = this.entries[i]!;
 

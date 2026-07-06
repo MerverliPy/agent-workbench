@@ -10,7 +10,11 @@
   "enabled": true,
   "provides": {
     "tools": [],
-    "providers": ["opencode:deepseek", "opencode:opencode-go", "opencode:github-copilot"],
+    "providers": [
+      "opencode:deepseek",
+      "opencode:opencode-go",
+      "opencode:github-copilot"
+    ],
     "panels": [],
     "hooks": []
   },

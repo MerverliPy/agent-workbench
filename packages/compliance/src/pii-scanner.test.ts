@@ -1,10 +1,12 @@
-import { describe, it, expect } from "bun:test";
-import { PiiScanner, defaultPiiScanner } from "./pii-scanner";
+import { describe, expect, it } from "bun:test";
+import { defaultPiiScanner, PiiScanner } from "./pii-scanner";
 
 describe("PiiScanner", () => {
   describe("Built-in patterns", () => {
     it("detects email addresses", () => {
-      const result = defaultPiiScanner.scan("Contact me at user@example.com or admin@test.co.uk");
+      const result = defaultPiiScanner.scan(
+        "Contact me at user@example.com or admin@test.co.uk",
+      );
       const emails = result.matches.filter((m) => m.category === "email");
       expect(emails.length).toBeGreaterThanOrEqual(2);
       expect(result.hasPii).toBe(true);
@@ -12,7 +14,9 @@ describe("PiiScanner", () => {
     });
 
     it("detects US phone numbers", () => {
-      const result = defaultPiiScanner.scan("Call (555) 123-4567 or +1 555-987-6543");
+      const result = defaultPiiScanner.scan(
+        "Call (555) 123-4567 or +1 555-987-6543",
+      );
       expect(result.hasPii).toBe(true);
       expect(result.categories).toContain("phone");
     });
@@ -36,19 +40,25 @@ describe("PiiScanner", () => {
     });
 
     it("detects API keys", () => {
-      const result = defaultPiiScanner.scan("api_key = sk-proj-abcdef1234567890abcdef12");
+      const result = defaultPiiScanner.scan(
+        "api_key = sk-proj-abcdef1234567890abcdef12",
+      );
       expect(result.hasPii).toBe(true);
       expect(result.categories).toContain("api-key");
     });
 
     it("detects bearer tokens", () => {
-      const result = defaultPiiScanner.scan("Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz12345");
+      const result = defaultPiiScanner.scan(
+        "Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz12345",
+      );
       expect(result.hasPii).toBe(true);
       expect(result.categories).toContain("api-key");
     });
 
     it("detects URLs with credentials", () => {
-      const result = defaultPiiScanner.scan("https://user:password@example.com/path");
+      const result = defaultPiiScanner.scan(
+        "https://user:password@example.com/path",
+      );
       expect(result.hasPii).toBe(true);
       expect(result.categories).toContain("url-credential");
     });
@@ -77,14 +87,17 @@ describe("PiiScanner", () => {
     });
 
     it("handles multiple PII types in one string", () => {
-      const input = "User user@example.com at IP 10.0.0.1 called (555) 123-4567";
+      const input =
+        "User user@example.com at IP 10.0.0.1 called (555) 123-4567";
       const result = defaultPiiScanner.redact(input);
       expect(result.replacements).toBeGreaterThanOrEqual(3);
       expect(result.text).not.toContain("user@example.com");
     });
 
     it("returns original text when no PII found", () => {
-      const result = defaultPiiScanner.redact("Hello, this is clean text with no PII.");
+      const result = defaultPiiScanner.redact(
+        "Hello, this is clean text with no PII.",
+      );
       expect(result.replacements).toBe(0);
       expect(result.text).toBe("Hello, this is clean text with no PII.");
     });
@@ -109,7 +122,10 @@ describe("PiiScanner", () => {
     });
 
     it("supports overriding mode via redact() parameter", () => {
-      const result = defaultPiiScanner.redact("Email: user@example.com", "redact");
+      const result = defaultPiiScanner.redact(
+        "Email: user@example.com",
+        "redact",
+      );
       expect(result.text).toContain("[REDACTED]");
     });
 
@@ -181,12 +197,16 @@ describe("PiiScanner", () => {
     });
 
     it("handles string with no PII", () => {
-      const result = defaultPiiScanner.scan("Just regular text with numbers like 42.");
+      const result = defaultPiiScanner.scan(
+        "Just regular text with numbers like 42.",
+      );
       expect(result.hasPii).toBe(false);
     });
 
     it("does not false-positive on localhost IPs", () => {
-      const result = defaultPiiScanner.scan("Server at 127.0.0.1 or localhost");
+      const _result = defaultPiiScanner.scan(
+        "Server at 127.0.0.1 or localhost",
+      );
       // IPv4 pattern has confidence 0.7 which is >= default 0.5
       // So it WILL match — that's expected. Localhost IPs are technically PII-adjacent.
       // But we should ensure it doesn't break redaction.

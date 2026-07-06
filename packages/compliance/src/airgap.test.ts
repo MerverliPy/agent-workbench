@@ -44,12 +44,17 @@ describe("isLocalUrl", () => {
 describe("createAirGappedFetch", () => {
   test("allows localhost requests", async () => {
     let called = false;
-    const mockFetch = async (input: URL | Request | string, _init?: RequestInit) => {
+    const mockFetch = async (
+      _input: URL | Request | string,
+      _init?: RequestInit,
+    ) => {
       called = true;
       return new Response("ok");
     };
 
-    const airGapped = createAirGappedFetch(mockFetch as unknown as typeof fetch);
+    const airGapped = createAirGappedFetch(
+      mockFetch as unknown as typeof fetch,
+    );
     const response = await airGapped("http://localhost:11434/v1/chat");
     expect(called).toBe(true);
     expect(await response.text()).toBe("ok");
@@ -62,14 +67,18 @@ describe("createAirGappedFetch", () => {
       return new Response("ok");
     };
 
-    const airGapped = createAirGappedFetch(mockFetch as unknown as typeof fetch);
+    const airGapped = createAirGappedFetch(
+      mockFetch as unknown as typeof fetch,
+    );
     await airGapped("http://127.0.0.1:3000/health");
     expect(called).toBe(true);
   });
 
   test("blocks external URLs", async () => {
     const mockFetch = async () => new Response("should not be called");
-    const airGapped = createAirGappedFetch(mockFetch as unknown as typeof fetch);
+    const airGapped = createAirGappedFetch(
+      mockFetch as unknown as typeof fetch,
+    );
 
     expect(airGapped("https://api.openai.com/v1")).rejects.toThrow(
       AirGapBlockedError,

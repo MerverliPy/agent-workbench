@@ -51,7 +51,13 @@ type OpenCodeAuthEntry = ApiCredential | OAuthCredential;
 
 const OPCODE_CONFIG_DIR = resolve(homedir(), ".config", "opencode");
 const CONFIG_PATH = join(OPCODE_CONFIG_DIR, "opencode.jsonc");
-const AUTH_PATH = resolve(homedir(), ".local", "share", "opencode", "auth.json");
+const AUTH_PATH = resolve(
+  homedir(),
+  ".local",
+  "share",
+  "opencode",
+  "auth.json",
+);
 
 // ── Well-known base URLs ───────────────────────────────────────────────────
 
@@ -100,7 +106,10 @@ interface ParsedJsonc {
   [key: string]: unknown;
 }
 
-function parseConfig(raw: string, auth: OpenCodeAuthFile | null): OpenCodeConfig {
+function parseConfig(
+  raw: string,
+  auth: OpenCodeAuthFile | null,
+): OpenCodeConfig {
   // Strip JSONC comments
   const cleaned = raw
     .split("\n")
@@ -128,10 +137,17 @@ function parseConfig(raw: string, auth: OpenCodeAuthFile | null): OpenCodeConfig
     const cred = getCredential(auth, providerName);
 
     const apiKey = resolveApiKey(cred);
-    const entry: { provider: string; model: string; baseUrl: string; isPrimary: boolean; apiKey?: string } = {
+    const entry: {
+      provider: string;
+      model: string;
+      baseUrl: string;
+      isPrimary: boolean;
+      apiKey?: string;
+    } = {
       provider: providerName,
       model: modelName,
-      baseUrl: KNOWN_BASE_URLS[providerName] ?? `https://api.${providerName}.com/v1`,
+      baseUrl:
+        KNOWN_BASE_URLS[providerName] ?? `https://api.${providerName}.com/v1`,
       isPrimary: true,
     };
     if (apiKey) entry.apiKey = apiKey;
@@ -146,10 +162,17 @@ function parseConfig(raw: string, auth: OpenCodeAuthFile | null): OpenCodeConfig
 
       const model = inferDefaultModel(providerName);
       const authApiKey = resolveApiKey(cred);
-      const authEntry: { provider: string; model: string; baseUrl: string; isPrimary: boolean; apiKey?: string } = {
+      const authEntry: {
+        provider: string;
+        model: string;
+        baseUrl: string;
+        isPrimary: boolean;
+        apiKey?: string;
+      } = {
         provider: providerName,
         model,
-        baseUrl: KNOWN_BASE_URLS[providerName] ?? `https://api.${providerName}.com/v1`,
+        baseUrl:
+          KNOWN_BASE_URLS[providerName] ?? `https://api.${providerName}.com/v1`,
         isPrimary: false,
       };
       if (authApiKey) authEntry.apiKey = authApiKey;
@@ -220,7 +243,9 @@ function getCredential(
   return auth[providerName];
 }
 
-function resolveApiKey(cred: OpenCodeAuthEntry | undefined): string | undefined {
+function resolveApiKey(
+  cred: OpenCodeAuthEntry | undefined,
+): string | undefined {
   if (!cred) return undefined;
   if (cred.type === "api") return cred.key;
   if (cred.type === "oauth") return cred.access;

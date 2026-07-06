@@ -15,7 +15,8 @@ export function ApprovalCard(props: ApprovalCardProps): JSX.Element {
 
   const borderColor = () => {
     if (props.data.status === "approved") return "var(--success)";
-    if (props.data.status === "denied" || props.data.status === "expired") return "var(--danger)";
+    if (props.data.status === "denied" || props.data.status === "expired")
+      return "var(--danger)";
     return "var(--warn)";
   };
 
@@ -23,12 +24,13 @@ export function ApprovalCard(props: ApprovalCardProps): JSX.Element {
     if (props.data.status === "approved") return "✓ Approved";
     if (props.data.status === "denied") return "✗ Rejected";
     if (props.data.status === "expired") return "⌛ Expired";
-    return "Approval " + props.data.sequenceNumber + "/" + props.data.totalCount;
+    return `Approval ${props.data.sequenceNumber}/${props.data.totalCount}`;
   };
 
   const labelColor = () => {
     if (props.data.status === "approved") return "var(--success)";
-    if (props.data.status === "denied" || props.data.status === "expired") return "var(--danger)";
+    if (props.data.status === "denied" || props.data.status === "expired")
+      return "var(--danger)";
     return "var(--warn)";
   };
 
@@ -45,20 +47,32 @@ export function ApprovalCard(props: ApprovalCardProps): JSX.Element {
   return (
     <div
       class="rounded-xl px-4 py-3.5 self-stretch max-w-full"
-      style={"border-left: 3px solid " + borderColor() + "; background: var(--surface); border: 1px solid var(--border);"}
+      style={
+        "border-left: 3px solid " +
+        borderColor() +
+        "; background: var(--surface); border: 1px solid var(--border);"
+      }
     >
       <div
         class="flex items-center gap-1.5 mb-2.5"
-        style={"font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: " + labelColor() + ";"}
+        style={
+          "font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: " +
+          labelColor() +
+          ";"
+        }
       >
-        <span class="text-xs" aria-hidden="true">⚠</span>
+        <span class="text-xs" aria-hidden="true">
+          ⚠
+        </span>
         {labelText()}
       </div>
 
       <p class="text-sm leading-relaxed mb-3" style="color: var(--fg);">
         <strong>Run: </strong>
         {props.data.toolName}
-        {props.data.targetPaths?.length ? " — " + props.data.targetPaths.join(", ") : ""}
+        {props.data.targetPaths?.length
+          ? ` — ${props.data.targetPaths.join(", ")}`
+          : ""}
       </p>
 
       <Show when={props.data.riskLevel}>
@@ -66,9 +80,17 @@ export function ApprovalCard(props: ApprovalCardProps): JSX.Element {
           class="text-xs font-medium mb-3 px-2 py-1 rounded inline-block"
           style={
             "color: " +
-            (props.data.riskLevel === "high" ? "var(--danger)" : props.data.riskLevel === "medium" ? "var(--warn)" : "var(--success)") +
+            (props.data.riskLevel === "high"
+              ? "var(--danger)"
+              : props.data.riskLevel === "medium"
+                ? "var(--warn)"
+                : "var(--success)") +
             "; background: " +
-            (props.data.riskLevel === "high" ? "var(--danger-soft)" : props.data.riskLevel === "medium" ? "var(--warn-soft)" : "var(--success-soft)") +
+            (props.data.riskLevel === "high"
+              ? "var(--danger-soft)"
+              : props.data.riskLevel === "medium"
+                ? "var(--warn-soft)"
+                : "var(--success-soft)") +
             ";"
           }
         >

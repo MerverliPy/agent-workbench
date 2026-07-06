@@ -18,7 +18,9 @@ test.describe("App shell", () => {
 
   test("topbar renders with all chips", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("header")).toContainText("Hermes Audit Workspace");
+    await expect(page.locator("header")).toContainText(
+      "Hermes Audit Workspace",
+    );
     await expect(page.locator("header")).toContainText("Safe");
   });
 
@@ -39,7 +41,9 @@ test.describe("App shell", () => {
 test.describe("Theme toggle", () => {
   test("toggles from light to dark on click", async ({ page }) => {
     await page.goto("/");
-    const btn = page.getByRole("button", { name: /switch to (dark|light) mode/i });
+    const btn = page.getByRole("button", {
+      name: /switch to (dark|light) mode/i,
+    });
     await expect(btn).toBeVisible();
     const initialLabel = await btn.textContent();
 
@@ -61,13 +65,17 @@ test.describe("Theme toggle", () => {
     const initial = await btn.textContent();
     await btn.click({ force: true });
     await page.waitForTimeout(200);
-    const afterFirstText = await page.getByRole("button", { name: /switch to /i }).textContent();
+    const afterFirstText = await page
+      .getByRole("button", { name: /switch to /i })
+      .textContent();
     expect(afterFirstText).not.toBe(initial);
   });
 
   test("persists theme across reloads", async ({ page }) => {
     await page.goto("/");
-    const btn = page.getByRole("button", { name: /switch to (dark|light) mode/i });
+    const btn = page.getByRole("button", {
+      name: /switch to (dark|light) mode/i,
+    });
     await btn.click({ force: true });
     await page.reload();
     const isDark = await page.evaluate(() =>
@@ -142,8 +150,12 @@ test.describe("Composer", () => {
 
   test("attach and mic buttons exist", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "Attach file" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Voice input" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Attach file" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Voice input" }),
+    ).toBeVisible();
   });
 });
 
@@ -164,7 +176,9 @@ test.describe("NavDrawer", () => {
     await expect(helpBtn).toBeVisible();
     // Verify no Chat/Files/Git buttons in the drawer
     await expect(page.getByRole("button", { name: "Chat" })).not.toBeVisible();
-    await expect(page.getByRole("button", { name: "File Browser" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "File Browser" }),
+    ).not.toBeVisible();
   });
 });
 
@@ -183,7 +197,9 @@ test.describe("Accessibility", () => {
 
   test("tab buttons have aria-selected", async ({ page }) => {
     await page.goto("/");
-    const tabs = page.getByRole("tablist", { name: "Main navigation" }).getByRole("tab");
+    const tabs = page
+      .getByRole("tablist", { name: "Main navigation" })
+      .getByRole("tab");
     const count = await tabs.count();
     for (let i = 0; i < count; i++) {
       await expect(tabs.nth(i)).toHaveAttribute("aria-selected");
@@ -198,13 +214,18 @@ test.describe("iOS Safari hardening", () => {
       const buttons = document.querySelectorAll("button");
       return Array.from(buttons).map((btn) => {
         const rect = btn.getBoundingClientRect();
-        return { text: (btn.textContent ?? "").trim().slice(0, 30), w: Math.round(rect.width), h: Math.round(rect.height) };
+        return {
+          text: (btn.textContent ?? "").trim().slice(0, 30),
+          w: Math.round(rect.width),
+          h: Math.round(rect.height),
+        };
       });
     });
     // Tab bar buttons, drawer nav buttons, and send button should all be >=44 in one dimension
     // Exclude icon-only elements (no meaningful text, connection dot, empty spans)
     const undersized = sizes.filter((s) => {
-      const iconOnly = !s.text || s.text === "◐" || s.text === "(svg icon)" || s.text === "";
+      const iconOnly =
+        !s.text || s.text === "◐" || s.text === "(svg icon)" || s.text === "";
       return !iconOnly && s.w < 44 && s.h < 44;
     });
     expect(undersized.length).toBe(0);
@@ -213,15 +234,19 @@ test.describe("iOS Safari hardening", () => {
   test("visualViewport script is embedded in index.html", async ({ page }) => {
     await page.goto("/");
     const hasScript = await page.evaluate(() => {
-      return typeof window.visualViewport !== "undefined" ||
-        document.documentElement.innerHTML.includes("visualViewport");
+      return (
+        typeof window.visualViewport !== "undefined" ||
+        document.documentElement.innerHTML.includes("visualViewport")
+      );
     });
     expect(hasScript).toBe(true);
   });
 
   test("body has overscroll-behavior: none", async ({ page }) => {
     await page.goto("/");
-    const style = await page.evaluate(() => getComputedStyle(document.body).overscrollBehavior);
+    const style = await page.evaluate(
+      () => getComputedStyle(document.body).overscrollBehavior,
+    );
     expect(style).toBe("none");
   });
 

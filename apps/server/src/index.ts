@@ -6,10 +6,7 @@ import {
   SharedSessionManager,
   ShareManager,
 } from "@agent-workbench/collab";
-import {
-  createAirGappedFetch,
-  isAirGapped,
-} from "@agent-workbench/compliance";
+import { createAirGappedFetch, isAirGapped } from "@agent-workbench/compliance";
 import {
   AgentRegistry,
   SessionRunner,

@@ -398,7 +398,7 @@
       overflow: hidden;
       transition: max-height 0.25s cubic-bezier(0.2, 0, 0, 1);
     }
-    .plan-steps.collapsed { max-height: 0 !important; opacity: 0; }
+    .plan-steps.collapsed { max-height: 0; opacity: 0; }
     .plan-steps li {
       padding: 6px 10px;
       background: var(--accent-dim);
@@ -814,9 +814,9 @@
        ═════════════════════════════════════════════════════════════════ */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
       }
       .stream-cursor { animation: none; opacity: 0; }
       .thinking .dot { animation: none; opacity: 0.5; }
@@ -951,7 +951,7 @@
     </footer>
 
     <!-- tab bar -->
-    <nav class="tab-bar" role="navigation" aria-label="Main navigation">
+    <nav class="tab-bar" aria-label="Main navigation">
       <button class="tab-item active" aria-current="page">
         <span class="tab-icon" aria-hidden="true">💬</span>
         Chats
@@ -973,21 +973,21 @@
   </div>
 
   <script>
-  (function() {
+  (() => {
     'use strict';
 
     /* ──────────────────────────────────────────────────────────────
        HELPERS
        ────────────────────────────────────────────────────────────── */
-    var $ = function(sel, ctx) { return (ctx || document).querySelector(sel); };
-    var $$ = function(sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); };
+    var $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    var $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
     var canvas = $('#canvas');
     var input = $('#composerInput');
     var sendBtn = $('#sendBtn');
 
     function scrollBottom(smooth) {
       if (!canvas) return;
-      requestAnimationFrame(function() {
+      requestAnimationFrame(() => {
         canvas.scrollTo({ top: canvas.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
       });
     }
@@ -1033,7 +1033,7 @@
     }
 
     if (themeToggle) {
-      themeToggle.addEventListener('click', function() {
+      themeToggle.addEventListener('click', () => {
         if (root.classList.contains('dark')) {
           root.classList.remove('dark');
           root.classList.add('light');
@@ -1053,7 +1053,7 @@
     /* ──────────────────────────────────────────────────────────────
        PLAN CARD — collapse/expand with animation
        ────────────────────────────────────────────────────────────── */
-    (function() {
+    (() => {
       var planLabel = $('#planLabel');
       var planSteps = $('#planSteps');
       if (!planLabel || !planSteps) return;
@@ -1061,18 +1061,18 @@
       planLabel.style.cursor = 'pointer';
       planLabel.style.userSelect = 'none';
       var naturalH = planSteps.scrollHeight;
-      planSteps.style.maxHeight = naturalH + 'px';
+      planSteps.style.maxHeight = `${naturalH}px`;
 
       var planCollapsed = false;
-      planLabel.addEventListener('click', function() {
+      planLabel.addEventListener('click', () => {
         planCollapsed = !planCollapsed;
         if (planCollapsed) {
           planSteps.classList.add('collapsed');
-          planLabel.textContent = '▸ Plan (' + $$('li', planSteps).length + ' steps)';
+          planLabel.textContent = `▸ Plan (${$$('li', planSteps).length} steps)`;
           planLabel.style.marginBottom = '0';
         } else {
           planSteps.classList.remove('collapsed');
-          planSteps.style.maxHeight = naturalH + 'px';
+          planSteps.style.maxHeight = `${naturalH}px`;
           planLabel.textContent = 'Plan';
           planLabel.style.marginBottom = '';
         }
@@ -1082,7 +1082,7 @@
     /* ──────────────────────────────────────────────────────────────
        APPROVAL CARD — button wiring
        ────────────────────────────────────────────────────────────── */
-    (function() {
+    (() => {
       var approveBtn = $('.btn-approve');
       var rejectBtn = $('.btn-reject');
       var approvalCard = $('.card-approval');
@@ -1105,8 +1105,8 @@
         if (labelEl) labelEl.textContent = badge;
       }
 
-      approveBtn.addEventListener('click', function() { handleDecision('approved'); });
-      rejectBtn.addEventListener('click', function() { handleDecision('rejected'); });
+      approveBtn.addEventListener('click', () => { handleDecision('approved'); });
+      rejectBtn.addEventListener('click', () => { handleDecision('rejected'); });
     })();
 
     /* ──────────────────────────────────────────────────────────────
@@ -1166,7 +1166,7 @@
       canvas.appendChild(think);
       scrollBottom(true);
 
-      setTimeout(function() {
+      setTimeout(() => {
         think.remove();
 
         var assistantMsg = createEl('div', 'msg msg-assistant');
@@ -1178,11 +1178,11 @@
         function streamChar() {
           if (i >= fullText.length) {
             /* remove cursor, then add structured cards */
-            assistantMsg.innerHTML = '<p>' + escapeHTML(fullText) + '</p>';
+            assistantMsg.innerHTML = `<p>${escapeHTML(fullText)}</p>`;
             addStructuredCards(0);
             return;
           }
-          assistantMsg.innerHTML = '<p>' + escapeHTML(fullText.slice(0, i + 1)) + '<span class="stream-cursor"></span></p>';
+          assistantMsg.innerHTML = `<p>${escapeHTML(fullText.slice(0, i + 1))}<span class="stream-cursor"></span></p>`;
           i++;
           scrollBottom(true);
           setTimeout(streamChar, 18 + Math.random() * 10);
@@ -1194,7 +1194,7 @@
     function addStructuredCards(idx) {
       if (idx >= DEMO_CARDS.length) return;
       var c = DEMO_CARDS[idx];
-      var el = createEl('div', 'card-msg ' + c.cls, c.html);
+      var el = createEl('div', `card-msg ${c.cls}`, c.html);
       canvas.appendChild(el);
       scrollBottom(true);
 
@@ -1216,8 +1216,8 @@
                 el.style.borderLeftColor = 'var(--danger)';
               }
             }
-            appBtn.addEventListener('click', function() { decide('approved'); });
-            rejBtn.addEventListener('click', function() { decide('rejected'); });
+            appBtn.addEventListener('click', () => { decide('approved'); });
+            rejBtn.addEventListener('click', () => { decide('rejected'); });
           }
         }
 
@@ -1229,17 +1229,17 @@
             pl.style.cursor = 'pointer';
             pl.style.userSelect = 'none';
             var nat = ps.scrollHeight;
-            ps.style.maxHeight = nat + 'px';
+            ps.style.maxHeight = `${nat}px`;
             var collapsed = false;
-            pl.addEventListener('click', function() {
+            pl.addEventListener('click', () => {
               collapsed = !collapsed;
               if (collapsed) {
                 ps.classList.add('collapsed');
-                pl.textContent = '▸ Plan (' + $$('li', ps).length + ' steps)';
+                pl.textContent = `▸ Plan (${$$('li', ps).length} steps)`;
                 pl.style.marginBottom = '0';
               } else {
                 ps.classList.remove('collapsed');
-                ps.style.maxHeight = nat + 'px';
+                ps.style.maxHeight = `${nat}px`;
                 pl.textContent = 'Plan';
                 pl.style.marginBottom = '';
               }
@@ -1248,7 +1248,7 @@
         }
       }
 
-      setTimeout(function() {
+      setTimeout(() => {
         wireCard();
         addStructuredCards(idx + 1);
       }, 300);
@@ -1263,7 +1263,7 @@
 
       /* press feedback */
       sendBtn.style.transform = 'scale(0.9)';
-      setTimeout(function() { sendBtn.style.transform = ''; }, 120);
+      setTimeout(() => { sendBtn.style.transform = ''; }, 120);
 
       /* user bubble */
       var userBubble = createEl('div', 'msg msg-user', escapeHTML(text));
@@ -1274,13 +1274,13 @@
 
       /* debounce */
       sendBtn.disabled = true;
-      setTimeout(function() { sendBtn.disabled = false; }, 2000);
+      setTimeout(() => { sendBtn.disabled = false; }, 2000);
 
       simulateAgentResponse();
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
@@ -1290,9 +1290,9 @@
     /* ──────────────────────────────────────────────────────────────
        TAB BAR SWITCHING
        ────────────────────────────────────────────────────────────── */
-    $$('.tab-item').forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        $$('.tab-item').forEach(function(t) { t.classList.remove('active'); t.removeAttribute('aria-current'); });
+    $$('.tab-item').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        $$('.tab-item').forEach((t) => { t.classList.remove('active'); t.removeAttribute('aria-current'); });
         tab.classList.add('active');
         tab.setAttribute('aria-current', 'page');
       });
@@ -1303,9 +1303,9 @@
        ────────────────────────────────────────────────────────────── */
     var micBtn = $('#micBtn');
     if (micBtn) {
-      micBtn.addEventListener('click', function() {
+      micBtn.addEventListener('click', () => {
         micBtn.style.color = 'var(--accent)';
-        setTimeout(function() { micBtn.style.color = ''; }, 600);
+        setTimeout(() => { micBtn.style.color = ''; }, 600);
       });
     }
 

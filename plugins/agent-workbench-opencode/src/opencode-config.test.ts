@@ -1,16 +1,16 @@
 // @ts-nocheck
-import { describe, it, expect } from "bun:test";
-import { join } from "node:path";
+import { describe, expect, it } from "bun:test";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 // We test the config parser directly
-import { readOpenCodeConfig, opencodeAvailable } from "./opencode-config";
+import { opencodeAvailable, readOpenCodeConfig } from "./opencode-config";
 
-function withTempDir(fn: (dir: string) => void) {
+function _withTempDir(fn: (dir: string) => void) {
   const dir = mkdtempSync(join(tmpdir(), "opencode-test-"));
-  const configDir = join(dir, ".config", "opencode");
-  const authDir = join(dir, ".local", "share", "opencode");
-  const oldHome = process.env.HOME;
+  const _configDir = join(dir, ".config", "opencode");
+  const _authDir = join(dir, ".local", "share", "opencode");
+  const _oldHome = process.env.HOME;
   try {
     // We can't easily override the homedir, so we test the parser function directly
     fn(dir);

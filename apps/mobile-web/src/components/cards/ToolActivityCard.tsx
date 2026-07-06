@@ -9,7 +9,8 @@ interface ToolActivityCardProps {
 export function ToolActivityCard(props: ToolActivityCardProps): JSX.Element {
   const icon = () => {
     if (props.data.status === "completed") return "✓";
-    if (props.data.status === "failed" || props.data.status === "aborted") return "✗";
+    if (props.data.status === "failed" || props.data.status === "aborted")
+      return "✗";
     if (props.data.status === "in_progress") return "◌";
     return "·";
   };
@@ -32,7 +33,17 @@ export function ToolActivityCard(props: ToolActivityCardProps): JSX.Element {
 
       <div
         class="flex items-center gap-2 py-1 text-xs font-mono border-b"
-        style={"color: " + (props.data.status === "completed" ? "var(--success)" : props.data.status === "failed" || props.data.status === "aborted" ? "var(--danger)" : props.data.status === "in_progress" ? "var(--accent)" : "var(--muted)") + "; border-bottom-color: var(--border-soft);"}
+        style={
+          "color: " +
+          (props.data.status === "completed"
+            ? "var(--success)"
+            : props.data.status === "failed" || props.data.status === "aborted"
+              ? "var(--danger)"
+              : props.data.status === "in_progress"
+                ? "var(--accent)"
+                : "var(--muted)") +
+          "; border-bottom-color: var(--border-soft);"
+        }
       >
         <span class="font-semibold">{icon()}</span>
         <span>{props.data.toolName}</span>

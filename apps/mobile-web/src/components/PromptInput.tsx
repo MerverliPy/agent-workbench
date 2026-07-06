@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { createSignal, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import { getClient } from "../lib/sdk";
 import {
   appendMessage,
@@ -170,7 +170,13 @@ export function PromptInput(): JSX.Element {
         {/* Send button */}
         <button
           class="flex items-center justify-center w-11 h-11 rounded-full shrink-0 transition-all"
-          style={"background: " + (hasText() && !submitting() ? "var(--accent)" : "color-mix(in oklch, var(--accent) 30%, var(--border))") + "; color: var(--surface);"}
+          style={
+            "background: " +
+            (hasText() && !submitting()
+              ? "var(--accent)"
+              : "color-mix(in oklch, var(--accent) 30%, var(--border))") +
+            "; color: var(--surface);"
+          }
           onClick={submit}
           disabled={!hasText() || submitting()}
           aria-label="Send message"

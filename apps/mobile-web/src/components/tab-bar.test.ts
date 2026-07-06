@@ -1,15 +1,36 @@
 // @ts-nocheck
-import { describe, it, expect } from "bun:test";
-import { readFileSync } from "fs";
-import path from "path";
+import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
-const TABBAR = readFileSync(path.resolve(import.meta.dirname, "../components/TabBar.tsx"), "utf-8");
-const WORKSPACES = readFileSync(path.resolve(import.meta.dirname, "../components/WorkspacesView.tsx"), "utf-8");
-const PANEL_CONTAINER = readFileSync(path.resolve(import.meta.dirname, "../components/panels/PanelContainer.tsx"), "utf-8");
-const APP = readFileSync(path.resolve(import.meta.dirname, "../App.tsx"), "utf-8");
-const STATE = readFileSync(path.resolve(import.meta.dirname, "../state/app.ts"), "utf-8");
-const NAV_DRAWER = readFileSync(path.resolve(import.meta.dirname, "../components/NavDrawer.tsx"), "utf-8");
-const CSS = readFileSync(path.resolve(import.meta.dirname, "../styles/index.css"), "utf-8");
+const TABBAR = readFileSync(
+  path.resolve(import.meta.dirname, "../components/TabBar.tsx"),
+  "utf-8",
+);
+const WORKSPACES = readFileSync(
+  path.resolve(import.meta.dirname, "../components/WorkspacesView.tsx"),
+  "utf-8",
+);
+const PANEL_CONTAINER = readFileSync(
+  path.resolve(import.meta.dirname, "../components/panels/PanelContainer.tsx"),
+  "utf-8",
+);
+const APP = readFileSync(
+  path.resolve(import.meta.dirname, "../App.tsx"),
+  "utf-8",
+);
+const STATE = readFileSync(
+  path.resolve(import.meta.dirname, "../state/app.ts"),
+  "utf-8",
+);
+const NAV_DRAWER = readFileSync(
+  path.resolve(import.meta.dirname, "../components/NavDrawer.tsx"),
+  "utf-8",
+);
+const CSS = readFileSync(
+  path.resolve(import.meta.dirname, "../styles/index.css"),
+  "utf-8",
+);
 
 describe("Phase 8 — Tab Bar + Workspaces", () => {
   describe("State layer", () => {
@@ -30,7 +51,7 @@ describe("Phase 8 — Tab Bar + Workspaces", () => {
     });
 
     it("activePanel defaults to chat", () => {
-      expect(STATE).toContain('activePanel, setActivePanel');
+      expect(STATE).toContain("activePanel, setActivePanel");
       expect(STATE).toContain('"chat"');
     });
 

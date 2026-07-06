@@ -121,11 +121,7 @@ function EmptyState(): JSX.Element {
 
   return (
     <div class="flex flex-col items-center justify-center h-full px-7 py-10 text-center">
-      <div
-        class="text-[44px] mb-1"
-        style="opacity: 0.25;"
-        aria-hidden="true"
-      >
+      <div class="text-[44px] mb-1" style="opacity: 0.25;" aria-hidden="true">
         💬
       </div>
       <h2
@@ -142,10 +138,7 @@ function EmptyState(): JSX.Element {
       </p>
 
       <div class="w-full max-w-[240px] mt-4 space-y-2">
-        <span
-          class="text-xs block text-center"
-          style="color: var(--muted);"
-        >
+        <span class="text-xs block text-center" style="color: var(--muted);">
           Try asking:
         </span>
         {SUGGESTED_PROMPTS.map((prompt) => (
@@ -155,10 +148,7 @@ function EmptyState(): JSX.Element {
             onClick={() => fillPrompt(prompt)}
           >
             {prompt}
-            <span
-              class="block text-xs mt-0.5"
-              style="color: var(--muted);"
-            >
+            <span class="block text-xs mt-0.5" style="color: var(--muted);">
               {prompt === "What can you help me with?"
                 ? "Learn about your capabilities"
                 : prompt === "Show me the project structure"
@@ -171,10 +161,7 @@ function EmptyState(): JSX.Element {
         ))}
       </div>
 
-      <p
-        class="text-xs mt-6"
-        style="color: var(--muted);"
-      >
+      <p class="text-xs mt-6" style="color: var(--muted);">
         Connected via the agent-workbench server
       </p>
     </div>

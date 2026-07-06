@@ -7,7 +7,7 @@
  * and verifies algorithm compliance.
  */
 
-import { createHash, randomBytes, getCiphers, getHashes } from "node:crypto";
+import { createHash, getCiphers, getHashes, randomBytes } from "node:crypto";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,12 +33,7 @@ export type FipsCheckResult =
 
 // ── FIPS-approved hash algorithms ──────────────────────────────────────────
 
-const FIPS_HASHES = new Set([
-  "sha256",
-  "sha384",
-  "sha512",
-  "sha512-256",
-]);
+const FIPS_HASHES = new Set(["sha256", "sha384", "sha512", "sha512-256"]);
 
 const FIPS_CIPHERS = new Set([
   "aes-128-cbc",
@@ -65,7 +60,7 @@ export function isFipsApproved(algorithm: string): boolean {
   const normalized = algorithm.toLowerCase().replace(/[-_]/g, "");
   const check = (set: Set<string>): boolean => {
     for (const item of set) {
-      if (item.replace(/[-_\/]/g, "") === normalized) return true;
+      if (item.replace(/[-_/]/g, "") === normalized) return true;
     }
     return false;
   };
@@ -87,17 +82,20 @@ const KAT_VECTORS: KatVector[] = [
   {
     algorithm: "sha256",
     input: "abc",
-    expected: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    expected:
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
   },
   {
     algorithm: "sha384",
     input: "abc",
-    expected: "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
+    expected:
+      "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
   },
   {
     algorithm: "sha512",
     input: "abc",
-    expected: "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+    expected:
+      "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
   },
 ];
 
@@ -151,7 +149,8 @@ export function secureRandomHex(byteLength: number): string {
  * (base62: 0-9, a-z, A-Z).
  */
 export function secureRandomString(length: number): string {
-  const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const chars =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const bytes = randomBytes(length);
   let result = "";
   for (let i = 0; i < length; i++) {

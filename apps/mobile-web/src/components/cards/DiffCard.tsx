@@ -6,9 +6,19 @@ interface DiffCardProps {
   data: DiffCardData;
 }
 
-function tagStyle(type: "modified" | "added" | "removed"): { label: string; bg: string; color: string } {
-  if (type === "modified") return { label: "Modified", bg: "var(--warn-dim)", color: "var(--warn)" };
-  if (type === "added") return { label: "Added", bg: "var(--success-soft)", color: "var(--success)" };
+function tagStyle(type: "modified" | "added" | "removed"): {
+  label: string;
+  bg: string;
+  color: string;
+} {
+  if (type === "modified")
+    return { label: "Modified", bg: "var(--warn-dim)", color: "var(--warn)" };
+  if (type === "added")
+    return {
+      label: "Added",
+      bg: "var(--success-soft)",
+      color: "var(--success)",
+    };
   return { label: "Removed", bg: "var(--danger-soft)", color: "var(--danger)" };
 }
 
@@ -37,16 +47,20 @@ export function DiffCard(props: DiffCardProps): JSX.Element {
               <div class="flex items-center gap-2 mb-1.5">
                 <span
                   class="inline-block px-[7px] py-[1px] rounded text-[10px] font-semibold uppercase tracking-[0.04em]"
-                  style={"background: " + tag.bg + "; color: " + tag.color + ";"}
+                  style={`background: ${tag.bg}; color: ${tag.color};`}
                 >
                   {tag.label}
                 </span>
-                <span class="text-xs font-mono truncate" style="color: var(--fg);">
+                <span
+                  class="text-xs font-mono truncate"
+                  style="color: var(--fg);"
+                >
                   {file.path}
                 </span>
               </div>
               <Show when={file.diff}>
-                <pre class="text-xs font-mono leading-relaxed px-3 py-2.5 rounded-lg overflow-x-auto whitespace-pre"
+                <pre
+                  class="text-xs font-mono leading-relaxed px-3 py-2.5 rounded-lg overflow-x-auto whitespace-pre"
                   style="background: var(--code-bg); color: var(--code-fg);"
                 >
                   {file.diff}
@@ -58,7 +72,9 @@ export function DiffCard(props: DiffCardProps): JSX.Element {
       </For>
 
       <Show when={props.data.files.length === 0}>
-        <div class="text-xs" style="color: var(--muted);">No file changes</div>
+        <div class="text-xs" style="color: var(--muted);">
+          No file changes
+        </div>
       </Show>
     </div>
   );

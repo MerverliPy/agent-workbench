@@ -59,9 +59,7 @@ export function applyRetention(
  * Merge two arrays of audit entries, deduplicating by `id`.
  * Useful for restoring from multiple snapshots.
  */
-export function mergeEntries(
-  ...batches: AuditEntry[][]
-): AuditEntry[] {
+export function mergeEntries(...batches: AuditEntry[][]): AuditEntry[] {
   const seen = new Set<string>();
   const result: AuditEntry[] = [];
 
@@ -75,9 +73,7 @@ export function mergeEntries(
   }
 
   // Sort by timestamp for chain integrity
-  result.sort(
-    (a, b) => a.timestamp.localeCompare(b.timestamp),
-  );
+  result.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   return result;
 }

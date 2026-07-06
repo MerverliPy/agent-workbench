@@ -12,9 +12,7 @@ export function PlanCard(props: PlanCardProps): JSX.Element {
   const label = () => {
     if (props.data.status === "approved") return "✓ Approved";
     if (props.data.status === "denied") return "✗ Denied";
-    return collapsed()
-      ? `▸ Plan (${props.data.steps.length} steps)`
-      : "Plan";
+    return collapsed() ? `▸ Plan (${props.data.steps.length} steps)` : "Plan";
   };
 
   return (

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { Hono } from "hono";
-import { ssoMiddleware } from "./sso-middleware";
 import type { SsoConfig } from "./sso-middleware";
+import { ssoMiddleware } from "./sso-middleware";
 
 // A minimal test config — points to a non-existent issuer so the login
 // endpoint will error, but we can verify routing and structure.
@@ -15,10 +15,7 @@ const TEST_CONFIG: SsoConfig = {
 
 function createSsoApp(config?: Partial<SsoConfig>) {
   const app = new Hono();
-  app.use(
-    "/auth/sso/*",
-    ssoMiddleware({ ...TEST_CONFIG, ...config }),
-  );
+  app.use("/auth/sso/*", ssoMiddleware({ ...TEST_CONFIG, ...config }));
   return app;
 }
 
@@ -43,7 +40,9 @@ describe("SSO middleware", () => {
 
     it("responds on /auth/sso/callback with error if state is invalid", async () => {
       const app = createSsoApp();
-      const res = await app.request("/auth/sso/callback?code=abc&state=invalid");
+      const res = await app.request(
+        "/auth/sso/callback?code=abc&state=invalid",
+      );
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.error).toBe("invalid_state");
@@ -77,12 +76,16 @@ describe("OIDC discovery URL construction", () => {
   it("constructs the well-known URL from the issuer", () => {
     const issuer = "https://accounts.google.com";
     const wellKnown = `${issuer.replace(/\/+$/, "")}/.well-known/openid-configuration`;
-    expect(wellKnown).toBe("https://accounts.google.com/.well-known/openid-configuration");
+    expect(wellKnown).toBe(
+      "https://accounts.google.com/.well-known/openid-configuration",
+    );
   });
 
   it("strips trailing slash from issuer", () => {
     const issuer = "https://dev-123.okta.com/";
     const wellKnown = `${issuer.replace(/\/+$/, "")}/.well-known/openid-configuration`;
-    expect(wellKnown).toBe("https://dev-123.okta.com/.well-known/openid-configuration");
+    expect(wellKnown).toBe(
+      "https://dev-123.okta.com/.well-known/openid-configuration",
+    );
   });
 });

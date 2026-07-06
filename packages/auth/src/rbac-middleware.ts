@@ -19,10 +19,10 @@
 
 import type { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { hasScope } from "./scopes";
-import { hasRole } from "./roles";
-import type { Role } from "./roles";
 import type { AuthContext } from "./auth-middleware";
+import type { Role } from "./roles";
+import { hasRole } from "./roles";
+import { hasScope } from "./scopes";
 
 /**
  * Require a specific role to access the route.

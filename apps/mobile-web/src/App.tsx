@@ -11,8 +11,8 @@ import { NavDrawer } from "./components/NavDrawer";
 import { OfflineBanner } from "./components/OfflineBanner";
 import { PermissionPrompt } from "./components/PermissionPrompt";
 import { PanelContainer } from "./components/panels/PanelContainer";
-import { TopBar } from "./components/TopBar";
 import { TabBar } from "./components/TabBar";
+import { TopBar } from "./components/TopBar";
 import { categorizeEvent, getCategoryIcon } from "./lib/events";
 import { reconnectClient } from "./lib/sdk";
 import { getSettings } from "./lib/settings";
@@ -184,7 +184,8 @@ export function App(): JSX.Element {
     // ── Plan events → PlanCard + SummaryCard ──
     if (type === "plan.proposed") {
       const planPayload = p.plan as Record<string, unknown> | undefined;
-      const steps = (planPayload?.steps as Array<Record<string, unknown>>) ?? [];
+      const steps =
+        (planPayload?.steps as Array<Record<string, unknown>>) ?? [];
       const planId = (planPayload?.id as string) ?? event.id;
       appendCard("plan", planId, "planId", {
         planId,
@@ -263,7 +264,8 @@ export function App(): JSX.Element {
     // ── Tool events → ToolActivityCard ──
     if (type === "tool.requested") {
       const toolCallId = (p.toolCallId as string) ?? event.id;
-      const toolName = (p.toolName as string) ?? (p.name as string) ?? "unknown";
+      const toolName =
+        (p.toolName as string) ?? (p.name as string) ?? "unknown";
       appendCard("tool", toolCallId, "toolCallId", {
         toolCallId,
         toolName,
@@ -275,7 +277,8 @@ export function App(): JSX.Element {
     if (type === "tool.started") {
       const toolCallId = (p.toolCallId as string) ?? "";
       updateCardData(toolCallId, (data) => {
-        if ("status" in data) (data as { status: string }).status = "in_progress";
+        if ("status" in data)
+          (data as { status: string }).status = "in_progress";
       });
       return;
     }
@@ -293,7 +296,8 @@ export function App(): JSX.Element {
 
     if (type === "tool.failed") {
       const toolCallId = (p.toolCallId as string) ?? "";
-      const error = (p.error as string) ?? (p.message as string) ?? "Tool failed";
+      const error =
+        (p.error as string) ?? (p.message as string) ?? "Tool failed";
       updateCardData(toolCallId, (data) => {
         const d = data as { status: string; error?: string };
         d.status = "failed";
@@ -313,7 +317,8 @@ export function App(): JSX.Element {
     // ── Shell events → TerminalCard ──
     if (type === "shell.command_started") {
       const sessionId = (p.sessionId as string) ?? (p.id as string) ?? event.id;
-      const command = (p.command as string) ?? (p.normalized as string) ?? "unknown";
+      const command =
+        (p.command as string) ?? (p.normalized as string) ?? "unknown";
       appendCard("terminal", sessionId, "sessionId", {
         sessionId,
         command,
@@ -325,7 +330,8 @@ export function App(): JSX.Element {
 
     if (type === "shell.output_chunk") {
       const sessionId = (p.sessionId as string) ?? "";
-      const chunk = (p.chunk as string) ?? (p.data as string) ?? (p.output as string) ?? "";
+      const chunk =
+        (p.chunk as string) ?? (p.data as string) ?? (p.output as string) ?? "";
       if (sessionId && chunk) {
         updateCardData(sessionId, (data) => {
           const d = data as { output: string };
@@ -379,13 +385,23 @@ export function App(): JSX.Element {
     // ── Diff/File events → DiffCard ──
     if (type === "diff.preview_created") {
       const diffPayload = p.diff as Record<string, unknown> | undefined;
-      const files = (diffPayload?.files as Array<Record<string, unknown>>) ?? (p.files as Array<Record<string, unknown>>) ?? [];
+      const files =
+        (diffPayload?.files as Array<Record<string, unknown>>) ??
+        (p.files as Array<Record<string, unknown>>) ??
+        [];
       const diffId = (diffPayload?.id as string) ?? event.id;
       appendCard("diff", diffId, null, {
         files: files.map((f) => {
-          const entry: { path: string; type: "modified" | "added" | "removed"; diff?: string } = {
+          const entry: {
+            path: string;
+            type: "modified" | "added" | "removed";
+            diff?: string;
+          } = {
             path: (f.path as string) ?? (f.file as string) ?? "",
-            type: ((f.type as string) ?? "modified") as "modified" | "added" | "removed",
+            type: ((f.type as string) ?? "modified") as
+              | "modified"
+              | "added"
+              | "removed",
           };
           const diff = f.diff as string | undefined;
           if (diff) entry.diff = diff;
@@ -439,7 +455,8 @@ export function App(): JSX.Element {
       if (requestId) {
         decrementPendingApprovals();
         updateCardData(requestId, (data) => {
-          if ("status" in data) (data as { status: string }).status = "approved";
+          if ("status" in data)
+            (data as { status: string }).status = "approved";
         });
       }
       return;

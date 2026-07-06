@@ -9,7 +9,9 @@ interface TerminalCardProps {
 export function TerminalCard(props: TerminalCardProps): JSX.Element {
   const exitDisplay = () => {
     if (props.data.exitCode === undefined) return "";
-    return props.data.exitCode === 0 ? "exit code: 0" : "exit code: " + props.data.exitCode;
+    return props.data.exitCode === 0
+      ? "exit code: 0"
+      : `exit code: ${props.data.exitCode}`;
   };
 
   return (
@@ -22,7 +24,11 @@ export function TerminalCard(props: TerminalCardProps): JSX.Element {
         class="flex items-center gap-2 px-3.5 py-2 text-xs font-mono border-b"
         style="color: oklch(70% 0.01 250); border-bottom-color: oklch(35% 0.015 250);"
       >
-        <span class="text-[6px] tracking-[3px]" style="color: oklch(45% 0.01 250);" aria-hidden="true">
+        <span
+          class="text-[6px] tracking-[3px]"
+          style="color: oklch(45% 0.01 250);"
+          aria-hidden="true"
+        >
           ⬤ ⬤ ⬤
         </span>
         <span style="color: oklch(70% 0.01 250);">Terminal Output</span>

@@ -12,9 +12,9 @@
  */
 
 import { createVerify, randomUUID } from "node:crypto";
+import { SessionToken } from "@agent-workbench/auth";
 import type { Context, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { SessionToken } from "@agent-workbench/auth";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -88,7 +88,10 @@ const JWKS_CACHE_TTL_MS = 3600_000; // 1 hour
 
 // ── Discovery cache ────────────────────────────────────────────────────────
 
-const discoveryCache = new Map<string, { data: OidcDiscovery; fetchedAt: number }>();
+const discoveryCache = new Map<
+  string,
+  { data: OidcDiscovery; fetchedAt: number }
+>();
 const DISCOVERY_CACHE_TTL_MS = 3600_000; // 1 hour
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -102,7 +105,9 @@ async function fetchDiscovery(issuer: string): Promise<OidcDiscovery> {
   const wellKnown = `${issuer.replace(/\/+$/, "")}/.well-known/openid-configuration`;
   const response = await fetch(wellKnown);
   if (!response.ok) {
-    throw new Error(`OIDC discovery failed: ${response.status} from ${wellKnown}`);
+    throw new Error(
+      `OIDC discovery failed: ${response.status} from ${wellKnown}`,
+    );
   }
   const data = (await response.json()) as OidcDiscovery;
 
@@ -142,7 +147,11 @@ async function verifyIdToken(
     throw new Error("ID token must have 3 JWT segments");
   }
 
-  const [headerB64, payloadB64, signatureB64] = parts as [string, string, string];
+  const [headerB64, payloadB64, signatureB64] = parts as [
+    string,
+    string,
+    string,
+  ];
 
   // Decode header to find the key ID
   let header: Record<string, unknown>;
@@ -169,11 +178,7 @@ async function verifyIdToken(
   const data = `${headerB64}.${payloadB64}`;
 
   const algorithm =
-    alg === "RS384"
-      ? "sha384"
-      : alg === "RS512"
-        ? "sha512"
-        : "sha256";
+    alg === "RS384" ? "sha384" : alg === "RS512" ? "sha512" : "sha256";
 
   const verifier = createVerify(algorithm);
   verifier.update(data);
@@ -187,24 +192,32 @@ async function verifyIdToken(
   // Decode and validate payload claims
   let payload: Record<string, unknown>;
   try {
-    payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+    payload = JSON.parse(
+      Buffer.from(payloadB64, "base64url").toString("utf-8"),
+    );
   } catch {
     throw new Error("Invalid JWT payload");
   }
 
   // Validate iss
   if (payload.iss !== expectedIssuer) {
-    throw new Error(`ID token iss mismatch: expected ${expectedIssuer}, got ${payload.iss}`);
+    throw new Error(
+      `ID token iss mismatch: expected ${expectedIssuer}, got ${payload.iss}`,
+    );
   }
 
   // Validate aud
   const aud = payload.aud;
   if (Array.isArray(aud)) {
     if (!aud.includes(expectedAudience)) {
-      throw new Error(`ID token aud mismatch: expected ${expectedAudience} in [${aud.join(",")}]`);
+      throw new Error(
+        `ID token aud mismatch: expected ${expectedAudience} in [${aud.join(",")}]`,
+      );
     }
   } else if (aud !== expectedAudience) {
-    throw new Error(`ID token aud mismatch: expected ${expectedAudience}, got ${aud}`);
+    throw new Error(
+      `ID token aud mismatch: expected ${expectedAudience}, got ${aud}`,
+    );
   }
 
   // Validate exp
@@ -226,7 +239,9 @@ async function verifyIdToken(
  */
 function jwkToSpki(jwk: Jwk): string {
   if (jwk.kty !== "RSA") {
-    throw new Error(`Unsupported JWK key type: ${jwk.kty} (only RSA is supported)`);
+    throw new Error(
+      `Unsupported JWK key type: ${jwk.kty} (only RSA is supported)`,
+    );
   }
 
   const n = Buffer.from(jwk.n ?? "", "base64url");
@@ -234,22 +249,21 @@ function jwkToSpki(jwk: Jwk): string {
 
   // Build the SubjectPublicKeyInfo DER structure manually for RSA keys
   // This is an ASN.1 DER-encoded RSAPublicKey wrapped in SubjectPublicKeyInfo
-  const rsaPublicKey = derSequence(
-    derInteger(n),
-    derInteger(e),
-  );
+  const rsaPublicKey = derSequence(derInteger(n), derInteger(e));
 
   const algorithmIdentifier = derSequence(
     derOid("1.2.840.113549.1.1.1"), // rsaEncryption
     derNull(),
   );
 
-  const spki = derSequence(
-    algorithmIdentifier,
-    derBitString(rsaPublicKey),
-  );
+  const spki = derSequence(algorithmIdentifier, derBitString(rsaPublicKey));
 
-  return `-----BEGIN PUBLIC KEY-----\n${spki.toString("base64").match(/.{1,64}/g)?.join("\n") ?? spki.toString("base64")}\n-----END PUBLIC KEY-----`;
+  return `-----BEGIN PUBLIC KEY-----\n${
+    spki
+      .toString("base64")
+      .match(/.{1,64}/g)
+      ?.join("\n") ?? spki.toString("base64")
+  }\n-----END PUBLIC KEY-----`;
 }
 
 // ── ASN.1 DER encoding helpers ─────────────────────────────────────────────
@@ -332,7 +346,9 @@ function derBitString(content: Buffer): Buffer {
 export function ssoMiddleware(config: SsoConfig): MiddlewareHandler {
   const sessionToken = new SessionToken({
     secret: config.sessionSecret,
-    ...(config.sessionTtlMs !== undefined ? { ttlMs: config.sessionTtlMs } : {}),
+    ...(config.sessionTtlMs !== undefined
+      ? { ttlMs: config.sessionTtlMs }
+      : {}),
   });
 
   return createMiddleware(async (c: Context, next) => {
@@ -366,7 +382,9 @@ export function ssoMiddleware(config: SsoConfig): MiddlewareHandler {
           nonce,
         });
 
-        return c.redirect(`${discovery.authorization_endpoint}?${params.toString()}`);
+        return c.redirect(
+          `${discovery.authorization_endpoint}?${params.toString()}`,
+        );
       } catch (err) {
         const message = err instanceof Error ? err.message : "SSO login failed";
         return c.json({ error: "sso_error", message }, 502);
@@ -415,7 +433,10 @@ export function ssoMiddleware(config: SsoConfig): MiddlewareHandler {
 
         if (!tokenResponse.ok) {
           const body = await tokenResponse.text().catch(() => "unknown");
-          return c.json({ error: "token_exchange_failed", detail: body.slice(0, 200) }, 502);
+          return c.json(
+            { error: "token_exchange_failed", detail: body.slice(0, 200) },
+            502,
+          );
         }
 
         const tokens = (await tokenResponse.json()) as TokenResponse;
@@ -435,22 +456,30 @@ export function ssoMiddleware(config: SsoConfig): MiddlewareHandler {
             pending.nonce,
           );
         } catch (verifyErr) {
-          return c.json({
-            error: "id_token_invalid",
-            message: verifyErr instanceof Error ? verifyErr.message : "Verification failed",
-          }, 401);
+          return c.json(
+            {
+              error: "id_token_invalid",
+              message:
+                verifyErr instanceof Error
+                  ? verifyErr.message
+                  : "Verification failed",
+            },
+            401,
+          );
         }
 
         // Extract user info from claims
         const subject = (claims.sub as string) ?? "unknown";
-        const email = (claims.email as string) ?? (claims.preferred_username as string) ?? subject;
+        const email =
+          (claims.email as string) ??
+          (claims.preferred_username as string) ??
+          subject;
         const name = (claims.name as string) ?? email;
 
         // Issue a local session token
-        const { token, expiresAt } = sessionToken.generate(
-          `sso:${subject}`,
-          ["*"],
-        );
+        const { token, expiresAt } = sessionToken.generate(`sso:${subject}`, [
+          "*",
+        ]);
 
         // Set session cookie
         c.header(
@@ -465,7 +494,8 @@ export function ssoMiddleware(config: SsoConfig): MiddlewareHandler {
           expiresAt,
         });
       } catch (err) {
-        const message = err instanceof Error ? err.message : "SSO callback failed";
+        const message =
+          err instanceof Error ? err.message : "SSO callback failed";
         return c.json({ error: "sso_error", message }, 502);
       }
     }

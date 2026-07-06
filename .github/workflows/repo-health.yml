@@ -27,7 +27,7 @@ jobs:
         if: hashFiles('bun.lock') != ''
         run: |
           bun install --frozen-lockfile
-          bun run typecheck --if-present
+          bun run --if-present typecheck
           bun test --if-present
           bun run build --if-present
 
