@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@agent-workbench/cache": "*",
+    "@agent-workbench/compliance": "*",
     "@agent-workbench/core": "*",
     "@agent-workbench/events": "*",
     "@agent-workbench/models": "*",

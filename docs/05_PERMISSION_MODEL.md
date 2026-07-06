@@ -1,8 +1,6 @@
-# 05 — Permission Model
+# Permission Model
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready permission model  
-Scope: safety posture, decisions, policies, risk classes, approval flow
+agent-workbench enforces a layered permission model that puts you in control of every risky operation. This document describes the permission decisions, policies, and approval flow.
 
 ## 1. Purpose
 

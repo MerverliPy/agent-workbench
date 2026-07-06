@@ -26,14 +26,13 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-          no-cache: false
       - run: bun install --frozen-lockfile
       - name: Run test-health
         run: bash scripts/test-health.sh
       - name: Check whitespace
         run: git diff --check
       - name: Biome lint
-        run: bunx @biomejs/biome check . --skip=a11y --skip=style/noNonNullAssertion --skip=suspicious/noExplicitAny --skip=complexity/noBannedTypes --skip-parse-errors --no-errors-on-unmatched 2>&1
+        run: bunx @biomejs/biome check . --skip-parse-errors --no-errors-on-unmatched 2>&1
 
   typecheck:
     name: Typecheck all packages + apps
@@ -45,7 +44,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-          no-cache: false
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh
@@ -81,7 +79,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-          no-cache: false
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh
@@ -109,7 +106,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-          no-cache: false
       - run: bun install --frozen-lockfile
       - name: Build workspace packages
         run: bash scripts/build-all.sh

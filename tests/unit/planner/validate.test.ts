@@ -53,7 +53,7 @@ describe("validatePlan", () => {
 
   it("rejects invalid status", () => {
     const plan = makePlan({
-      status: "invalid" as any,
+      status: "invalid" as const,
       steps: [makeStep({ order: 1 })],
     });
     const result = validatePlan(plan);

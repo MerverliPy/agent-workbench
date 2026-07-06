@@ -33,9 +33,7 @@ export function registerGitRoutes(app: Hono<ServerAppBindings>) {
       // Parse branch info
       const aheadMatch = statusOutput.match(/ahead (\d+)/);
       const behindMatch = statusOutput.match(/behind (\d+)/);
-      // biome-ignore lint/style/noNonNullAssertion: guarded by ternary check above
       const ahead = aheadMatch ? parseInt(aheadMatch[1]!, 10) : 0;
-      // biome-ignore lint/style/noNonNullAssertion: guarded by ternary check above
       const behind = behindMatch ? parseInt(behindMatch[1]!, 10) : 0;
 
       // Parse file status

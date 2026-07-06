@@ -1,7 +1,6 @@
 # @agent-workbench/tui
 
-Status: Phase 4 — TUI Shell
-Implementation status: OpenTUI + SolidJS chat-first shell
+Terminal UI client. Owns rendering and user input only.
 
 ## Purpose
 

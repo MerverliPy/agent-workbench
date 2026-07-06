@@ -20,7 +20,10 @@
     "test:e2e": "cd tests && bun test e2e",
     "test:repeat": "bash scripts/test-repeat.sh",
     "test:health": "bash scripts/test-health.sh",
+    "typecheck": "bun run --filter='*' typecheck 2>&1",
     "coverage": "bun test --coverage",
+    "sbom": "bash scripts/sbom.sh",
+    "sbom:audit": "bash scripts/sbom.sh --audit",
     "prepare": "husky || true",
     "postinstall": "ln -sf ../../../packages/telemetry tests/node_modules/@agent-workbench/telemetry 2>/dev/null; ln -sf ../../../packages/plugin-sdk tests/node_modules/@agent-workbench/plugin-sdk 2>/dev/null; true"
   },

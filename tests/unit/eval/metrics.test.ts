@@ -6,10 +6,14 @@ import { describe, expect, it } from "bun:test";
 import { MetricsCollector } from "../metrics";
 
 // Mock repository for testing
-function createMockRepo(): any {
-  const store = new Map<string, any>();
+interface MockRepo {
+  upsertMetrics: (row: { runId: string; [key: string]: unknown }) => void;
+  findMetricsByRun: (runId: string) => object | null;
+}
+function createMockRepo(): MockRepo {
+  const store = new Map<string, object>();
   return {
-    upsertMetrics: (row: any) => store.set(row.runId, row),
+    upsertMetrics: (row) => store.set(row.runId, row),
     findMetricsByRun: (runId: string) => store.get(runId) ?? null,
   };
 }
@@ -17,19 +21,19 @@ function createMockRepo(): any {
 describe("MetricsCollector", () => {
   describe("computePercentiles", () => {
     it("returns zeros for empty array", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const result = collector.computePercentiles([]);
       expect(result).toEqual({ p50: 0, p95: 0, p99: 0 });
     });
 
     it("returns same value for single-element array", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const result = collector.computePercentiles([150]);
       expect(result).toEqual({ p50: 150, p95: 150, p99: 150 });
     });
 
     it("computes correct percentiles for range", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const latencies = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
       const result = collector.computePercentiles(latencies);
       expect(result.p50).toBeGreaterThanOrEqual(500);
@@ -41,14 +45,14 @@ describe("MetricsCollector", () => {
 
   describe("computeCostPerEval", () => {
     it("matches known models exactly", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       // GPT-4o: $0.0025/1K input, $0.01/1K output
       const cost = collector.computeCostPerEval("gpt-4o", 1000, 500);
       expect(cost).toBeCloseTo(0.0025 * 1 + 0.01 * 0.5, 6);
     });
 
     it("uses prefix matching for model variants", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const cost = collector.computeCostPerEval(
         "claude-sonnet-4-20250514",
         1000,
@@ -58,13 +62,13 @@ describe("MetricsCollector", () => {
     });
 
     it("defaults to GPT-4o pricing for unknown models", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const cost = collector.computeCostPerEval("unknown-model", 1000, 500);
       expect(cost).toBeCloseTo(0.0025 * 1 + 0.01 * 0.5, 6);
     });
 
     it("returns 0 for zero tokens", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const cost = collector.computeCostPerEval("gpt-4o", 0, 0);
       expect(cost).toBe(0);
     });
@@ -72,7 +76,7 @@ describe("MetricsCollector", () => {
 
   describe("record and get", () => {
     it("persists and retrieves metrics", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       const metrics = {
         accuracy: 0.85,
         totalItems: 100,
@@ -95,19 +99,19 @@ describe("MetricsCollector", () => {
     });
 
     it("returns undefined for nonexistent run", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       expect(collector.get("nonexistent")).toBeUndefined();
     });
   });
 
   describe("compare", () => {
     it("returns empty array for empty input", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       expect(collector.compare([])).toEqual([]);
     });
 
     it("compares multiple runs", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       collector.record("run-a", {
         accuracy: 0.9,
         totalItems: 100,
@@ -138,7 +142,7 @@ describe("MetricsCollector", () => {
     });
 
     it("skips missing runs", () => {
-      const collector = new MetricsCollector(createMockRepo() as any);
+      const collector = new MetricsCollector(createMockRepo());
       collector.record("run-a", {
         accuracy: 0.9,
         totalItems: 100,

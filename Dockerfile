@@ -4,22 +4,11 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY packages/ packages/
 COPY apps/server/ apps/server/
+COPY apps/cli/ apps/cli/
+COPY scripts/ scripts/
 COPY tsconfig.base.json ./
 RUN bun install --frozen-lockfile
-RUN cd packages/protocol && bun run build
-RUN cd packages/models && bun run build
-RUN cd packages/storage && bun run build
-RUN cd packages/tokens && bun run build
-RUN cd packages/diff && bun run build
-RUN cd packages/events && bun run build
-RUN cd packages/sdk && bun run build
-RUN cd packages/shell && bun run build
-RUN cd packages/permissions && bun run build
-RUN cd packages/cache && bun run build
-RUN cd packages/planner && bun run build
-RUN cd packages/tools && bun run build
-RUN cd packages/core && bun run build
-RUN cd apps/server && bun run build
+RUN bash scripts/build-all.sh
 
 FROM oven/bun:1.2-slim
 

@@ -41,6 +41,108 @@ updates:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
 
+  # Workspace packages with external dependencies
+  - package-ecosystem: "npm"
+    directory: "/tests"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    groups:
+      test-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "tests"
+
+  - package-ecosystem: "npm"
+    directory: "/apps/server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    groups:
+      server-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "server"
+
+  - package-ecosystem: "npm"
+    directory: "/apps/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    groups:
+      dashboard-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "dashboard"
+
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile-web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    groups:
+      mobile-web-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "mobile-web"
+
+  - package-ecosystem: "npm"
+    directory: "/apps/tui"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    groups:
+      tui-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "tui"
+
+  - package-ecosystem: "npm"
+    directories:
+      - "/packages/storage"
+      - "/packages/protocol"
+      - "/packages/sdk"
+      - "/packages/tools"
+      - "/packages/eval"
+      - "/packages/auth"
+      - "/packages/diff"
+      - "/packages/plugin-sdk"
+      - "/packages/collab"
+      - "/packages/core"
+      - "/packages/permissions"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:30"
+    groups:
+      packages-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "packages"
+
   - package-ecosystem: "pip"
     directory: "/"
     schedule:

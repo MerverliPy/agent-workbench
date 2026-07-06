@@ -55,6 +55,7 @@ export async function runPromptfooEval(
   const startTime = performance.now();
 
   // Build the promptfoo test suite from our options
+  // biome-ignore lint/suspicious/noExplicitAny: promptfoo test suite shape is complex
   const testSuite: any = {
     prompts: evalOptions.prompts.map((p, i) => ({
       raw: p,
@@ -147,6 +148,7 @@ export async function runPromptfooEval(
 }
 
 /** Extract scores, token usage, and per-item latencies from a promptfoo Eval result */
+// biome-ignore lint/suspicious/noExplicitAny: external promptfoo result type
 function extractPromptfooMetrics(evalResult: any): {
   scores: EvalResult["scores"];
   tokenUsage: Array<{ input: number; output: number }>;

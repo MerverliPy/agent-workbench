@@ -38,9 +38,13 @@ import type { EvalResult, EvalRunOptions } from "../runner";
 export async function runCustomEvalScript(
   options: EvalRunOptions,
   repo: {
+    // biome-ignore lint/complexity/noBannedTypes: integration glue, external API shapes
     createRun: Function;
+    // biome-ignore lint/complexity/noBannedTypes: integration glue, external API shapes
     createScores: Function;
+    // biome-ignore lint/complexity/noBannedTypes: integration glue, external API shapes
     upsertMetrics: Function;
+    // biome-ignore lint/complexity/noBannedTypes: integration glue, external API shapes
     updateRunStatus: Function;
   },
 ): Promise<EvalResult> {
@@ -117,6 +121,7 @@ export async function runCustomEvalScript(
     }
 
     // Parse output
+    // biome-ignore lint/suspicious/noExplicitAny: output shape from external script
     let output: any;
     try {
       output = JSON.parse(stdout.trim());
@@ -127,6 +132,7 @@ export async function runCustomEvalScript(
     }
 
     const scores: EvalResult["scores"] = (output.scores ?? []).map(
+      // biome-ignore lint/suspicious/noExplicitAny: scores from external script
       (s: any) => ({
         task: s.task ?? "unknown",
         score: typeof s.score === "number" ? s.score : 0,
@@ -146,7 +152,10 @@ export async function runCustomEvalScript(
     );
     const accuracy = totalItems > 0 ? itemsPassed / totalItems : 0;
 
-    const metrics = new MetricsCollector(repo as any);
+    const metrics = new MetricsCollector(
+      // biome-ignore lint/suspicious/noExplicitAny: partial repo subset for MetricsCollector
+      repo as any,
+    );
 
     const result: EvalResult = {
       id: runId,

@@ -20,27 +20,152 @@ export const [connectionError, setConnectionError] = createSignal<
 
 // ── Message state ──────────────────────────────────────────────────────────
 
+export type CardStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | "aborted"
+  | "approved"
+  | "denied"
+  | "expired";
+
+export interface PlanCardData {
+  planId: string;
+  steps: Array<{
+    number: number;
+    description: string;
+    status: CardStatus;
+  }>;
+  status: CardStatus;
+}
+
+export interface ToolActivityCardData {
+  toolCallId: string;
+  toolName: string;
+  status: CardStatus;
+  result?: string;
+  error?: string;
+}
+
+export interface DiffCardData {
+  files: Array<{
+    path: string;
+    type: "modified" | "added" | "removed";
+    diff?: string;
+  }>;
+  status: CardStatus;
+  error?: string;
+}
+
+export interface TerminalCardData {
+  sessionId: string;
+  command: string;
+  riskLevel?: string;
+  output: string;
+  exitCode?: number;
+  status: CardStatus;
+  error?: string;
+}
+
+export interface ApprovalCardData {
+  requestId: string;
+  toolName: string;
+  targetPaths?: string[];
+  riskLevel: "low" | "medium" | "high";
+  status: CardStatus;
+  sequenceNumber: number;
+  totalCount: number;
+}
+
+export interface SummaryCardData {
+  content: string;
+  items?: string[];
+}
+
+export type CardDataType =
+  | PlanCardData
+  | ToolActivityCardData
+  | DiffCardData
+  | TerminalCardData
+  | ApprovalCardData
+  | SummaryCardData;
+
+export type CardType =
+  | "plan"
+  | "tool"
+  | "diff"
+  | "terminal"
+  | "approval"
+  | "summary";
+
+export type CorrelationType =
+  | "toolCallId"
+  | "requestId"
+  | "sessionId"
+  | "planId"
+  | null;
+
 export interface DisplayMessage {
   readonly id: string;
   readonly role: "user" | "assistant" | "system";
   readonly content: string;
   readonly createdAt: string;
+  readonly cardType?: CardType;
+  readonly cardId?: string;
+  readonly correlationType?: CorrelationType;
+  readonly cardData?: CardDataType;
 }
 
 export const [messages, setMessages] = createSignal<DisplayMessage[]>([]);
 
 export function appendMessage(msg: DisplayMessage): void {
   setMessages((prev) => {
-    // Deduplicate: skip if message with same ID already exists
     if (prev.some((m) => m.id === msg.id)) return prev;
     return [...prev, msg];
+  });
+}
+
+export function appendCard(
+  cardType: CardType,
+  cardId: string,
+  correlationType: CorrelationType,
+  cardData: CardDataType,
+): void {
+  appendMessage({
+    id: `card-${cardType}-${cardId}-${Date.now()}`,
+    role: "assistant" as const,
+    content: "",
+    createdAt: new Date().toISOString(),
+    cardType,
+    cardId,
+    correlationType,
+    cardData,
+  });
+}
+
+/** Update a card's cardData in-place by matching cardId. */
+export function updateCardData(
+  cardId: string,
+  updater: (data: CardDataType) => void,
+): void {
+  setMessages((prev) => {
+    const m = prev.find((x) => x.cardId === cardId);
+    if (!m?.cardData) return prev;
+    const clone = JSON.parse(JSON.stringify(m.cardData)) as CardDataType;
+    updater(clone);
+    return prev.map((x) =>
+      x.cardId === cardId
+        ? ({ ...x, content: "", cardData: clone } as DisplayMessage)
+        : x,
+    );
   });
 }
 
 export function appendSystemNotice(text: string): void {
   appendMessage({
     id: `system-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    role: "system",
+    role: "system" as const,
     content: text,
     createdAt: new Date().toISOString(),
   });
@@ -53,6 +178,10 @@ export const [streamingMessageId, setStreamingMessageId] = createSignal<
   string | null
 >(null);
 export const [isStreaming, setIsStreaming] = createSignal<boolean>(false);
+
+// Thinking indicator (run.started / run.completed toggle)
+export const [thinkingIndicator, setThinkingIndicator] =
+  createSignal<boolean>(false);
 
 export function beginStreaming(id: string): void {
   setStreamingMessageId(id);
@@ -70,7 +199,7 @@ export function finalizeStreaming(): void {
   if (content && id) {
     appendMessage({
       id,
-      role: "assistant",
+      role: "assistant" as const,
       content,
       createdAt: new Date().toISOString(),
     });
@@ -93,6 +222,18 @@ export const [pendingPermissionRequest, setPendingPermissionRequest] =
 export const [permissionModalOpen, setPermissionModalOpen] =
   createSignal(false);
 
+// Pending approval count (for topbar badge)
+export const [pendingApprovalCount, setPendingApprovalCount] = createSignal(0);
+export const [fallbackMode, setFallbackMode] = createSignal(false);
+
+// Increment/decrement helpers for stacking
+export function incrementPendingApprovals(): void {
+  setPendingApprovalCount((c) => c + 1);
+}
+export function decrementPendingApprovals(): void {
+  setPendingApprovalCount((c) => Math.max(0, c - 1));
+}
+
 // ── Agent state ────────────────────────────────────────────────────────────
 
 export const [currentAgentId, setCurrentAgentId] =
@@ -105,14 +246,17 @@ export const [availableAgents, setAvailableAgents] = createSignal<
 
 export type PanelId =
   | "chat"
+  | "workspaces"
   | "files"
-  | "git"
-  | "sessions"
   | "activity"
   | "settings"
   | "help";
 
+export type WorkspaceSubTab = "files" | "git" | "sessions";
+
 export const [activePanel, setActivePanel] = createSignal<PanelId>("chat");
+export const [workspaceSubTab, setWorkspaceSubTab] =
+  createSignal<WorkspaceSubTab>("files");
 
 // ── Drawer state ───────────────────────────────────────────────────────────
 
@@ -144,7 +288,7 @@ export const [activityEntries, setActivityEntries] = createSignal<
 export function appendActivity(entry: ActivityEntry): void {
   setActivityEntries((prev) => {
     const next = [entry, ...prev];
-    return next.slice(0, 50); // keep last 50
+    return next.slice(0, 50);
   });
 }
 

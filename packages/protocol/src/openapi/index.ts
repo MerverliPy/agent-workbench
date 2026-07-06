@@ -138,7 +138,11 @@ function registerRoute(registry: OpenAPIRegistry, route: RouteContract) {
   registry.registerPath({
     method: openApiMethod(route.method),
     path,
-    request: Object.keys(request).length > 0 ? (request as any) : undefined,
+    request:
+      Object.keys(request).length > 0
+        ? // biome-ignore lint/suspicious/noExplicitAny: OpenAPI route config uses optional ?
+          (request as any)
+        : undefined,
     responses,
   });
 }

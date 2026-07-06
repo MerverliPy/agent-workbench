@@ -4,10 +4,12 @@ import { cors } from "hono/cors";
 import type { ServerConfig } from "./config";
 import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
+import { complianceHeaders } from "./middleware/compliance-headers";
 import { handleAppError } from "./middleware/error-handler";
 import { metricsMiddleware } from "./middleware/metrics-middleware";
 import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { requestIdMiddleware } from "./middleware/request-id";
+import { ssoMiddleware } from "./middleware/sso-middleware";
 import { tracingMiddleware } from "./middleware/tracing";
 import { registerAgentRoutes } from "./routes/agent-routes";
 import { registerAuthRoutes } from "./routes/auth-routes";
@@ -41,6 +43,7 @@ export function createApp(options: CreateAppOptions) {
   const { tracer, metricsExporter } = options.services;
 
   app.use("*", requestIdMiddleware);
+  app.use("*", complianceHeaders());
   app.use("*", rateLimitMiddleware());
   app.use("*", metricsMiddleware(metricsExporter));
   app.use("*", tracingMiddleware(tracer));
@@ -84,10 +87,38 @@ export function createApp(options: CreateAppOptions) {
           "/global/info",
           "/auth/token",
           "/auth/status",
+          "/auth/sso/login",
+          "/auth/sso/callback",
           "/metrics",
         ],
       }),
     );
+  }
+
+  // Phase 30: SSO middleware — conditionally enabled when env vars are set
+  const ssoIssuer = process.env.AGENT_WORKBENCH_SSO_ISSUER;
+  const ssoClientId = process.env.AGENT_WORKBENCH_SSO_CLIENT_ID;
+  const ssoClientSecret = process.env.AGENT_WORKBENCH_SSO_CLIENT_SECRET;
+  const ssoRedirectUri = process.env.AGENT_WORKBENCH_SSO_REDIRECT_URI;
+  const ssoSessionSecret = process.env.AGENT_WORKBENCH_AUTH_SECRET;
+  if (
+    ssoIssuer &&
+    ssoClientId &&
+    ssoClientSecret &&
+    ssoRedirectUri &&
+    ssoSessionSecret
+  ) {
+    app.use(
+      "/auth/sso/*",
+      ssoMiddleware({
+        issuer: ssoIssuer,
+        clientId: ssoClientId,
+        clientSecret: ssoClientSecret,
+        redirectUri: ssoRedirectUri,
+        sessionSecret: ssoSessionSecret,
+      }),
+    );
+    console.log(`[sso] OIDC SSO enabled — issuer: ${ssoIssuer}`);
   }
 
   registerAuthRoutes(app, { auth: options.services.auth });

@@ -12,6 +12,24 @@ coverage/
 # Docker
 .dockerignore
 
+# Git
+.git/
+.github/
+.gitignore
+
+# Docs — not needed at runtime
+docs/
+decisions/
+*.md
+
+# Tests — not needed at runtime
+tests/
+benchmarks/
+tools/
+.ai/
+.opencode/
+.husky/
+
 # Local environment
 .env
 .env.*
@@ -35,3 +53,18 @@ coverage/
 model-router-v3.3-repo-ready.zip
 tools/model-router-v3.3-repo-ready/archives/
 tools/model-router-v3.3-repo-ready/reports/
+
+# Git files
+.git/
+
+# Documentation and development artifacts  
+docs/
+tests/
+benchmarks/
+tools/
+decisions/
+*.md
+
+# Audit and analysis artifacts
+.ai/
+AUDIT_REPORT.md

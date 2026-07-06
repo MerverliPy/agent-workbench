@@ -1,7 +1,8 @@
+import DOMPurify from "dompurify";
 import { marked } from "marked";
 import type { JSX } from "solid-js";
+import { CardRegistry } from "./cards/CardRegistry";
 
-// Configure marked for safe rendering (no HTML in input)
 marked.setOptions({
   breaks: true,
   gfm: true,
@@ -13,12 +14,15 @@ interface MessageBubbleProps {
     role: "user" | "assistant" | "system";
     content: string;
     createdAt: string;
+    cardType?: string;
+    cardData?: unknown;
   };
 }
 
 function renderMarkdown(text: string): string {
   try {
-    return marked.parse(text) as string;
+    const raw = marked.parse(text) as string;
+    return DOMPurify.sanitize(raw);
   } catch {
     return escapeHtml(text);
   }
@@ -31,13 +35,44 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
+function formatTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
 export function MessageBubble(props: MessageBubbleProps): JSX.Element {
-  const { role, content, createdAt } = props.message;
+  const { role, content, createdAt, cardType, cardData } = props.message;
 
   if (role === "system") {
     return (
-      <div class="flex justify-center">
-        <span class="text-xs text-slate-500 italic px-3 py-1">{content}</span>
+      <div class="flex justify-center msg-in">
+        <span class="text-xs italic px-3 py-1" style="color: var(--muted);">
+          {content}
+        </span>
+      </div>
+    );
+  }
+
+  // Card type messages get rendered by CardRegistry
+  if (cardType && cardData) {
+    return (
+      <div class="msg-in">
+        <CardRegistry
+          cardType={
+            cardType as
+              | "plan"
+              | "tool"
+              | "diff"
+              | "terminal"
+              | "approval"
+              | "summary"
+          }
+          cardData={cardData}
+        />
       </div>
     );
   }
@@ -45,20 +80,23 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
   const isUser = role === "user";
 
   return (
-    <div class={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div class={`flex msg-in ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        class={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
+        class={
+          "max-w-[85%] rounded-2xl px-3.5 py-2.5 " +
+          (isUser ? "rounded-br-md" : "rounded-bl-md")
+        }
+        style={
           isUser
-            ? "bg-blue-600 text-white rounded-br-md"
-            : "bg-slate-800 text-slate-200 rounded-bl-md border border-slate-700/40"
-        }`}
+            ? "background: var(--fg); color: var(--surface);"
+            : "background: var(--surface); color: var(--fg); border: 1px solid var(--border);"
+        }
       >
         {isUser ? (
           <span class="text-sm whitespace-pre-wrap break-words">{content}</span>
         ) : (
           <div
             class="text-sm markdown-body"
-            // eslint-disable-next-line solid/no-innerhtml
             innerHTML={renderMarkdown(content)}
           />
         )}
@@ -68,14 +106,4 @@ export function MessageBubble(props: MessageBubbleProps): JSX.Element {
       </div>
     </div>
   );
-}
-
-/** Format ISO timestamp to short time string (e.g. "10:42 AM"). */
-function formatTime(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return "";
-  }
 }
