@@ -140,7 +140,8 @@ function registerRoute(registry: OpenAPIRegistry, route: RouteContract) {
     path,
     request:
       Object.keys(request).length > 0
-        ? (request as Record<string, unknown>)
+        ? // biome-ignore lint/suspicious/noExplicitAny: OpenAPI route config uses optional ?
+          (request as any)
         : undefined,
     responses,
   });
