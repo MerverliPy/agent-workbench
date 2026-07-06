@@ -42,3 +42,8 @@ tools/model-router-v3.3-repo-ready/archives/
 tools/model-router-v3.3-repo-ready/reports/
 redesign-prototype.html
 .hermes/
+
+# SBOM artifacts
+bom.json
+bom.csv
+audit-report.txt

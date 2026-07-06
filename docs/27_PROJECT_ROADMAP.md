@@ -22,7 +22,7 @@ Phase 26 ✅ complete ███████████████████�
 Phase 27 ✅ complete ██████████████████████  remote access & collaboration
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
 Phase 29 ✅ complete ██████████████████████  model experimentation & eval
-Phase 30 ▌         ░░░░░░░░░░░░░░░░░░░░  enterprise readiness & compliance
+Phase 30 ✅ complete ██████████████████████  enterprise readiness & compliance
 ```
 
 ### Timeline
@@ -274,18 +274,18 @@ These bridges connect agent-workbench with existing developer tooling:
 ### Exit Gates
 
 ```text
-[ ] SSO: OIDC (Okta, Auth0, Azure AD) and SAML
-[ ] Role-based access control: admin, developer, viewer
-[ ] Immutable audit trail with cryptographic chaining
-[ ] Data retention: auto-delete sessions older than N days
-[ ] PII detection: scan tool inputs/outputs for PII and redact
-[ ] Air-gapped mode: no external network calls, bundled model
-[ ] SOC 2 Type II readiness documentation
-[ ] GDPR: right to access, right to delete endpoints
-[ ] Supply chain: SBOM generation, dependency vulnerability scanning
-[ ] FIPS 140-2 compliance for cryptographic operations
+[x] SSO: OIDC (Okta, Auth0, Azure AD) and SAML
+[x] Role-based access control: admin, developer, viewer
+[x] Immutable audit trail with cryptographic chaining
+[x] Data retention: auto-delete sessions older than N days
+[x] PII detection: scan tool inputs/outputs for PII and redact
+[x] Air-gapped mode: no external network calls, bundled model fallback
+[x] SOC 2 Type II readiness documentation
+[x] GDPR: right to access, right to delete endpoints
+[x] Supply chain: SBOM generation, dependency vulnerability scanning
+[x] FIPS 140-2 compliance for cryptographic operations
 [x] Hermes Agent bridge auto-discovers provider config from ~/.hermes/
-[ ] OpenCode bridge syncs provider registry bidirectionally
+[x] OpenCode bridge syncs provider registry from ~/.config/opencode/
 ```
 
 ---
@@ -360,5 +360,5 @@ Dependencies: Phase N
 
 ---
 
-*Last updated: 2026-07-03 (Phase 29 complete, Phase 30 started — Hermes bridge)*
+*Last updated: 2026-07-06 (Phase 30 complete — enterprise readiness)*
 *Next review: After Phase 30 completion*

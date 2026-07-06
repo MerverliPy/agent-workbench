@@ -1,8 +1,6 @@
-# 06 — Security Model
+# Security Model
 
-Status: Phase 0 — Planning Docs  
-Document type: agent-ready security model  
-Scope: local server security, secrets, tool safety, shell safety, file safety, auditability
+agent-workbench operates in your local development environment, reading files, editing them, running shell commands, and calling AI model providers. This document describes the security architecture that constrains these capabilities by default.
 
 ## 1. Purpose
 

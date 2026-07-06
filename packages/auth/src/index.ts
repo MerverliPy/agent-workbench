@@ -2,7 +2,8 @@
  * @agent-workbench/auth — Phase 27: Remote access & collaboration
  *
  * Provides bearer token authentication middleware for Hono,
- * TLS certificate generation, and time-limited session tokens.
+ * TLS certificate generation, time-limited session tokens,
+ * and role-based access control (RBAC).
  *
  * ## Usage
  *
@@ -23,6 +24,7 @@
  * | `AGENT_WORKBENCH_TLS_CERT` | (auto-gen) | Path to TLS certificate file. |
  * | `AGENT_WORKBENCH_TLS_KEY` | (auto-gen) | Path to TLS key file. |
  * | `AGENT_WORKBENCH_TOKEN_TTL_MS` | `3600000` | Session token time-to-live in milliseconds (default: 1 hour). |
+ * | `AGENT_WORKBENCH_DEFAULT_ROLE` | `"admin"` | Default role assigned to tokens without explicit role mapping. |
  */
 export { AuthManager } from "./auth-manager";
 export {
@@ -30,8 +32,15 @@ export {
   type AuthMiddlewareOptions,
   authMiddleware,
 } from "./auth-middleware";
+export { Scope, defaultScopes, hasScope, scopeMatches } from "./scopes";
 export type { ScopeValue } from "./scopes";
-export { defaultScopes, hasScope, Scope, scopeMatches } from "./scopes";
+export {
+  getRoleFromScopes,
+  getScopesForRole,
+  hasRole,
+  listRoles,
+} from "./roles";
+export type { Role } from "./roles";
 export { SessionToken, type SessionTokenConfig } from "./session-tokens";
 export { TlsConfig, type TlsConfigOptions } from "./tls-config";
 export { InMemoryTokenStore, type TokenRecord } from "./token-store";

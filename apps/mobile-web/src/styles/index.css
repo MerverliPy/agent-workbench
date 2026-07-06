@@ -1,25 +1,157 @@
 @import "tailwindcss";
 
 @theme {
-  --color-workbench-900: #0f172a;
-  --color-workbench-800: #1e293b;
-  --color-workbench-700: #334155;
-  --color-workbench-600: #475569;
-  --color-workbench-400: #94a3b8;
-  --color-workbench-300: #cbd5e1;
-  --color-workbench-200: #e2e8f0;
-  --color-workbench-100: #f1f5f9;
-  --color-accent-green: #22c55e;
-  --color-accent-red: #ef4444;
-  --color-accent-blue: #3b82f6;
-  --color-accent-teal: #2dd4bf;
+  --color-bg:       oklch(99% 0.002 240);
+  --color-surface:  oklch(100% 0 0);
+  --color-fg:       oklch(18% 0.012 250);
+  --color-muted:    oklch(50% 0.014 250);
+  --color-border:   oklch(92% 0.005 250);
+  --color-border-soft: oklch(96% 0.003 250);
+
+  --color-accent:       oklch(55% 0.18 280);
+  --color-accent-soft:  oklch(57% 0.15 280 / 12%);
+  --color-accent-dim:   oklch(57% 0.15 280 / 6%);
+
+  --color-warn:     oklch(68% 0.16 80);
+  --color-warn-soft:  oklch(68% 0.16 80 / 12%);
+  --color-warn-dim:   oklch(68% 0.16 80 / 6%);
+  --color-success:  oklch(56% 0.15 155);
+  --color-success-soft: oklch(56% 0.15 155 / 10%);
+  --color-danger:   oklch(52% 0.19 22);
+  --color-danger-soft: oklch(52% 0.19 22 / 10%);
+
+  --color-code-bg:  oklch(25% 0.015 250);
+  --color-code-fg:  oklch(92% 0.005 250);
+
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  --fs-xs:   11px;
+  --fs-meta: 12px;
+  --fs-body: 15px;
+  --fs-label: 13px;
+  --fs-title: 17px;
+
+  --radius-sm:  8px;
+  --radius:     12px;
+  --radius-lg:  18px;
+  --radius-pill: 999px;
 }
 
+/* ═══════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — light (default)
+   ═══════════════════════════════════════════════════ */
+:root {
+  --bg:       var(--color-bg);
+  --surface:  var(--color-surface);
+  --fg:       var(--color-fg);
+  --muted:    var(--color-muted);
+  --border:   var(--color-border);
+  --border-soft: var(--color-border-soft);
+
+  --accent:       var(--color-accent);
+  --accent-soft:  var(--color-accent-soft);
+  --accent-dim:   var(--color-accent-dim);
+
+  --warn:     var(--color-warn);
+  --warn-soft:  var(--color-warn-soft);
+  --warn-dim:   var(--color-warn-dim);
+  --success:  var(--color-success);
+  --success-soft: var(--color-success-soft);
+  --danger:   var(--color-danger);
+  --danger-soft: var(--color-danger-soft);
+
+  --code-bg:  var(--color-code-bg);
+  --code-fg:  var(--color-code-fg);
+
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+  --topbar-h:    52px;
+  --composer-h:  60px;
+}
+
+/* ═══════════════════════════════════════════════════
+   DARK MODE — explicit class & system auto
+   ═══════════════════════════════════════════════════ */
+html.dark {
+  --bg:       oklch(14% 0.008 255);
+  --surface:  oklch(18% 0.01 255);
+  --fg:       oklch(92% 0.004 255);
+  --muted:    oklch(62% 0.012 255);
+  --border:   rgba(255, 255, 255, 0.08);
+  --border-soft: rgba(255, 255, 255, 0.05);
+
+  --accent:       oklch(62% 0.18 280);
+  --accent-soft:  color-mix(in oklch, var(--accent) 14%, transparent);
+  --accent-dim:   color-mix(in oklch, var(--accent) 7%, transparent);
+
+  --warn:     oklch(72% 0.16 85);
+  --warn-soft:  color-mix(in oklch, var(--warn) 14%, transparent);
+  --warn-dim:   color-mix(in oklch, var(--warn) 7%, transparent);
+  --success:  oklch(62% 0.14 155);
+  --success-soft: color-mix(in oklch, var(--success) 12%, transparent);
+  --danger:   oklch(58% 0.18 22);
+  --danger-soft: color-mix(in oklch, var(--danger) 12%, transparent);
+
+  --code-bg:  oklch(20% 0.012 255);
+  --code-fg:  oklch(90% 0.004 255);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    --bg:       oklch(14% 0.008 255);
+    --surface:  oklch(18% 0.01 255);
+    --fg:       oklch(92% 0.004 255);
+    --muted:    oklch(62% 0.012 255);
+    --border:   rgba(255, 255, 255, 0.08);
+    --border-soft: rgba(255, 255, 255, 0.05);
+    --accent:       oklch(62% 0.18 280);
+    --accent-soft:  color-mix(in oklch, var(--accent) 14%, transparent);
+    --accent-dim:   color-mix(in oklch, var(--accent) 7%, transparent);
+    --warn:     oklch(72% 0.16 85);
+    --warn-soft:  color-mix(in oklch, var(--warn) 14%, transparent);
+    --warn-dim:   color-mix(in oklch, var(--warn) 7%, transparent);
+    --success:  oklch(62% 0.14 155);
+    --success-soft: color-mix(in oklch, var(--success) 12%, transparent);
+    --danger:   oklch(58% 0.18 22);
+    --danger-soft: color-mix(in oklch, var(--danger) 12%, transparent);
+    --code-bg:  oklch(20% 0.012 255);
+    --code-fg:  oklch(90% 0.004 255);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   THEME INIT — inline <script> sets class before FOUC
+   ═══════════════════════════════════════════════════ */
+.theme-init-dark { --bg: oklch(14% 0.008 255); }
+.theme-init-light { --bg: oklch(99% 0.002 240); }
+
+/* ═══════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════ */
 body {
   @apply bg-slate-900 text-slate-100;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
+  /* Prevent iOS rubber-band overscroll outside the shell */
+  overscroll-behavior: none;
+}
+
+/* Prevent iOS overscroll chrome on the app shell */
+#root {
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+/* Smooth scrolling for iOS scroll containers */
+[role="log"],
+.panel-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Allow text selection in input/textarea */
@@ -31,11 +163,11 @@ textarea {
 
 /* Safe area padding for notched phones */
 .safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-top);
 }
 
 .safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-bottom);
 }
 
 /* Scrollbar styling */
@@ -48,7 +180,7 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--muted);
   border-radius: 2px;
 }
 
@@ -68,9 +200,65 @@ textarea {
   }
 }
 
-/* ── Landscape orientation support ──────────────────────────────────────── */
+/* ── Message entry animation ───────────────────── */
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-/* On landscape iPhones (notched), ensure full-height layouts work */
+.msg-in {
+  animation: msgIn 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ── Streaming cursor blink ────────────────────── */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent);
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink 0.7s step-end infinite;
+}
+
+/* ── Thinking dots ─────────────────────────────── */
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+.animate-dot-bounce {
+  animation: dotBounce 0.9s infinite ease;
+}
+
+.animate-dot-bounce:nth-child(2) { animation-delay: 0.15s; }
+.animate-dot-bounce:nth-child(3) { animation-delay: 0.3s; }
+
+/* ── Streaming pulse (connection) ──────────────── */
+@keyframes connection-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-connection-pulse {
+  animation: connection-pulse 2s ease-in-out infinite;
+}
+
+/* ── Fade in (scroll-to-bottom button) ─────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+/* ── Landscape orientation support ─────────────── */
 @media screen and (orientation: landscape) and (max-height: 450px) {
   .panel-enter {
     animation-duration: 100ms;
@@ -79,7 +267,7 @@ textarea {
   input,
   textarea,
   select {
-    font-size: 14px; /* Prevent iOS zoom on focus */
+    font-size: 14px;
   }
   .nav-drawer-panel {
     width: 60vw;
@@ -87,7 +275,6 @@ textarea {
   }
 }
 
-/* Taller landscape tablets */
 @media screen and (orientation: landscape) and (min-height: 451px) {
   .nav-drawer-panel {
     width: 35vw;
@@ -95,123 +282,69 @@ textarea {
   }
 }
 
-/* Ensure scroll containers work in landscape split-view */
 .h-dvh {
   height: 100dvh;
 }
 
-/* Safe area for landscape notches on both sides */
+/* ── Backdrop-filter fallback ──────────────────── */
+/* Safari <15 / low-power mode may not support backdrop-filter.
+   The .frost class is applied by <TopBar> and <TabBar>.
+   When backdrop-filter is unsupported, show a solid color fallback. */
+.frost {
+  background: color-mix(in oklch, var(--bg) 96%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .frost {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Prevent iOS callout on long-press */
+* {
+  -webkit-touch-callout: none;
+}
+
 .safe-left {
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-left: var(--safe-left);
 }
 .safe-right {
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-right: var(--safe-right);
 }
 
-/* Streaming pulse */
-@keyframes connection-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
+/* ── Reduced motion ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  50% {
-    opacity: 1;
-  }
+  .stream-cursor { animation: none; opacity: 0; }
+  .animate-dot-bounce { animation: none; opacity: 0.5; }
 }
 
-.animate-connection-pulse {
-  animation: connection-pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.streaming-dot {
-  animation: pulse-dot 1s ease-in-out infinite;
-}
-
-/* Bounce animation (typing indicator) — 1.4s total, 7px dot */
-@keyframes streaming-bounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-7px);
-  }
-}
-
-.animate-streaming-bounce {
-  animation: streaming-bounce 1.4s ease-in-out infinite;
-}
-
-/* Fade in (scroll-to-bottom button) */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 200ms ease-out;
-}
-
-/* ── Markdown content styling ─────────────────────────────────────── */
-
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3,
-.markdown-body h4 {
+/* ── Markdown content styling ──────────────────── */
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
   font-weight: 600;
   margin: 0.5em 0 0.25em;
   line-height: 1.3;
 }
-.markdown-body h1 {
-  font-size: 1.2em;
-}
-.markdown-body h2 {
-  font-size: 1.1em;
-}
-.markdown-body h3 {
-  font-size: 1.05em;
-}
-
-.markdown-body p {
-  margin: 0.25em 0;
-}
-
-.markdown-body ul,
-.markdown-body ol {
-  padding-left: 1.5em;
-  margin: 0.25em 0;
-}
-
-.markdown-body li {
-  margin: 0.125em 0;
-}
-
+.markdown-body h1 { font-size: 1.2em; }
+.markdown-body h2 { font-size: 1.1em; }
+.markdown-body h3 { font-size: 1.05em; }
+.markdown-body p { margin: 0.25em 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin: 0.25em 0; }
+.markdown-body li { margin: 0.125em 0; }
 .markdown-body code {
   background: rgba(255, 255, 255, 0.08);
   padding: 0.1em 0.35em;
   border-radius: 3px;
   font-size: 0.9em;
-  font-family:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
-
 .markdown-body pre {
   background: rgba(0, 0, 0, 0.3);
   padding: 0.75em 0.85em;
@@ -219,36 +352,14 @@ textarea {
   overflow-x: auto;
   margin: 0.5em 0;
 }
-
-.markdown-body pre code {
-  background: none;
-  padding: 0;
-  font-size: 0.85em;
-  line-height: 1.5;
-}
-
-.markdown-body strong {
-  font-weight: 600;
-}
-
-.markdown-body em {
-  font-style: italic;
-}
-
+.markdown-body pre code { background: none; padding: 0; font-size: 0.85em; line-height: 1.5; }
+.markdown-body strong { font-weight: 600; }
+.markdown-body em { font-style: italic; }
 .markdown-body blockquote {
   border-left: 3px solid rgba(255, 255, 255, 0.15);
   padding-left: 0.75em;
   margin: 0.25em 0;
   opacity: 0.85;
 }
-
-.markdown-body a {
-  color: #60a5fa;
-  text-decoration: underline;
-}
-
-.markdown-body hr {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin: 0.5em 0;
-}
+.markdown-body a { color: #60a5fa; text-decoration: underline; }
+.markdown-body hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 0.5em 0; }

@@ -11,12 +11,11 @@ import {
 
 export function PromptInput(): JSX.Element {
   const [submitting, setSubmitting] = createSignal(false);
-  // Non-reactive guard prevents double-fire on mobile tap spam
   let submittingRef = false;
+  let textareaRef: HTMLTextAreaElement | undefined;
 
   async function submit(): Promise<void> {
     const content = inputText().trim();
-    // Check both reactive signal AND non-reactive ref for iOS double-tap safety
     if (!content || submitting() || submittingRef) return;
 
     submittingRef = true;
@@ -24,7 +23,6 @@ export function PromptInput(): JSX.Element {
     const messageText = content;
     setInputText("");
 
-    // Append user message immediately
     appendMessage({
       id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       role: "user",
@@ -83,25 +81,30 @@ export function PromptInput(): JSX.Element {
     }
   }
 
-  function autoResize(el: HTMLTextAreaElement): void {
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  function autoResize(): void {
+    if (!textareaRef) return;
+    textareaRef.style.height = "auto";
+    textareaRef.style.height = `${Math.min(textareaRef.scrollHeight, 128)}px`;
   }
 
   const hasText = () => inputText().trim().length > 0;
 
   return (
-    <div class="flex-shrink-0 bg-slate-900 border-t border-slate-700 safe-bottom">
-      {/* Toolbar */}
-      <div class="flex items-center gap-1 px-2 pt-1 pb-0.5">
+    <div
+      class="flex-shrink-0 safe-bottom"
+      style="padding: 8px 10px calc(8px + var(--safe-bottom)); border-top: 1px solid var(--border); background: var(--surface);"
+    >
+      <div class="flex items-end gap-1.5">
+        {/* Attach button */}
         <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 active:bg-slate-800 active:text-slate-300 transition-colors"
+          class="flex items-center justify-center w-11 h-11 rounded-xl shrink-0 transition-colors"
+          style="color: var(--muted);"
           aria-label="Attach file"
           disabled={submitting()}
         >
           <svg
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -111,14 +114,47 @@ export function PromptInput(): JSX.Element {
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
           </svg>
         </button>
+
+        {/* Pill-shaped input */}
+        <div
+          class="flex items-center flex-1 min-w-0 gap-1"
+          style="background: var(--bg); border: 1px solid var(--border); border-radius: 22px; padding: 6px 12px; transition: border-color 0.15s, background 0.2s;"
+        >
+          {/* Model badge */}
+          <span
+            class="text-[11px] font-mono font-medium whitespace-nowrap shrink-0 pr-1.5"
+            style="color: var(--fg); border-right: 1px solid var(--border);"
+          >
+            Agent
+          </span>
+
+          {/* Textarea (auto-resizing, single-line at rest) */}
+          <textarea
+            ref={textareaRef}
+            class="flex-1 bg-transparent text-sm outline-none resize-none leading-relaxed"
+            style="color: var(--fg); padding: 4px 0; min-height: 24px; max-height: 128px;"
+            placeholder="Type a message..."
+            rows={1}
+            value={inputText()}
+            onInput={(e) => {
+              setInputText((e.target as HTMLTextAreaElement).value);
+              queueMicrotask(() => autoResize());
+            }}
+            onKeyDown={handleKeyDown}
+            disabled={submitting()}
+          />
+        </div>
+
+        {/* Mic button */}
         <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 active:bg-slate-800 active:text-slate-300 transition-colors"
+          class="flex items-center justify-center w-11 h-11 rounded-xl shrink-0 transition-colors"
+          style="color: var(--muted);"
           aria-label="Voice input"
           disabled={submitting()}
         >
           <svg
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -130,31 +166,11 @@ export function PromptInput(): JSX.Element {
             <line x1="12" y1="19" x2="12" y2="22" />
           </svg>
         </button>
-        <Show when={submitting()}>
-          <span class="text-[10px] text-slate-500 ml-auto">Connecting...</span>
-        </Show>
-      </div>
 
-      {/* Input row */}
-      <div class="flex items-end gap-2 px-3 pb-2">
-        <textarea
-          class="flex-1 bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-blue-500/50 min-h-[40px] max-h-32 transition-shadow"
-          placeholder="Type a message..."
-          rows={1}
-          value={inputText()}
-          onInput={(e) => {
-            setInputText((e.target as HTMLTextAreaElement).value);
-            autoResize(e.target as HTMLTextAreaElement);
-          }}
-          onKeyDown={handleKeyDown}
-          disabled={submitting()}
-        />
+        {/* Send button */}
         <button
-          class={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors shrink-0 ${
-            hasText() && !submitting()
-              ? "bg-blue-600 active:bg-blue-700 text-white"
-              : "bg-slate-700 text-slate-500"
-          }`}
+          class="flex items-center justify-center w-11 h-11 rounded-full shrink-0 transition-all"
+          style={"background: " + (hasText() && !submitting() ? "var(--accent)" : "color-mix(in oklch, var(--accent) 30%, var(--border))") + "; color: var(--surface);"}
           onClick={submit}
           disabled={!hasText() || submitting()}
           aria-label="Send message"

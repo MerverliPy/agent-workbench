@@ -1,13 +1,13 @@
 # 🧠 @agent-workbench/core
 
 [![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-6..16-blue)]()
+[![Phase](https://img.shields.io/badge/Phase-6..30-blue)]()
 
 Agent runtime orchestration: session runner, tool dispatch, permission orchestration, and plan gate.
 
 ## Status
 
-**Complete** — implemented across Phases 6–16. Handles session lifecycle, context building, model/tool loop, plan gating, token health, and agent modes.
+**Complete** — implemented across Phases 6–30. Handles session lifecycle, context building, model/tool loop, plan gating, token health, and agent modes.
 
 ## Purpose
 

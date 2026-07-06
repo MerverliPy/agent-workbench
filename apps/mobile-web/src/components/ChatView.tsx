@@ -111,7 +111,6 @@ export function ChatView(): JSX.Element {
 function EmptyState(): JSX.Element {
   function fillPrompt(text: string): void {
     setInputText(text);
-    // Focus the textarea after setting the value
     queueMicrotask(() => {
       const textarea = document.querySelector<HTMLTextAreaElement>(
         'textarea[placeholder="Type a message..."]',
@@ -121,32 +120,61 @@ function EmptyState(): JSX.Element {
   }
 
   return (
-    <div class="flex flex-col items-center justify-center h-full px-4 py-12">
-      <div class="text-center mb-6">
-        <div class="text-4xl mb-3">🤖</div>
-        <h2 class="text-lg font-semibold text-slate-200 mb-1">
-          agent-workbench
-        </h2>
-        <p class="text-sm text-slate-500 max-w-xs">
-          Your AI coding companion. Ask questions, edit files, or run commands.
-        </p>
+    <div class="flex flex-col items-center justify-center h-full px-7 py-10 text-center">
+      <div
+        class="text-[44px] mb-1"
+        style="opacity: 0.25;"
+        aria-hidden="true"
+      >
+        💬
       </div>
+      <h2
+        class="text-lg font-semibold mb-1"
+        style="font-family: var(--font-display); letter-spacing: -0.01em;"
+      >
+        agent-workbench
+      </h2>
+      <p
+        class="text-sm leading-relaxed max-w-[280px]"
+        style="color: var(--muted);"
+      >
+        Your AI coding companion. Ask questions, edit files, or run commands.
+      </p>
 
-      <div class="w-full max-w-xs space-y-2 mb-6">
-        <span class="text-xs text-slate-500 block text-center mb-1">
+      <div class="w-full max-w-[240px] mt-4 space-y-2">
+        <span
+          class="text-xs block text-center"
+          style="color: var(--muted);"
+        >
           Try asking:
         </span>
         {SUGGESTED_PROMPTS.map((prompt) => (
           <button
-            class="w-full text-left text-sm text-slate-300 bg-slate-800/60 hover:bg-slate-800 active:bg-slate-700 rounded-xl px-3.5 py-3 transition-colors border border-slate-700/50 min-h-[44px]"
+            class="w-full text-left text-sm rounded-xl px-3.5 py-2.5 transition-colors min-h-[44px] border"
+            style="color: var(--fg); border-color: var(--border);"
             onClick={() => fillPrompt(prompt)}
           >
             {prompt}
+            <span
+              class="block text-xs mt-0.5"
+              style="color: var(--muted);"
+            >
+              {prompt === "What can you help me with?"
+                ? "Learn about your capabilities"
+                : prompt === "Show me the project structure"
+                  ? "Browse files in the current workspace"
+                  : prompt === "Explain the code in src/"
+                    ? "Get a code walkthrough"
+                    : "Check repository status"}
+            </span>
           </button>
         ))}
       </div>
 
-      <p class="text-xs text-slate-600">
+      <p
+        class="text-xs mt-6"
+        style="color: var(--muted);"
+      >
         Connected via the agent-workbench server
       </p>
     </div>

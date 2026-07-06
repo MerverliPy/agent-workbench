@@ -2,13 +2,15 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#141418" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f7fa" media="(prefers-color-scheme: light)" />
     <meta name="description" content="Mobile companion for agent-workbench — touch-optimized chat + panels" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%236363f0'/><path d='M11 16c0-2.76 2.24-5 5-5s5 2.24 5 5-2.24 5-5 5a4.98 4.98 0 0 1-2.93-.93l-2.24.93.93-2.24A4.98 4.98 0 0 1 11 16' fill='none' stroke='white' stroke-width='1.5' stroke-linecap='round'/></svg>">
 
     <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Agent WB" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
@@ -16,7 +18,52 @@
     <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json" />
 
-    <title>agent-workbench</title>
+    <!-- Theme init — prevent FOUC -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('agent-workbench-theme');
+        if (saved === 'dark') document.documentElement.classList.add('dark');
+        else if (saved === 'light') document.documentElement.classList.add('light');
+        // auto: no class — respects prefers-color-scheme via CSS
+      })();
+    </script>
+
+    <!-- iOS Safari keyboard avoidance — use visualViewport API to keep composer visible -->
+    <script>
+      (function() {
+        if (!window.visualViewport) return;
+        var root = document.getElementById('root') || document.body;
+        var restoreKeyboard = function() {
+          var vh = window.visualViewport.height;
+          var full = window.screen.height;
+          var keyboardHeight = full - vh;
+          if (keyboardHeight > 100) {
+            // Keyboard is open — push the composer into the remaining viewport
+            root.style.setProperty('--kb-height', keyboardHeight + 'px');
+            root.style.setProperty('--vh', vh + 'px');
+            document.documentElement.classList.add('keyboard-open');
+          } else {
+            // Keyboard is closed
+            root.style.removeProperty('--kb-height');
+            root.style.removeProperty('--vh');
+            document.documentElement.classList.remove('keyboard-open');
+          }
+        };
+        window.visualViewport.addEventListener('resize', restoreKeyboard);
+        window.visualViewport.addEventListener('scroll', function() {
+          // iOS Safari scrolls the viewport when the keyboard opens — snap back
+          if (window.visualViewport.offsetTop !== 0) {
+            window.scrollTo(0, 0);
+          }
+        });
+        // Also check on orientation change
+        window.addEventListener('orientationchange', function() {
+          setTimeout(restoreKeyboard, 300);
+        });
+      })();
+    </script>
+
+    <title>Agent WB</title>
   </head>
   <body class="bg-slate-900 text-slate-100 antialiased overscroll-none">
     <div id="root"></div>

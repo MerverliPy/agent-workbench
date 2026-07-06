@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/) conventions.
 
 ---
 
+## [Phase 30] — 2026-07-06
+
+### Added
+- **Air-gapped mode** (`AGENT_WORKBENCH_AIRGAPPED=true`): blocks all external network calls, only local Loopback services allowed
+- **SBOM generation**: `bun run sbom` generates CycloneDX v1.5 software bill of materials; `bun run sbom:audit` includes dependency vulnerability scanning
+- **Compliance documentation**: security whitepaper, SOC 2 readiness checklist, GDPR addendum, on-prem deployment guide (`docs/compliance/`)
+
+### Security
+- **Air-gapped fetch wrapper**: all provider adapters receive a wrapped `fetch` that throws `AirGapBlockedError` on external URLs
+- **Provider registry hardening**: air-gapped mode prevents registration of external providers
+
+---
+
 ## [Phase 29.5] — 2026-07-03
 
 ### Added

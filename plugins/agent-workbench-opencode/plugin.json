@@ -1,0 +1,23 @@
+{
+  "name": "agent-workbench-opencode",
+  "displayName": "OpenCode Bridge",
+  "version": "1.0.0",
+  "description": "Bridges OpenCode provider configuration into agent-workbench. Reads ~/.config/opencode/opencode.jsonc and ~/.local/share/opencode/auth.json to auto-discover providers and sync credentials.",
+  "author": "agent-workbench",
+  "license": "MIT",
+  "minWorkbenchVersion": "0.0.0",
+  "main": "src/index.ts",
+  "enabled": true,
+  "provides": {
+    "tools": [],
+    "providers": ["opencode:deepseek", "opencode:opencode-go", "opencode:github-copilot"],
+    "panels": [],
+    "hooks": []
+  },
+  "permissions": {
+    "filesystemRead": true,
+    "filesystemWrite": false,
+    "network": true,
+    "subprocess": false
+  }
+}

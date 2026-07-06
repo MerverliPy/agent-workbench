@@ -1,13 +1,13 @@
 # 🌐 @agent-workbench/server
 
 [![Status](https://img.shields.io/badge/status-complete-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-3..17-blue)]()
+[![Phase](https://img.shields.io/badge/Phase-3..27-blue)]()
 
 Local HTTP/SSE control plane. Owns routes, middleware, and server lifecycle.
 
 ## Status
 
-**Complete** — Phases 3 (base server), 15 (provider routes), 16 (streaming), 17 (CI pipeline). Full Hono app with all route modules.
+**Complete** — Phases 3–27 (base server, provider routes, streaming, CI pipeline, auth, SSO, compliance headers, air-gapped mode). Full Hono app with all route modules.
 
 ## Purpose
 

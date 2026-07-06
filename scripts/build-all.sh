@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "=== Building packages (dependency-ordered) ==="
 
 # Level 0: no @agent-workbench dependencies
-for pkg in protocol models storage tokens diff telemetry plugin-sdk auth; do
+for pkg in protocol models storage tokens diff telemetry plugin-sdk auth compliance; do
   echo "  [build] packages/$pkg"
   (cd "$ROOT/packages/$pkg" && bun run build 2>&1) || exit 1
 done
@@ -21,6 +21,9 @@ done
 # Plugins
 echo "  [build] plugins/agent-workbench-hermes"
 (cd "$ROOT/plugins/agent-workbench-hermes" && bun run build 2>&1) || exit 1
+
+echo "  [build] plugins/agent-workbench-opencode"
+(cd "$ROOT/plugins/agent-workbench-opencode" && bun run build 2>&1) || exit 1
 
 # Level 2: depends on cache, diff, protocol, shell, storage
 echo "  [build] packages/tools"
@@ -39,5 +42,8 @@ echo "  [build] apps/cli"
 
 # tui is a Vite/SolidJS app, no tsc build needed for test resolution
 # (it only imports protocol types and SDK which are already built)
+
+echo "  [build] apps/mobile-web"
+(cd "$ROOT/apps/mobile-web" && bun run build 2>&1) || exit 1
 
 echo "=== All packages built ==="

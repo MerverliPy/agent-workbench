@@ -1,17 +1,64 @@
 # 🤝 Contributing to agent-workbench
 
-First off, thank you for considering contributing! This project is a local-first, permission-gated agent workbench, and every contribution helps.
+First off, thank you for considering contributing! agent-workbench is a local-first agent workbench, and we welcome contributions of all kinds — bug fixes, features, documentation, and plugins.
+
+---
 
 ## Table of Contents
 
-- [Development Setup](#development-setup)
+- [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
+- [Development Setup](#development-setup)
 - [Code Style](#code-style)
-- [Phase Workflow](#phase-workflow)
 - [Making Changes](#making-changes)
 - [Testing](#testing)
 - [Pull Request Process](#pull-request-process)
 - [Architecture Principles](#architecture-principles)
+- [Getting Help](#getting-help)
+
+---
+
+## Getting Started
+
+This is a **TypeScript + Bun monorepo** with multiple packages and apps. The best way to start contributing:
+
+1. Read the [README.md](README.md) to understand what the project does
+2. Browse the [`docs/`](docs/) directory for detailed documentation
+3. Check open issues for things to work on
+4. Join the discussion in GitHub issues
+
+---
+
+## Project Structure
+
+```
+agent-workbench/
+├── apps/
+│   ├── tui/          # Terminal UI client
+│   ├── server/       # HTTP/SSE server
+│   ├── mobile-web/   # Mobile PWA companion
+│   ├── dashboard/    # Observability dashboard
+│   └── cli/          # CLI entry point
+├── packages/
+│   ├── core/         # Core runtime orchestration
+│   ├── protocol/     # Zod schemas, API contracts
+│   ├── sdk/          # Typed client SDK
+│   ├── tools/        # Tool definitions
+│   ├── permissions/  # Permission engine
+│   ├── shell/        # Command runners
+│   ├── storage/      # SQLite persistence
+│   ├── models/       # Model provider adapters
+│   ├── compliance/   # Enterprise compliance
+│   ├── auth/         # Auth & RBAC
+│   ├── collab/       # Collaboration
+│   ├── eval/         # Model evaluation
+│   ├── telemetry/    # Observability
+│   ├── plugin-sdk/   # Plugin system
+│   └── ...           # Cache, tokens, diff, planner, events, etc.
+├── docs/             # Documentation
+├── tests/            # Test suite
+└── scripts/          # Build and utility scripts
+```
 
 ---
 
@@ -35,50 +82,13 @@ bun install
 bash scripts/build-all.sh
 ```
 
-This compiles TypeScript to `dist/` for all workspace packages in dependency order (17 packages + apps).
-
----
-
-## Project Structure
-
-```
-agent-workbench/
-├── apps/
-│   ├── tui/          # OpenTUI + SolidJS terminal client
-│   ├── server/       # Hono HTTP/SSE server
-│   ├── mobile-web/   # SolidJS PWA (touch-optimized)
-│   ├── dashboard/    # SolidJS observability dashboard
-│   └── cli/          # CLI entrypoint (plugin management)
-├── packages/
-│   ├── core/         # Runtime orchestration
-│   ├── protocol/     # Zod schemas, route contracts
-│   ├── sdk/          # Typed HTTP/SSE client
-│   ├── tools/        # Tool definitions & registry
-│   ├── permissions/  # Allow/ask/deny engine
-│   ├── shell/        # Simple + PTY command runners
-│   ├── storage/      # SQLite/Drizzle persistence
-│   ├── models/       # Provider adapters + marketplace
-│   ├── tokens/       # Token health & budgets
-│   ├── diff/         # Patch preview/apply
-│   ├── planner/      # Pre-run plan gates
-│   ├── events/       # Event bus
-│   ├── cache/        # Read/grep/glob cache
-│   ├── telemetry/    # OpenTelemetry tracing, metrics
-│   ├── plugin-sdk/   # Plugin extension interfaces
-│   ├── config/       # Config loading (scaffold)
-│   └── ui/           # Shared UI primitives (scaffold)
-├── docs/             # Phase planning docs (00–27)
-├── decisions/        # Architecture Decision Records (0017)
-├── tests/            # Unit, integration, e2e, fixtures
-├── scripts/          # Build & health scripts
-└── tools/            # Model-router benchmark tooling
-```
+This compiles TypeScript to `dist/` for all workspace packages in dependency order.
 
 ---
 
 ## Code Style
 
-- **TypeScript** with `strict: true` and `noUncheckedIndexedAccess`
+- **TypeScript** with `strict: true`
 - **Biome** for formatting and linting (see `biome.json`)
 - **No `any`** — prefer `unknown` with type guards
 - **Zod** as the single source of truth for all data shapes
@@ -92,22 +102,6 @@ npx @biomejs/biome format --write .
 
 ---
 
-## Phase Workflow
-
-This project follows a **phase-based development** model (currently 0–26 complete, 27–30 planned). Each phase has:
-
-1. A **plan doc** (`docs/NN_PHASE_NAME.md`) defining scope and deliverables
-2. An **ADR** (`decisions/NNNN-topic.md`) recording architectural decisions
-3. **Exit gates** in `docs/18_PHASE_EXIT_GATES.md` that must be satisfied
-4. **Tests** covering the implementation
-
-**Rules:**
-- Do not skip ahead to later phases
-- Do not start a phase until its exit gate is complete
-- Exceptions require explicit maintainer approval
-
----
-
 ## Making Changes
 
 ### For Human Contributors
@@ -115,25 +109,19 @@ This project follows a **phase-based development** model (currently 0–26 compl
 1. Fork the repo and create a branch from `main`
 2. Make your changes following the architecture boundaries
 3. Run tests: `bun test`
-4. Ensure all 602 tests pass
-5. Ensure `bash scripts/build-all.sh` completes cleanly
-6. Submit a pull request
+4. Ensure `bash scripts/build-all.sh` completes cleanly
+5. Submit a pull request
 
 ### For AI Agents
 
-See [`AGENTS.md`](./AGENTS.md) for the agent-specific workflow, which includes:
-
-1. Read relevant docs and decisions before making changes
-2. Propose a bounded plan identifying target files and risk
-3. Obtain approval before writing, editing, or running shell commands
-4. Execute through the runtime (never through the TUI)
+See [`docs/dev/AGENTS.md`](docs/dev/AGENTS.md) for the agent-specific workflow and rules.
 
 ---
 
 ## Testing
 
 ```bash
-# Full test suite (602 tests, 0 failures)
+# Full test suite
 bun test
 
 # Per-category
@@ -141,36 +129,22 @@ bun test unit
 bun test integration
 bun test e2e
 
-# Specific areas
-bun test tests/unit/plugin-sdk/    # Plugin system (26 tests)
-bun test tests/unit/telemetry/     # Telemetry (59 tests)
-bun test tests/integration/server/ # Server integration
-
 # Build verification
 bash scripts/build-all.sh
 ```
-
-### Test Structure
-
-- `tests/unit/` — Isolated unit tests per package (core, tools, permissions, models, telemetry, plugin-sdk, etc.)
-- `tests/integration/` — Cross-package integration + fault injection
-- `tests/e2e/` — Full-stack end-to-end validation
-- `tests/helpers/` — Shared test utilities and fixtures (test-db, test-server, mock-model)
 
 ---
 
 ## Pull Request Process
 
-1. Ensure all 602 tests pass and CI is green
+1. Ensure all tests pass and CI is green
 2. Update README and package-level docs if your change affects public API
-3. Update phase checklists if your change completes a phase exit gate
-4. Include a clear PR description referencing the relevant docs/decisions
-5. PRs require at least one review before merging
+3. Include a clear PR description
+4. PRs require at least one review before merging
 
 ### PR Title Convention
 
 ```
-Phase N: Brief description
 feat: Brief description
 fix: Brief description
 docs: Brief description
@@ -181,23 +155,20 @@ chore: Brief description
 
 ## Architecture Principles
 
-These principles must be preserved in every contribution:
-
 | Principle | Description |
 |-----------|-------------|
 | **TUI is thin** | The TUI renders and accepts input only. Never executes tools, permissions, or runtime logic. |
 | **Server is thin** | Routes delegate to core runtime. Never execute tools or shell commands directly. |
-| **Schema-first** | All data shapes are defined in Zod schemas first, then consumed everywhere. |
+| **Schema-first** | All data shapes are defined in Zod schemas first. |
 | **Permission-gated** | No file mutation or shell execution bypasses the permission engine. |
-| **Localhost default** | The server binds to `127.0.0.1` by default (override with `WORKBENCH_HOST=0.0.0.0`). |
-| **Full audit trail** | Every tool call, permission decision, and runtime event is recorded in the run ledger. |
-| **Plugin sandbox** | Plugins declare permissions; risky operations are logged and gated. |
+| **Localhost default** | Server binds to `127.0.0.1` by default. |
+| **Full audit trail** | Every tool call and permission decision is recorded. |
+| **Plugin sandbox** | Plugins declare permissions; risky operations are gated. |
 
 ---
 
 ## Getting Help
 
 - Open an issue for bugs or feature requests
-- See the [`docs/`](./docs/) directory for detailed planning docs
-- See [`AGENTS.md`](./AGENTS.md) for the AI agent workflow
 - See [`docs/27_PROJECT_ROADMAP.md`](docs/27_PROJECT_ROADMAP.md) for the project roadmap
+- See [`docs/dev/`](docs/dev/) for developer documentation and architecture records

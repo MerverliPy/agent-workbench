@@ -1,0 +1,24 @@
+{
+  "name": "@agent-workbench/compliance",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Enterprise compliance: immutable audit trail, data retention, PII detection, FIPS helpers",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^6.0.3"
+  }
+}

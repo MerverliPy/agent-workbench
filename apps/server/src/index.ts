@@ -7,6 +7,10 @@ import {
   ShareManager,
 } from "@agent-workbench/collab";
 import {
+  createAirGappedFetch,
+  isAirGapped,
+} from "@agent-workbench/compliance";
+import {
   AgentRegistry,
   SessionRunner,
   TokenHealthService,
@@ -128,7 +132,15 @@ registerShellTool(toolRegistry, { shellRunner });
 registerPtyShellTool(toolRegistry, { ptyRunner });
 
 // ── Phase 15: Provider registry ──────────────────────────────────────────────
-const providerRegistry = new ProviderRegistry();
+const airGapped = isAirGapped();
+if (airGapped) {
+  logger.info("🔒 Air-gapped mode ACTIVE — external network calls are blocked");
+  logger.info("  Only local services (localhost) are allowed.");
+}
+
+const providerRegistry = new ProviderRegistry({
+  fetchImpl: airGapped ? createAirGappedFetch() : undefined,
+});
 const modelProvider = providerRegistry.getDefaultProvider();
 
 // ── Phase 24: Provider marketplace & smart routing ───────────────────────────
