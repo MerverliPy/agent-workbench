@@ -1,7 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "ignore": ["dist/", "node_modules/", "coverage/", "bun.lock"]
   },
   "vcs": {
     "clientKind": "git",
@@ -33,7 +34,10 @@
         "useAltText": "off",
         "useKeyWithClickEvents": "off",
         "useKeyWithMouseEvents": "off",
-        "useValidAnchor": "off"
+        "useValidAnchor": "off",
+        "useButtonType": "off",
+        "noStaticElementInteractions": "off",
+        "noLabelWithoutControl": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off",
