@@ -22,7 +22,7 @@
     "@agent-workbench/protocol": "*",
     "@agent-workbench/shell": "*",
     "@agent-workbench/storage": "*",
-    "ulid": "^2.3.0",
+    "ulid": "^3.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

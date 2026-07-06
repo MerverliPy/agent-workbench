@@ -22,7 +22,7 @@
     "@agent-workbench/storage": "*",
     "drizzle-orm": "^0.45.2",
     "promptfoo": "^0.121.17",
-    "ulid": "^2.3.0"
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14"
