@@ -27,9 +27,9 @@ jobs:
         if: hashFiles('bun.lock') != ''
         run: |
           bun install --frozen-lockfile
+          bash scripts/build-all.sh
           bun run --if-present typecheck
           bun test --if-present
-          bun run build --if-present
 
       - name: Python checks
         if: hashFiles('requirements.txt', 'pyproject.toml') != ''

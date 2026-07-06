@@ -182,7 +182,6 @@ function adaptPluginProvider(provider: PluginModelProvider): ModelProvider {
           }) as PluginModelMessage,
       );
 
-      // biome-ignore lint/style/noNonNullAssertion: guarded by outer if (provider.stream)
       const stream = provider.stream!(messages);
       for await (const chunk of stream) {
         yield {
