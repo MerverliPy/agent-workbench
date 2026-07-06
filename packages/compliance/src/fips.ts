@@ -153,8 +153,14 @@ export function secureRandomString(length: number): string {
     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const bytes = randomBytes(length);
   let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars[bytes[i]! % chars.length];
+  let i = 0;
+  // Rejection sampling to avoid modulo bias: 256 / 62 = 4 remainder 8,
+  // so only bytes in [0, 247] are fair. Reject bytes >= 248.
+  while (result.length < length) {
+    if (bytes[i]! < 248) {
+      result += chars[bytes[i]! % chars.length];
+    }
+    i++;
   }
   return result;
 }

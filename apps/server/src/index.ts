@@ -135,9 +135,9 @@ if (airGapped) {
   logger.info("  Only local services (localhost) are allowed.");
 }
 
-const providerRegistry = new ProviderRegistry({
-  fetchImpl: airGapped ? createAirGappedFetch() : undefined,
-});
+const providerRegistry = new ProviderRegistry(
+  airGapped ? { fetchImpl: createAirGappedFetch() } : undefined,
+);
 const modelProvider = providerRegistry.getDefaultProvider();
 
 // ── Phase 24: Provider marketplace & smart routing ───────────────────────────
