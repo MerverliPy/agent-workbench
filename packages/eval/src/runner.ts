@@ -318,7 +318,10 @@ export class EvalRunner {
       prompts: (options.params?.prompts as string[]) ?? ["Test prompt"],
       systemPrompt: (options.params?.systemPrompt as string) ?? "",
       ...(options.params?.assertions
-        ? { assertions: options.params.assertions as any[] }
+        ? {
+            // biome-ignore lint/suspicious/noExplicitAny: assertions from user config
+            assertions: options.params.assertions as any[],
+          }
         : {}),
       ...(options.limit ? { repeats: options.limit } : {}),
     });

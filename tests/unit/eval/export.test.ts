@@ -11,7 +11,21 @@ import { ResultsExporter } from "../export";
 // The EvalRepository interface that ResultsExporter uses:
 //   listRuns(limit, offset) -> EvalRunRow[]
 //   findMetricsByRun(id) -> EvalMetricsRow | null
-function createMockRepo(): any {
+// biome-ignore lint/correctness/noUnusedVariables: documented interface for test clarity
+interface EvalRunRow {
+  id: string;
+  benchmarkId: string;
+  model: string;
+  provider: string;
+  status: string;
+  createdAt: string;
+  completedAt: string | null;
+  configJson: string | null;
+  rawOutput: string | null;
+  error: string | null;
+}
+
+function createMockRepo() {
   const runs = [
     {
       id: "run-1",
@@ -39,7 +53,23 @@ function createMockRepo(): any {
     },
   ];
 
-  const metrics: Record<string, any> = {
+  const metrics: Record<
+    string,
+    {
+      runId: string;
+      accuracy: number;
+      totalItems: number;
+      itemsPassed: number;
+      durationMs: number;
+      costUsd: number;
+      tokensInput: number;
+      tokensOutput: number;
+      latencyP50Ms: number;
+      latencyP95Ms: number;
+      latencyP99Ms: number;
+      errorRate: number;
+    }
+  > = {
     "run-1": {
       runId: "run-1",
       accuracy: 0.856,
@@ -109,7 +139,7 @@ describe("ResultsExporter", () => {
       const result = exporter.exportToString({ format: "json", maxRuns: 10 });
       const parsed = JSON.parse(result);
 
-      const run1 = parsed.runs.find((r: any) => r.id === "run-1");
+      const run1 = parsed.runs.find((r: { id: string }) => r.id === "run-1");
       expect(run1.metrics).toBeDefined();
       expect(run1.metrics.accuracy).toBeCloseTo(0.856, 3);
       expect(run1.metrics.costUsd).toBeCloseTo(2.5, 1);
@@ -118,7 +148,7 @@ describe("ResultsExporter", () => {
     it("excludes rawOutput by default", () => {
       const result = exporter.exportToString({ format: "json", maxRuns: 10 });
       const parsed = JSON.parse(result);
-      const run1 = parsed.runs.find((r: any) => r.id === "run-1");
+      const run1 = parsed.runs.find((r: { id: string }) => r.id === "run-1");
       expect(run1.rawOutput).toBeUndefined();
     });
 
@@ -129,7 +159,7 @@ describe("ResultsExporter", () => {
         includeRawOutput: true,
       });
       const parsed = JSON.parse(result);
-      const run1 = parsed.runs.find((r: any) => r.id === "run-1");
+      const run1 = parsed.runs.find((r: { id: string }) => r.id === "run-1");
       expect(run1.rawOutput).toBe('{"results": []}');
     });
   });

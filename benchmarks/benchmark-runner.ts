@@ -86,9 +86,10 @@ function benchmarkTypecheck(): void {
     if (!existsSync(tsconfig)) continue;
     const packageJsonPath = join(pkgPath, "package.json");
     if (!existsSync(packageJsonPath)) continue;
-    const pkgJson = Bun.file(packageJsonPath);
-    // Skip packages without a typecheck script
-    const scripts = (pkgJson as any)?.scripts ?? {};
+    const pkgJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as {
+      scripts?: Record<string, string>;
+    };
+    const scripts = pkgJson?.scripts ?? {};
     if (!scripts.typecheck) continue;
 
     measure(

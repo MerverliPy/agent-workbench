@@ -193,14 +193,14 @@ function parseConfig(
 
 function isInsideString(line: string, idx: number): boolean {
   let inString = false;
-  let escape = false;
+  let isEscaped = false;
   for (let i = 0; i < idx; i++) {
-    if (escape) {
-      escape = false;
+    if (isEscaped) {
+      isEscaped = false;
       continue;
     }
     if (line[i] === "\\") {
-      escape = true;
+      isEscaped = true;
       continue;
     }
     if (line[i] === '"') {
