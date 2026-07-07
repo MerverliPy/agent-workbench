@@ -1,9 +1,13 @@
 /**
- * agent-workbench CLI — entry point for plugin management and other commands.
+ * agent-workbench CLI — entry point for plugin management, CI/CD commands,
+ * and project scaffolding.
  *
  * Usage:
  *   agent-workbench plugin list|install|enable|disable|uninstall
  *   agent-workbench init <template> [path]
+ *   agent-workbench review --pr <number>
+ *   agent-workbench changelog [--from <tag>] [--to <tag>]
+ *   agent-workbench pr-describe [--base <branch>] [--head <branch>]
  *
  * Templates: typescript, bun
  */
@@ -15,6 +19,9 @@ import {
   type PluginManifest,
   PluginRegistry,
 } from "@agent-workbench/plugin-sdk";
+import { handleChangelog } from "./commands/changelog";
+import { handlePrDescribe } from "./commands/pr-describe";
+import { handleReview } from "./commands/review";
 
 function printUsage(): void {
   console.log(`agent-workbench — CLI for managing agent-workbench
@@ -22,6 +29,9 @@ function printUsage(): void {
 Usage:
   agent-workbench plugin <command> [args]     Manage plugins
   agent-workbench init <template> [path]      Scaffold a new project
+  agent-workbench review --pr <number>        PR review bot
+  agent-workbench changelog [options]         Generate changelog
+  agent-workbench pr-describe [options]       Generate PR description
 
 Plugin Commands:
   agent-workbench plugin list                      List installed plugins
@@ -34,10 +44,30 @@ Init Command:
   agent-workbench init typescript [path]           Empty TypeScript project
   agent-workbench init bun [path]                  Bun project with test setup
 
+Review Command:
+  agent-workbench review --pr <number>             Analyze PR diff and post review
+  agent-workbench review --diff <file>             Analyze local diff file
+    Options: --repo owner/repo                     GitHub repo (auto-detected)
+
+Changelog Command:
+  agent-workbench changelog                        From last tag to HEAD
+    Options: --from <tag|commit> --to <tag|commit> Custom range
+             --last-release                        Use last tag as base
+             --output <file>                       Write to file (default: stdout)
+
+PR Describe Command:
+  agent-workbench pr-describe                      From main to HEAD
+    Options: --base <branch> --head <branch>       Custom branches
+             --pr <number>                         Fetch from GitHub PR
+             --output <file>                       Write to file
+
 Examples:
   agent-workbench plugin list
   agent-workbench plugin install local:~/my-plugin
   agent-workbench init typescript ./my-project
+  agent-workbench review --pr 42
+  agent-workbench changelog --last-release --output CHANGELOG.md
+  agent-workbench pr-describe --pr 42 --output PR.md
 `);
 }
 
@@ -87,10 +117,6 @@ async function handlePluginCommand(
         return 1;
       }
 
-      // For now, we delegate to the server. But CLI has no server; it uses the
-      // registry directly. We need a simple install that copies into the plugins dir.
-      // Since the full install flow is implemented in the server route, we'll
-      // use the registry directly for local: sources.
       const { existsSync, mkdirSync, cpSync } = await import("node:fs");
       const { join } = await import("node:path");
 
@@ -175,7 +201,6 @@ async function handlePluginCommand(
         return 1;
       }
 
-      // Remove plugin directory
       const { rmSync } = await import("node:fs");
       try {
         rmSync(plugin.installPath, { recursive: true, force: true });
@@ -195,7 +220,7 @@ async function handlePluginCommand(
   }
 }
 
-// ── Main ────────────────────────────────────────────────────────────────────
+// ── Init command ───────────────────────────────────────────────────────────
 
 async function handleInitCommand(
   template: string,
@@ -229,7 +254,6 @@ async function handleInitCommand(
     return 1;
   }
 
-  // Copy template to target
   mkdirSync(targetDir, { recursive: true });
   cpSync(templateDir, targetDir, { recursive: true });
 
@@ -243,6 +267,8 @@ async function handleInitCommand(
 
   return 0;
 }
+
+// ── Main ────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
@@ -279,6 +305,15 @@ async function main(): Promise<number> {
       const path = subArgs[1] ?? ".";
       return handleInitCommand(tmpl, path);
     }
+
+    case "review":
+      return handleReview(subArgs);
+
+    case "changelog":
+      return handleChangelog(subArgs);
+
+    case "pr-describe":
+      return handlePrDescribe(subArgs);
 
     default:
       console.error(`Error: Unknown command: ${command}`);

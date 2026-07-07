@@ -23,6 +23,7 @@ Phase 27 ✅ complete ███████████████████�
 Phase 28 ⏸️        ░░░░░░░░░░░░░░░░░░░░  ⏸️  desktop application (deferred)
 Phase 29 ✅ complete ██████████████████████  model experimentation & eval
 Phase 30 ✅ complete ██████████████████████  enterprise readiness & compliance
+Phase 31 ✅ complete ██████████████████████  CI/CD integration
 ```
 
 ### Timeline
@@ -312,11 +313,11 @@ These are speculative directions that may become formal phases based on communit
 - Screen context awareness
 - Video walkthrough generation
 
-### Horizon 4: CI/CD Integration
-- GitHub Actions integration
-- GitLab CI integration
-- PR review bot mode
-- Automated changelog generation from agent actions
+### Horizon 4: CI/CD Integration → **[Phase 31](31_PHASE_31_CICD_INTEGRATION.md)** ✅
+- ✅ GitHub Actions integration (CLI commands + workflow templates)
+- ⏳ GitLab CI integration (future)
+- ✅ PR review bot mode (`agent-workbench review`, `agent-review.yml` workflow)
+- ✅ Automated changelog generation (`agent-workbench changelog`, `agent-changelog.yml` workflow)
 
 ---
 
@@ -360,5 +361,5 @@ Dependencies: Phase N
 
 ---
 
-*Last updated: 2026-07-06 (Phase 30 complete — enterprise readiness)*
-*Next review: After Phase 30 completion*
+*Last updated: 2026-07-07 (Phase 31 in progress — CI/CD integration)*
+*Next review: After Phase 31 completion*

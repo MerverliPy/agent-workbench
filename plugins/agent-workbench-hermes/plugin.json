@@ -6,7 +6,7 @@
   "author": "agent-workbench",
   "license": "MIT",
   "minWorkbenchVersion": "0.0.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "enabled": true,
   "provides": {
     "tools": [],
