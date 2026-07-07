@@ -115,7 +115,6 @@ export function TabBar(): JSX.Element {
   return (
     <nav
       class="frost flex justify-around items-center h-[50px] shrink-0 border-t"
-      role="tablist"
       aria-label="Main navigation"
       style="border-top-color: var(--border); padding-bottom: var(--safe-bottom);"
     >

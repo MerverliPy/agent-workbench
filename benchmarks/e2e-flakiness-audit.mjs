@@ -43,7 +43,7 @@ function extractCodeBlocks(md) {
 }
 
 /** Count occurrences of a regex in a string. Returns count + array of matched snippets with context. */
-function findPattern(text, pattern, label) {
+function findPattern(text, pattern, _label) {
   const re = new RegExp(pattern, "g");
   const matches = [];
   let m;

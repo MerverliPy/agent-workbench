@@ -25,7 +25,7 @@ const scriptDir = (() => {
   return dirname(fileURLToPath(import.meta.url));
 })();
 
-const ROOT = resolve(scriptDir, "..");
+const _ROOT = resolve(scriptDir, "..");
 const SKILL_PATH = resolve(
   process.env.HOME ?? "/home/calvin",
   ".hermes/skills/software-development/playwright-e2e-testing/SKILL.md",

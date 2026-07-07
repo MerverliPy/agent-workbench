@@ -118,7 +118,7 @@ try {
 for (const pj of workspacePkgJsons) {
   try {
     const p = JSON.parse(readFileSync(pj, "utf-8"));
-    if (p.name && p.name.startsWith("@agent-workbench/")) {
+    if (p.name?.startsWith("@agent-workbench/")) {
       workspaceNames.add(p.name);
     }
   } catch {
@@ -296,7 +296,7 @@ if (flags.csv) {
   for (const c of components) {
     lines.push(`"${c.name}","${c.version}","${c.properties[0].value}"`);
   }
-  writeFileSync(csvPath, lines.join("\n") + "\n", "utf-8");
+  writeFileSync(csvPath, `${lines.join("\n")}\n`, "utf-8");
   console.log(`  \u2705 CSV written to ${csvPath}`);
 }
 
