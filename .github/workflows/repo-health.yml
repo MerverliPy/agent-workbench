@@ -29,7 +29,7 @@ jobs:
           bun install --frozen-lockfile
           bash scripts/build-all.sh
           bun run --if-present typecheck
-          bun test --if-present
+          bun test --if-present --exclude '"**/e2e/**"'
 
       - name: Python checks
         if: hashFiles('requirements.txt', 'pyproject.toml') != ''

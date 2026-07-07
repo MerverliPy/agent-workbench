@@ -115,7 +115,7 @@ jobs:
           for dir in apps/server apps/mobile-web packages/compliance packages/auth plugins/agent-workbench-opencode; do
             if [ -d "$dir" ]; then
               echo "  [test] $dir"
-              (cd "$dir" && bun test 2>&1) || echo "⚠️ Tests in $dir had failures (non-blocking)"
+              (cd "$dir" && bun run test 2>&1) || echo "⚠️ Tests in $dir had failures (non-blocking)"
             fi
           done
       - name: Upload coverage reports
