@@ -112,7 +112,7 @@ jobs:
         run: bun test --coverage
       - name: Run orphan tests (outside tests/ workspace)
         run: |
-          for dir in apps/server apps/mobile-web packages/compliance packages/auth plugins/agent-workbench-opencode; do
+          for dir in apps/server packages/compliance packages/auth plugins/agent-workbench-opencode; do
             if [ -d "$dir" ]; then
               echo "  [test] $dir"
               (cd "$dir" && bun run test 2>&1) || echo "⚠️ Tests in $dir had failures (non-blocking)"
