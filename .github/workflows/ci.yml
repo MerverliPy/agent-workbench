@@ -109,7 +109,7 @@ jobs:
       - name: Build workspace packages
         run: bash scripts/build-all.sh
       - name: Run tests with coverage
-        run: bun test --coverage
+        run: cd tests && bun test --coverage
       - name: Run orphan tests (outside tests/ workspace)
         run: |
           for dir in apps/server packages/compliance packages/auth plugins/agent-workbench-opencode; do
