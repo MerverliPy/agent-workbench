@@ -14,7 +14,12 @@
 //   node scripts/generate-sbom.js ./output     # Write to ./output/bom.json
 
 const { execSync } = require("node:child_process");
-const { existsSync, readFileSync, writeFileSync, mkdirSync } = require("node:fs");
+const {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+} = require("node:fs");
 const { randomUUID } = require("node:crypto");
 const { resolve } = require("node:path");
 
@@ -38,19 +43,27 @@ let OS_NAME = "unknown";
 let OS_ARCH = "unknown";
 try {
   BUN_VERSION = execSync("bun --version", { encoding: "utf-8" }).trim();
-} catch { /* no bun */ }
+} catch {
+  /* no bun */
+}
 try {
   OS_NAME = execSync("uname -s", { encoding: "utf-8" }).trim();
   OS_ARCH = execSync("uname -m", { encoding: "utf-8" }).trim();
-} catch { /* no uname */ }
+} catch {
+  /* no uname */
+}
 
-console.log(`\ud83d\udd0d Generating SBOM for ${PACKAGE_NAME}@${PACKAGE_VERSION}...`);
+console.log(
+  `\ud83d\udd0d Generating SBOM for ${PACKAGE_NAME}@${PACKAGE_VERSION}...`,
+);
 console.log(`  Bun: v${BUN_VERSION}  OS: ${OS_NAME}/${OS_ARCH}`);
 
 // ── Parse bun.lock ─────────────────────────────────────────────────────
 const LOCK_PATH = "bun.lock";
 if (!existsSync(LOCK_PATH)) {
-  console.error(`\u274c ${LOCK_PATH} not found \u2014 run 'bun install' first.`);
+  console.error(
+    `\u274c ${LOCK_PATH} not found \u2014 run 'bun install' first.`,
+  );
   process.exit(1);
 }
 
@@ -62,7 +75,9 @@ let LOCK;
 try {
   LOCK = JSON.parse(LOCK_RE);
 } catch (err) {
-  console.error("\u274c Failed to parse bun.lock after trailing-comma cleanup.");
+  console.error(
+    "\u274c Failed to parse bun.lock after trailing-comma cleanup.",
+  );
   console.error(`   ${err instanceof Error ? err.message : String(err)}`);
   process.exit(1);
 }
@@ -75,9 +90,11 @@ if (workspaces) {
   for (const ws of Object.values(workspaces)) {
     const wsPkg = /** @type {any} */ (ws);
     if (wsPkg?.name) {
-      const name = typeof wsPkg.name === "string"
-        ? wsPkg.name.split("@").slice(0, -1).join("@") || `@${wsPkg.name.split("@")[1]}`
-        : wsPkg.name;
+      const name =
+        typeof wsPkg.name === "string"
+          ? wsPkg.name.split("@").slice(0, -1).join("@") ||
+            `@${wsPkg.name.split("@")[1]}`
+          : wsPkg.name;
       workspaceNames.add(name);
     }
   }
@@ -90,7 +107,10 @@ try {
     "find packages apps plugins tests -name 'package.json' ! -path '*/node_modules/*' 2>/dev/null || true",
     { encoding: "utf-8" },
   ).trim();
-  workspacePkgJsons = ["package.json", ...(findOut ? findOut.split("\n").filter(Boolean) : [])];
+  workspacePkgJsons = [
+    "package.json",
+    ...(findOut ? findOut.split("\n").filter(Boolean) : []),
+  ];
 } catch {
   workspacePkgJsons = ["package.json"];
 }
@@ -101,7 +121,9 @@ for (const pj of workspacePkgJsons) {
     if (p.name && p.name.startsWith("@agent-workbench/")) {
       workspaceNames.add(p.name);
     }
-  } catch { /* skip unreadable */ }
+  } catch {
+    /* skip unreadable */
+  }
 }
 
 // ── Classify dev vs runtime from workspace package.json files ──────────
@@ -113,7 +135,9 @@ for (const pj of workspacePkgJsons) {
     for (const k of Object.keys(dd)) {
       if (!k.startsWith("@agent-workbench/")) devDeps.add(k);
     }
-  } catch { /* skip */ }
+  } catch {
+    /* skip */
+  }
 }
 const isDevPkg = (name) => devDeps.has(name);
 
@@ -136,7 +160,8 @@ for (const entry of Object.values(packages)) {
   if (!pkgName || !pkgVer) continue;
 
   // Skip workspace packages
-  if (workspaceNames.has(pkgName) || pkgName.startsWith("@agent-workbench/")) continue;
+  if (workspaceNames.has(pkgName) || pkgName.startsWith("@agent-workbench/"))
+    continue;
 
   // Deduplicate
   if (seenNames.has(pkgName)) continue;
@@ -144,7 +169,10 @@ for (const entry of Object.values(packages)) {
 
   const integrity = arr[3] ? String(arr[3]) : undefined;
   const depMap = arr[2] || {};
-  const deps = { ...(depMap.dependencies || {}), ...(depMap.peerDependencies || {}) };
+  const deps = {
+    ...(depMap.dependencies || {}),
+    ...(depMap.peerDependencies || {}),
+  };
 
   const purl = `pkg:npm/${pkgName}@${pkgVer}`;
 
@@ -158,19 +186,24 @@ for (const entry of Object.values(packages)) {
 
   // Add integrity hash if available
   if (integrity) {
-    const algo = integrity.startsWith("sha512") ? "SHA-512"
-      : integrity.startsWith("sha384") ? "SHA-384"
-      : integrity.startsWith("sha256") ? "SHA-256"
-      : undefined;
+    const algo = integrity.startsWith("sha512")
+      ? "SHA-512"
+      : integrity.startsWith("sha384")
+        ? "SHA-384"
+        : integrity.startsWith("sha256")
+          ? "SHA-256"
+          : undefined;
     if (algo) {
       comp.hashes = [{ alg: algo, value: integrity }];
     }
   }
 
-  comp.properties = [{
-    name: "dependency_type",
-    value: isDevPkg(pkgName) ? "devDependencies" : "dependencies",
-  }];
+  comp.properties = [
+    {
+      name: "dependency_type",
+      value: isDevPkg(pkgName) ? "devDependencies" : "dependencies",
+    },
+  ];
 
   components.push(comp);
   packageEntries.push({ name: pkgName, version: pkgVer, deps, purl });
@@ -191,9 +224,7 @@ const dependsOn = [
 for (const pkg of packageEntries) {
   const depRefs = [];
   for (const depName of Object.keys(pkg.deps)) {
-    const match = components.find(
-      (c) => c.name === depName,
-    );
+    const match = components.find((c) => c.name === depName);
     if (match) {
       depRefs.push(match["bom-ref"]);
     }
@@ -211,7 +242,9 @@ function generateUUID() {
   try {
     const out = execSync("uuidgen", { encoding: "utf-8" }).trim().toLowerCase();
     if (out.length === 36) return out;
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
   return randomUUID();
 }
 
@@ -226,11 +259,13 @@ const bom = {
   version: 1,
   metadata: {
     timestamp: TIMESTAMP,
-    tools: [{
-      vendor: "agent-workbench",
-      name: "sbom-generator",
-      version: "2.0.0",
-    }],
+    tools: [
+      {
+        vendor: "agent-workbench",
+        name: "sbom-generator",
+        version: "2.0.0",
+      },
+    ],
     component: {
       "bom-ref": `pkg:npm/${PACKAGE_NAME}@${PACKAGE_VERSION}`,
       type: "application",
@@ -251,7 +286,9 @@ const bom = {
 mkdirSync(ROOT, { recursive: true });
 const bomPath = resolve(ROOT, "bom.json");
 writeFileSync(bomPath, JSON.stringify(bom, null, 2), "utf-8");
-console.log(`  \u2705 SBOM written to ${bomPath} (${components.length} components)`);
+console.log(
+  `  \u2705 SBOM written to ${bomPath} (${components.length} components)`,
+);
 
 if (flags.csv) {
   const csvPath = resolve(ROOT, "bom.csv");
@@ -269,7 +306,9 @@ if (flags.audit) {
     const auditOut = execSync("bun pm scan 2>&1", { encoding: "utf-8" });
     console.log(auditOut);
     writeFileSync(resolve(ROOT, "audit-report.txt"), auditOut, "utf-8");
-    console.log(`  \u2705 Audit report written to ${resolve(ROOT, "audit-report.txt")}`);
+    console.log(
+      `  \u2705 Audit report written to ${resolve(ROOT, "audit-report.txt")}`,
+    );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`  \u26a0\ufe0f Audit failed: ${msg}`);

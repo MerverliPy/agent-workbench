@@ -1,4 +1,4 @@
-import { AuditTrail, type AuditEntry } from "@agent-workbench/compliance";
+import { type AuditEntry, AuditTrail } from "@agent-workbench/compliance";
 import type { MiddlewareHandler } from "hono";
 import type { ServerAppBindings } from "../context";
 
@@ -25,7 +25,7 @@ export function auditLogMiddleware(
     } finally {
       const authCtx = context.get("auth");
       const userId = authCtx?.subject ?? "anonymous";
-      // nosemgrep: type-coercion
+      // biome-ignore lint/suspicious/noExplicitAny: context.res.status type is not accessible from middleware context
       const statusCode = (context.res as any)?.status ?? 0;
 
       auditTrail.append({

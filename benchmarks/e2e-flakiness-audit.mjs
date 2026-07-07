@@ -10,10 +10,10 @@
  * Output: benchmarks/e2e-flakiness-audit.json + stdout JSON
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
@@ -33,7 +33,8 @@ const EXISTING_TEST_PATH = join(
 /** Extract all markdown code blocks (```…```) from a string. */
 function extractCodeBlocks(md) {
   const blocks = [];
-  const re = /```(?:typescript|ts|javascript|js|yaml|yml|bash|sh)?\s*\n([\s\S]*?)```/g;
+  const re =
+    /```(?:typescript|ts|javascript|js|yaml|yml|bash|sh)?\s*\n([\s\S]*?)```/g;
   let m;
   while ((m = re.exec(md)) !== null) {
     blocks.push({ content: m[1], start: m.index, end: m.index + m[0].length });
@@ -69,8 +70,7 @@ function findTimeoutValues(text) {
     const val = parseInt(m[1], 10);
     // Filter likely timeout-related: near keywords like timeout, waitFor, etc.
     const before = text.slice(Math.max(0, m.index - 50), m.index);
-    const isTimeout =
-      /timeout|wait|delay|retry|interval|poll/i.test(before);
+    const isTimeout = /timeout|wait|delay|retry|interval|poll/i.test(before);
     if (isTimeout) {
       const ctxStart = Math.max(0, m.index - 30);
       const ctxEnd = Math.min(text.length, m.index + m[0].length + 30);
@@ -116,9 +116,10 @@ function checkWaitForTimeoutWithoutDomAssertion(codeBlocks) {
       // Non-greedy match with {1,2} close-parens to handle nesting like:
       //   expect(page.getByText(/foo/i)).not.toBeVisible()
       //   expect(page.locator("body")).not.toBeEmpty()
-      const hasDomAssertion = /expect\s*\(.+?\){1,2}\s*\.(?:not\.)?(?:toBeVisible|toHaveText|toHaveAttribute|toHaveCount|toBeEmpty|toContainText)\b/.test(
-        afterCall.slice(0, 1000),
-      );
+      const hasDomAssertion =
+        /expect\s*\(.+?\){1,2}\s*\.(?:not\.)?(?:toBeVisible|toHaveText|toHaveAttribute|toHaveCount|toBeEmpty|toContainText)\b/.test(
+          afterCall.slice(0, 1000),
+        );
       if (!hasDomAssertion) {
         const ctxStart = Math.max(0, wftMatch.index - 60);
         const ctxEnd = Math.min(
@@ -204,9 +205,8 @@ const safetyRatio =
     : 1.0;
 
 // ── 4) waitForTimeout without DOM assertion ──────────────────────────
-const wftNoDomAssertSkill = checkWaitForTimeoutWithoutDomAssertion(
-  skillCodeBlocks,
-);
+const wftNoDomAssertSkill =
+  checkWaitForTimeoutWithoutDomAssertion(skillCodeBlocks);
 
 // For the existing test file, treat it as a single code block
 const wftNoDomAssertExisting = checkWaitForTimeoutWithoutDomAssertion([
@@ -257,8 +257,7 @@ const result = {
       wftNoDomAssertSkill.length + wftNoDomAssertExisting.length,
     hardcoded_timeouts_total: allTimeoutValues.length,
     hardcoded_timeouts_over_2000ms: over2000ms.length,
-    networkidle_occurrences:
-      networkIdleSkill.count + networkIdleExisting.count,
+    networkidle_occurrences: networkIdleSkill.count + networkIdleExisting.count,
   },
   details: {
     waitForTimeout_high_flakiness_risk: highFlakinessRisk,

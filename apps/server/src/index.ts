@@ -6,7 +6,11 @@ import {
   SharedSessionManager,
   ShareManager,
 } from "@agent-workbench/collab";
-import { applyRetention, createAirGappedFetch, isAirGapped } from "@agent-workbench/compliance";
+import {
+  applyRetention,
+  createAirGappedFetch,
+  isAirGapped,
+} from "@agent-workbench/compliance";
 import {
   AgentRegistry,
   SessionRunner,
@@ -146,6 +150,7 @@ const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 (function scheduleRetention() {
   try {
     const entriesResult = ledgerRepository.listByCategory("audit");
+    // biome-ignore lint/suspicious/noExplicitAny: LedgerRow[] → AuditEntry[] cast for retention
     const { result } = applyRetention(entriesResult as any);
     if (result.deletedCount > 0) {
       logger.info(
@@ -159,6 +164,7 @@ const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
   setInterval(() => {
     try {
       const entriesResult = ledgerRepository.listByCategory("audit");
+      // biome-ignore lint/suspicious/noExplicitAny: LedgerRow[] → AuditEntry[] cast for retention
       const { result } = applyRetention(entriesResult as any);
       if (result.deletedCount > 0) {
         logger.info(

@@ -70,18 +70,9 @@
     }
   },
   "pageObjects": {
-    "fullyImplemented": [
-      "BasePage",
-      "ChatPage",
-      "SettingsPage",
-      "AuthPage"
-    ],
+    "fullyImplemented": ["BasePage", "ChatPage", "SettingsPage", "AuthPage"],
     "fullyImplementedCount": 4,
-    "stubbed": [
-      "WorkspacePage",
-      "FilesPage",
-      "ActivityPage"
-    ],
+    "stubbed": ["WorkspacePage", "FilesPage", "ActivityPage"],
     "stubbedCount": 3
   },
   "fileDetails": [

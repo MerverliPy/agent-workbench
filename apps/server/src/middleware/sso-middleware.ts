@@ -178,12 +178,17 @@ async function verifyIdToken(
   const data = `${headerB64}.${payloadB64}`;
 
   const algorithm =
-    alg === "RS384" ? "sha384" :
-    alg === "RS512" ? "sha512" :
-    alg === "ES256" ? "sha256" :
-    alg === "ES384" ? "sha384" :
-    alg === "ES512" ? "sha512" :
-    "sha256"; // default: RS256 / ES256
+    alg === "RS384"
+      ? "sha384"
+      : alg === "RS512"
+        ? "sha512"
+        : alg === "ES256"
+          ? "sha256"
+          : alg === "ES384"
+            ? "sha384"
+            : alg === "ES512"
+              ? "sha512"
+              : "sha256"; // default: RS256 / ES256
 
   const verifier = createVerify(algorithm);
   verifier.update(data);
@@ -301,7 +306,7 @@ function ecJwkToSpki(jwk: Jwk): string {
   // AlgorithmIdentifier: ecPublicKey + named curve OID
   const algorithmIdentifier = derSequence(
     derOid("1.2.840.10045.2.1"), // ecPublicKey
-    derOid(curveOid),            // named curve
+    derOid(curveOid), // named curve
   );
 
   const spki = derSequence(algorithmIdentifier, derBitString(point));

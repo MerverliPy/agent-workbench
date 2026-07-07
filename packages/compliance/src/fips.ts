@@ -187,7 +187,10 @@ export function isFipsCapable(): boolean {
     // Check OpenSSL FIPS mode via /proc (Linux)
     try {
       if (existsSync("/proc/sys/crypto/fips_enabled")) {
-        const fipsFlag = readFileSync("/proc/sys/crypto/fips_enabled", "utf-8").trim();
+        const fipsFlag = readFileSync(
+          "/proc/sys/crypto/fips_enabled",
+          "utf-8",
+        ).trim();
         if (fipsFlag === "1") return true;
       }
     } catch {

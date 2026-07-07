@@ -1,9 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
   "files": {
-    "ignoreUnknown": true,
-    "include": ["apps/*/src/**", "packages/**", "scripts/**", "tests/**", "plugins/**"],
-    "ignore": ["**/dist/**", "**/e2e/**"]
+    "ignoreUnknown": true
   },
   "vcs": {
     "clientKind": "git",

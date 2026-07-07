@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import { createResource, createSignal, For, onMount, Show } from "solid-js";
-import { DashboardClient } from "./client";
 import type { DashboardResponse } from "./client";
+import { DashboardClient } from "./client";
 
 const DEFAULT_SERVER = "http://localhost:3000";
 
@@ -29,7 +29,8 @@ function formatCost(cost: number): string {
 
 export function App(): JSX.Element {
   const [serverUrl, setServerUrl] = createSignal(getServerUrl());
-  const [dashboard, { refetch }] = createResource<DashboardResponse>(fetchDashboard);
+  const [dashboard, { refetch }] =
+    createResource<DashboardResponse>(fetchDashboard);
   const [autoRefresh, setAutoRefresh] = createSignal(true);
 
   // Auto-refresh every 10 seconds

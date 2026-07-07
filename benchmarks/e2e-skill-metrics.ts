@@ -11,13 +11,17 @@
  * Output:    benchmarks/e2e-skill-metrics.json + stdout summary
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // ── Cross-runtime __dirname ─────────────────────────────────────────────────
 const scriptDir = (() => {
-  try { return import.meta.dirname; } catch { /* not Bun */ }
+  try {
+    return import.meta.dirname;
+  } catch {
+    /* not Bun */
+  }
   return dirname(fileURLToPath(import.meta.url));
 })();
 
@@ -67,23 +71,41 @@ interface DescribedFile {
 }
 
 interface SkillMetrics {
-  meta: { skillName: string; skillVersion: string; analyzedAt: string; skillPath: string };
+  meta: {
+    skillName: string;
+    skillVersion: string;
+    analyzedAt: string;
+    skillPath: string;
+  };
   files: {
-    totalDescribed: number; totalWithCode: number; readyToRunRatio: number; architectureOnly: number;
+    totalDescribed: number;
+    totalWithCode: number;
+    readyToRunRatio: number;
+    architectureOnly: number;
     breakdown: Record<string, { described: number; withCode: number }>;
   };
   linesOfCode: {
-    totalProductionCode: number; totalLines: number; commentLines: number; blankLines: number;
+    totalProductionCode: number;
+    totalLines: number;
+    commentLines: number;
+    blankLines: number;
     byCategory: Record<string, { codeLines: number; totalLines: number }>;
   };
-  pageObjects: { fullyImplemented: string[]; fullyImplementedCount: number; stubbed: string[]; stubbedCount: number };
+  pageObjects: {
+    fullyImplemented: string[];
+    fullyImplementedCount: number;
+    stubbed: string[];
+    stubbedCount: number;
+  };
   fileDetails: FileMetrics[];
 }
 
 // ── Fenced code block parser ────────────────────────────────────────────────
 
 /** Parse SKILL.md into all fenced code blocks with language and content. */
-function parseAllCodeBlocks(markdown: string): { language: string; content: string; startLine: number }[] {
+function parseAllCodeBlocks(
+  markdown: string,
+): { language: string; content: string; startLine: number }[] {
   const blocks: { language: string; content: string; startLine: number }[] = [];
   const lines = markdown.split("\n");
   let i = 0;
@@ -215,14 +237,21 @@ function categorizeFile(fullPath: string): DescribedFile["category"] {
   if (fullPath.includes("/specs/")) return "spec";
   if (fullPath.includes("/utils/")) return "util";
   if (fullPath.includes("/fixtures/")) return "fixture";
-  if (fullPath.includes("playwright.config") || fullPath.includes("playwright.base")) return "config";
+  if (
+    fullPath.includes("playwright.config") ||
+    fullPath.includes("playwright.base")
+  )
+    return "config";
   if (fullPath.endsWith(".yml") || fullPath.endsWith(".yaml")) return "ci";
   return "other";
 }
 
 // ── File-path extraction from code blocks ───────────────────────────────────
 
-function extractFilePath(block: { language: string; content: string }): string | null {
+function extractFilePath(block: {
+  language: string;
+  content: string;
+}): string | null {
   const firstLine = block.content.split("\n")[0]?.trim() ?? "";
 
   // TS/JS: // path/to/file.ts
@@ -246,11 +275,17 @@ function extractFilePath(block: { language: string; content: string }): string |
 
 function countLoc(code: string, language: string) {
   const lines = code.split("\n");
-  let codeLines = 0, commentLines = 0, blankLines = 0, inBlockComment = false;
+  let codeLines = 0,
+    commentLines = 0,
+    blankLines = 0,
+    inBlockComment = false;
 
   for (const raw of lines) {
     const line = raw.trim();
-    if (line === "") { blankLines++; continue; }
+    if (line === "") {
+      blankLines++;
+      continue;
+    }
 
     if (["typescript", "ts", "javascript", "js"].includes(language)) {
       if (inBlockComment) {
@@ -259,16 +294,25 @@ function countLoc(code: string, language: string) {
         continue;
       }
       // Skip JSDoc-style /** ... */ blocks on one line
-      if (/^\/\*\*.*\*\/$/.test(line)) { commentLines++; continue; }
+      if (/^\/\*\*.*\*\/$/.test(line)) {
+        commentLines++;
+        continue;
+      }
       if (line.startsWith("/*")) {
         commentLines++;
         if (!line.includes("*/")) inBlockComment = true;
         continue;
       }
-      if (line.startsWith("//")) { commentLines++; continue; }
+      if (line.startsWith("//")) {
+        commentLines++;
+        continue;
+      }
       codeLines++;
     } else if (["yaml", "yml", "bash", "sh"].includes(language)) {
-      if (line.startsWith("#")) { commentLines++; continue; }
+      if (line.startsWith("#")) {
+        commentLines++;
+        continue;
+      }
       codeLines++;
     } else {
       codeLines++;
@@ -284,7 +328,9 @@ function detectPageObject(block: CodeBlock): PomInfo | null {
   if (!["typescript", "ts"].includes(block.language)) return null;
   const content = block.content;
 
-  const classMatch = content.match(/(?:export\s+)?(?:abstract\s+)?class\s+(\w+)\s*(?:extends\s+(\w+))?/);
+  const classMatch = content.match(
+    /(?:export\s+)?(?:abstract\s+)?class\s+(\w+)\s*(?:extends\s+(\w+))?/,
+  );
   if (!classMatch) return null;
 
   const className = classMatch[1];
@@ -353,7 +399,9 @@ function analyze(): SkillMetrics {
       isSpec: block.filePath.includes("/specs/"),
       isUtil: block.filePath.includes("/utils/"),
       isFixture: block.filePath.includes("/fixtures/"),
-      isConfig: block.filePath.includes("config") || block.filePath.includes("playwright.config"),
+      isConfig:
+        block.filePath.includes("config") ||
+        block.filePath.includes("playwright.config"),
     };
   });
 
@@ -367,11 +415,18 @@ function analyze(): SkillMetrics {
   const stubbedPoms: string[] = [];
   for (const df of describedFiles) {
     if (df.category === "page" && !df.hasCode) {
-      const pageName = df.filePath.split("/").pop()?.replace(/\.ts$/, "")
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join("") ?? df.filePath;
-      if (!stubbedPoms.includes(pageName) && !pomInfos.some((p) => p.name === pageName)) {
+      const pageName =
+        df.filePath
+          .split("/")
+          .pop()
+          ?.replace(/\.ts$/, "")
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join("") ?? df.filePath;
+      if (
+        !stubbedPoms.includes(pageName) &&
+        !pomInfos.some((p) => p.name === pageName)
+      ) {
         stubbedPoms.push(pageName);
       }
     }
@@ -380,15 +435,29 @@ function analyze(): SkillMetrics {
   // ── Aggregation ──────────────────────────────────────────────────────────
   const totalDescribed = describedFiles.length;
   const totalWithCode = describedFiles.filter((f) => f.hasCode).length;
-  const readyToRunRatio = totalDescribed > 0 ? totalWithCode / totalDescribed : 0;
+  const readyToRunRatio =
+    totalDescribed > 0 ? totalWithCode / totalDescribed : 0;
 
-  const totalProductionCode = fileMetrics.reduce((s, fm) => s + fm.codeLines, 0);
+  const totalProductionCode = fileMetrics.reduce(
+    (s, fm) => s + fm.codeLines,
+    0,
+  );
   const totalAllLines = fileMetrics.reduce((s, fm) => s + fm.totalLines, 0);
-  const totalCommentLines = fileMetrics.reduce((s, fm) => s + fm.commentLines, 0);
+  const totalCommentLines = fileMetrics.reduce(
+    (s, fm) => s + fm.commentLines,
+    0,
+  );
   const totalBlankLines = fileMetrics.reduce((s, fm) => s + fm.blankLines, 0);
 
   // Breakdown by category
-  const categories = ["page", "spec", "util", "fixture", "config", "ci"] as const;
+  const categories = [
+    "page",
+    "spec",
+    "util",
+    "fixture",
+    "config",
+    "ci",
+  ] as const;
   const breakdown: Record<string, { described: number; withCode: number }> = {};
   for (const cat of categories) {
     const described = describedFiles.filter((f) => f.category === cat);
@@ -399,7 +468,10 @@ function analyze(): SkillMetrics {
   }
 
   // LOC by category
-  const locByCategory: Record<string, { codeLines: number; totalLines: number }> = {};
+  const locByCategory: Record<
+    string,
+    { codeLines: number; totalLines: number }
+  > = {};
   for (const fm of fileMetrics) {
     let cat = "other";
     if (fm.isPom) cat = "pages";
@@ -407,9 +479,11 @@ function analyze(): SkillMetrics {
     else if (fm.isUtil) cat = "utils";
     else if (fm.isFixture) cat = "fixtures";
     else if (fm.isConfig) cat = "configs";
-    else if (fm.filePath.endsWith(".yml") || fm.filePath.endsWith(".yaml")) cat = "ci";
+    else if (fm.filePath.endsWith(".yml") || fm.filePath.endsWith(".yaml"))
+      cat = "ci";
 
-    if (!locByCategory[cat]) locByCategory[cat] = { codeLines: 0, totalLines: 0 };
+    if (!locByCategory[cat])
+      locByCategory[cat] = { codeLines: 0, totalLines: 0 };
     locByCategory[cat].codeLines += fm.codeLines;
     locByCategory[cat].totalLines += fm.totalLines;
   }
@@ -436,7 +510,9 @@ function analyze(): SkillMetrics {
       byCategory: locByCategory,
     },
     pageObjects: {
-      fullyImplemented: pomInfos.filter((p) => p.implemented).map((p) => p.name),
+      fullyImplemented: pomInfos
+        .filter((p) => p.implemented)
+        .map((p) => p.name),
       fullyImplementedCount: pomInfos.filter((p) => p.implemented).length,
       stubbed: stubbedPoms,
       stubbedCount: stubbedPoms.length,
@@ -454,7 +530,9 @@ writeFileSync(OUTPUT_PATH, JSON.stringify(metrics, null, 2));
 console.log("═══════════════════════════════════════════════════════");
 console.log("  E2E Skill Benchmark — POM Generation Efficiency");
 console.log("═══════════════════════════════════════════════════════");
-console.log(`\n  Skill:          ${metrics.meta.skillName} v${metrics.meta.skillVersion}`);
+console.log(
+  `\n  Skill:          ${metrics.meta.skillName} v${metrics.meta.skillVersion}`,
+);
 console.log(`  Analyzed at:    ${metrics.meta.analyzedAt}`);
 console.log("\n───────────────────────────────────────────────────────");
 console.log("  FILE COVERAGE");
@@ -464,35 +542,50 @@ console.log(`  Total with executable code:  ${metrics.files.totalWithCode}`);
 console.log(`  Ready-to-run ratio:          ${metrics.files.readyToRunRatio}%`);
 console.log(`  Architecture-only (stubs):   ${metrics.files.architectureOnly}`);
 for (const [cat, bd] of Object.entries(metrics.files.breakdown)) {
-  console.log(`  ${cat.padEnd(10)} ${String(bd.withCode).padStart(2)}/${String(bd.described).padStart(2)} with code`);
+  console.log(
+    `  ${cat.padEnd(10)} ${String(bd.withCode).padStart(2)}/${String(bd.described).padStart(2)} with code`,
+  );
 }
 console.log("\n───────────────────────────────────────────────────────");
 console.log("  LINES OF CODE");
 console.log("───────────────────────────────────────────────────────");
 console.log(`  Total lines (raw):           ${metrics.linesOfCode.totalLines}`);
-console.log(`  Production code lines:       ${metrics.linesOfCode.totalProductionCode}`);
-console.log(`  Comment lines:               ${metrics.linesOfCode.commentLines}`);
+console.log(
+  `  Production code lines:       ${metrics.linesOfCode.totalProductionCode}`,
+);
+console.log(
+  `  Comment lines:               ${metrics.linesOfCode.commentLines}`,
+);
 console.log(`  Blank lines:                 ${metrics.linesOfCode.blankLines}`);
 for (const [cat, loc] of Object.entries(metrics.linesOfCode.byCategory)) {
-  console.log(`  ${cat.padEnd(10)} ${String(loc.codeLines).padStart(5)} code lines`);
+  console.log(
+    `  ${cat.padEnd(10)} ${String(loc.codeLines).padStart(5)} code lines`,
+  );
 }
 console.log("\n───────────────────────────────────────────────────────");
 console.log("  PAGE OBJECTS");
 console.log("───────────────────────────────────────────────────────");
-console.log(`  Fully implemented:  ${metrics.pageObjects.fullyImplementedCount} (${metrics.pageObjects.fullyImplemented.join(", ")})`);
-console.log(`  Stubbed only:       ${metrics.pageObjects.stubbedCount} (${metrics.pageObjects.stubbed.join(", ") || "none"})`);
+console.log(
+  `  Fully implemented:  ${metrics.pageObjects.fullyImplementedCount} (${metrics.pageObjects.fullyImplemented.join(", ")})`,
+);
+console.log(
+  `  Stubbed only:       ${metrics.pageObjects.stubbedCount} (${metrics.pageObjects.stubbed.join(", ") || "none"})`,
+);
 console.log(`\n───────────────────────────────────────────────────────`);
 console.log(`  Output saved to: ${OUTPUT_PATH}`);
 console.log("═══════════════════════════════════════════════════════");
 
 // JSON export
-console.log("\n" + JSON.stringify({
-  total_files_described: metrics.files.totalDescribed,
-  total_with_code: metrics.files.totalWithCode,
-  ready_to_run_pct: metrics.files.readyToRunRatio,
-  total_lines_of_production_code: metrics.linesOfCode.totalProductionCode,
-  page_objects_implemented: metrics.pageObjects.fullyImplementedCount,
-  page_objects_stubbed: metrics.pageObjects.stubbedCount,
-  file_breakdown: metrics.files.breakdown,
-  loc_breakdown: metrics.linesOfCode.byCategory,
-}));
+console.log(
+  "\n" +
+    JSON.stringify({
+      total_files_described: metrics.files.totalDescribed,
+      total_with_code: metrics.files.totalWithCode,
+      ready_to_run_pct: metrics.files.readyToRunRatio,
+      total_lines_of_production_code: metrics.linesOfCode.totalProductionCode,
+      page_objects_implemented: metrics.pageObjects.fullyImplementedCount,
+      page_objects_stubbed: metrics.pageObjects.stubbedCount,
+      file_breakdown: metrics.files.breakdown,
+      loc_breakdown: metrics.linesOfCode.byCategory,
+    }),
+);
