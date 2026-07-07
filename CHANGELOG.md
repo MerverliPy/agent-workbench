@@ -93,7 +93,7 @@ No active development — deferred to future phase.
 - `providerRegistry.registerPluginProvider()` — public API for plugin provider registration
 - **CLI** (`apps/cli`): `agent-workbench plugin list|install|enable|disable|uninstall` commands
 - 26 new tests for plugin registry, loader, routes, and sandbox validation
-- Total test suite: 523 tests, 0 failures
+- Total test suite: 564 tests, 0 failures (up from 323 at Phase 15)
 
 ### Changed
 - `ProviderRegistry` now exposes `registerPluginProvider` for plugin-based provider registration

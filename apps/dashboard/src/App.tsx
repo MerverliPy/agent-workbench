@@ -1,6 +1,7 @@
 import type { JSX } from "solid-js";
 import { createResource, createSignal, For, onMount, Show } from "solid-js";
-import type { DashboardData } from "./types";
+import type { DashboardResponse } from "./client";
+import { DashboardClient } from "./client";
 
 const DEFAULT_SERVER = "http://localhost:3000";
 
@@ -8,13 +9,10 @@ function getServerUrl(): string {
   return localStorage.getItem("dashboard-server-url") ?? DEFAULT_SERVER;
 }
 
-async function fetchDashboard(): Promise<DashboardData> {
-  const base = getServerUrl();
-  const res = await fetch(`${base}/observability/dashboard`);
-  if (!res.ok) {
-    throw new Error(`Server returned ${res.status}: ${res.statusText}`);
-  }
-  return res.json() as Promise<DashboardData>;
+let dashboardClient = new DashboardClient(getServerUrl());
+
+async function fetchDashboard() {
+  return dashboardClient.fetchDashboard();
 }
 
 function formatMs(ms: number): string {
@@ -31,7 +29,8 @@ function formatCost(cost: number): string {
 
 export function App(): JSX.Element {
   const [serverUrl, setServerUrl] = createSignal(getServerUrl());
-  const [dashboard, { refetch }] = createResource(fetchDashboard);
+  const [dashboard, { refetch }] =
+    createResource<DashboardResponse>(fetchDashboard);
   const [autoRefresh, setAutoRefresh] = createSignal(true);
 
   // Auto-refresh every 10 seconds
@@ -49,6 +48,7 @@ export function App(): JSX.Element {
     const url = input.value.replace(/\/$/, "");
     setServerUrl(url);
     localStorage.setItem("dashboard-server-url", url);
+    dashboardClient = new DashboardClient(url);
     refetch();
   }
 

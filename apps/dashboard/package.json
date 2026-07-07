@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agent-workbench/protocol": "*",
+    "@agent-workbench/sdk": "*",
     "solid-js": "^1.9.12"
   },
   "devDependencies": {

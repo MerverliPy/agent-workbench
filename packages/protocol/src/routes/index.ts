@@ -7,6 +7,7 @@ export * from "./health";
 export * from "./info";
 export * from "./marketplace";
 export * from "./message";
+export * from "./observability";
 export * from "./permission";
 export * from "./plan";
 export * from "./provider";

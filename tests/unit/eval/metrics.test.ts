@@ -3,7 +3,7 @@
 // Tests cost estimation, latency percentiles, comparison, and formatting.
 
 import { describe, expect, it } from "bun:test";
-import { MetricsCollector } from "../metrics";
+import { MetricsCollector } from "@agent-workbench/eval";
 
 // Mock repository for testing
 interface MockRepo {

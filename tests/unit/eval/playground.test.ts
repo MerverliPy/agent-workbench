@@ -5,7 +5,7 @@
 // and provider model listing.
 
 import { describe, expect, it } from "bun:test";
-import { ModelPlayground } from "../playground";
+import { ModelPlayground } from "@agent-workbench/eval";
 
 describe("ModelPlayground", () => {
   const playground = new ModelPlayground();

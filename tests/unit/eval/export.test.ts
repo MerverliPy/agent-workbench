@@ -3,7 +3,7 @@
 // Tests CSV and JSON export formats with mock data.
 
 import { beforeAll, describe, expect, it } from "bun:test";
-import { ResultsExporter } from "../export";
+import { ResultsExporter } from "@agent-workbench/eval";
 
 // We mock the EvalRepository at a high level since we don't
 // have a real SQLite database in these unit tests.

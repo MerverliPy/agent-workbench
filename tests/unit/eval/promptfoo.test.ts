@@ -5,8 +5,8 @@
 // from the failed provider call rather than a fallback error.
 
 import { describe, expect, it } from "bun:test";
-import { runPromptfooEval } from "../integrations/promptfoo";
-import type { EvalRunOptions } from "../runner";
+import type { EvalRunOptions } from "@agent-workbench/eval";
+import { runPromptfooEval } from "@agent-workbench/eval/integrations";
 
 describe("promptfoo integration", () => {
   describe("fallback when promptfoo not installed", () => {

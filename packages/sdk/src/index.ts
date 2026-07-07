@@ -8,6 +8,7 @@ export {
   FileResource,
   HealthResource,
   MessageResource,
+  ObservabilityResource,
   PermissionResource,
   PlanResource,
   ProviderResource,

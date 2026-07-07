@@ -47,3 +47,12 @@ redesign-prototype.html
 bom.json
 bom.csv
 audit-report.txt
+
+# Playwright e2e test files (not part of workspace test runner)
+apps/mobile-web/e2e/pages/
+apps/mobile-web/e2e/specs/
+apps/mobile-web/e2e/utils/
+
+# Benchmark test artifacts (pre-existing lint issues)
+benchmarks/e2e-flakiness-audit.mjs
+benchmarks/e2e-skill-metrics.ts

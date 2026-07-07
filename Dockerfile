@@ -5,6 +5,7 @@ COPY package.json bun.lock ./
 COPY packages/ packages/
 COPY apps/server/ apps/server/
 COPY apps/cli/ apps/cli/
+COPY apps/mobile-web/ apps/mobile-web/
 COPY scripts/ scripts/
 COPY tsconfig.base.json ./
 RUN bun install --frozen-lockfile

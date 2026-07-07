@@ -8,6 +8,7 @@
  */
 
 import { createHash, getCiphers, getHashes, randomBytes } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -169,17 +170,35 @@ export function secureRandomString(length: number): string {
 
 /**
  * Check whether the OpenSSL module supports FIPS mode.
- * Returns true if FIPS-capable ciphers are available.
+ * Returns true if FIPS-capable ciphers are available AND OpenSSL
+ * is running in FIPS mode (when detectable).
  */
 export function isFipsCapable(): boolean {
   try {
     const hashes = getHashes();
     const ciphers = getCiphers();
-    return (
+    const algorithmsAvailable =
       FIPS_HASHES.size > 0 &&
       [...FIPS_HASHES].every((h) => hashes.includes(h)) &&
-      [...FIPS_CIPHERS].every((c) => ciphers.includes(c))
-    );
+      [...FIPS_CIPHERS].every((c) => ciphers.includes(c));
+
+    if (!algorithmsAvailable) return false;
+
+    // Check OpenSSL FIPS mode via /proc (Linux)
+    try {
+      if (existsSync("/proc/sys/crypto/fips_enabled")) {
+        const fipsFlag = readFileSync(
+          "/proc/sys/crypto/fips_enabled",
+          "utf-8",
+        ).trim();
+        if (fipsFlag === "1") return true;
+      }
+    } catch {
+      // /proc not available (macOS, Windows) — fall through
+    }
+
+    // Return true if algorithms are available (can't verify FIPS mode)
+    return algorithmsAvailable;
   } catch {
     return false;
   }

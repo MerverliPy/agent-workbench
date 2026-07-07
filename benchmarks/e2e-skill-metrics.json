@@ -1,0 +1,360 @@
+{
+  "meta": {
+    "skillName": "playwright-e2e-testing",
+    "skillVersion": "2.1.0",
+    "analyzedAt": "2026-07-07T11:38:42.029Z",
+    "skillPath": "/home/calvin/.hermes/skills/software-development/playwright-e2e-testing/SKILL.md"
+  },
+  "files": {
+    "totalDescribed": 32,
+    "totalWithCode": 15,
+    "readyToRunRatio": 46.88,
+    "architectureOnly": 17,
+    "breakdown": {
+      "page": {
+        "described": 7,
+        "withCode": 4
+      },
+      "spec": {
+        "described": 12,
+        "withCode": 6
+      },
+      "util": {
+        "described": 5,
+        "withCode": 3
+      },
+      "fixture": {
+        "described": 4,
+        "withCode": 1
+      },
+      "config": {
+        "described": 2,
+        "withCode": 1
+      },
+      "ci": {
+        "described": 0,
+        "withCode": 0
+      }
+    }
+  },
+  "linesOfCode": {
+    "totalProductionCode": 937,
+    "totalLines": 1242,
+    "commentLines": 185,
+    "blankLines": 120,
+    "byCategory": {
+      "pages": {
+        "codeLines": 163,
+        "totalLines": 205
+      },
+      "specs": {
+        "codeLines": 325,
+        "totalLines": 436
+      },
+      "utils": {
+        "codeLines": 244,
+        "totalLines": 362
+      },
+      "fixtures": {
+        "codeLines": 63,
+        "totalLines": 79
+      },
+      "configs": {
+        "codeLines": 59,
+        "totalLines": 67
+      },
+      "ci": {
+        "codeLines": 83,
+        "totalLines": 93
+      }
+    }
+  },
+  "pageObjects": {
+    "fullyImplemented": ["BasePage", "ChatPage", "SettingsPage", "AuthPage"],
+    "fullyImplementedCount": 4,
+    "stubbed": ["WorkspacePage", "FilesPage", "ActivityPage"],
+    "stubbedCount": 3
+  },
+  "fileDetails": [
+    {
+      "filePath": "apps/mobile-web/e2e/pages/base-page.ts",
+      "language": "typescript",
+      "totalLines": 70,
+      "codeLines": 51,
+      "commentLines": 12,
+      "blankLines": 7,
+      "hasCode": true,
+      "isPom": true,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/pages/chat-page.ts",
+      "language": "typescript",
+      "totalLines": 52,
+      "codeLines": 46,
+      "commentLines": 1,
+      "blankLines": 5,
+      "hasCode": true,
+      "isPom": true,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/pages/settings-page.ts",
+      "language": "typescript",
+      "totalLines": 48,
+      "codeLines": 39,
+      "commentLines": 3,
+      "blankLines": 6,
+      "hasCode": true,
+      "isPom": true,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/visual.spec.ts",
+      "language": "typescript",
+      "totalLines": 50,
+      "codeLines": 42,
+      "commentLines": 2,
+      "blankLines": 6,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/utils/screenshot-diff.ts",
+      "language": "typescript",
+      "totalLines": 93,
+      "codeLines": 69,
+      "commentLines": 12,
+      "blankLines": 12,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": true,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/utils/network-conditions.ts",
+      "language": "typescript",
+      "totalLines": 94,
+      "codeLines": 57,
+      "commentLines": 23,
+      "blankLines": 14,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": true,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/network.spec.ts",
+      "language": "typescript",
+      "totalLines": 52,
+      "codeLines": 34,
+      "commentLines": 8,
+      "blankLines": 10,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/utils/mock-server.ts",
+      "language": "typescript",
+      "totalLines": 85,
+      "codeLines": 54,
+      "commentLines": 22,
+      "blankLines": 9,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": true,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/security-headers.spec.ts",
+      "language": "typescript",
+      "totalLines": 31,
+      "codeLines": 27,
+      "commentLines": 1,
+      "blankLines": 3,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/xss-injection.spec.ts",
+      "language": "typescript",
+      "totalLines": 46,
+      "codeLines": 38,
+      "commentLines": 5,
+      "blankLines": 3,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/pages/auth-page.ts",
+      "language": "typescript",
+      "totalLines": 35,
+      "codeLines": 27,
+      "commentLines": 3,
+      "blankLines": 5,
+      "hasCode": true,
+      "isPom": true,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/auth.spec.ts",
+      "language": "typescript",
+      "totalLines": 64,
+      "codeLines": 55,
+      "commentLines": 4,
+      "blankLines": 5,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/utils/axe-runner.ts",
+      "language": "typescript",
+      "totalLines": 54,
+      "codeLines": 41,
+      "commentLines": 9,
+      "blankLines": 4,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": true,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/accessibility.spec.ts",
+      "language": "typescript",
+      "totalLines": 41,
+      "codeLines": 31,
+      "commentLines": 3,
+      "blankLines": 7,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/cross-app.spec.ts",
+      "language": "typescript",
+      "totalLines": 67,
+      "codeLines": 34,
+      "commentLines": 28,
+      "blankLines": 5,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "e2e/fixtures/server-fixtures.ts",
+      "language": "typescript",
+      "totalLines": 79,
+      "codeLines": 63,
+      "commentLines": 10,
+      "blankLines": 6,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": true,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/specs/error-boundary.spec.ts",
+      "language": "typescript",
+      "totalLines": 85,
+      "codeLines": 64,
+      "commentLines": 16,
+      "blankLines": 5,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": true,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/e2e/utils/performance.ts",
+      "language": "typescript",
+      "totalLines": 36,
+      "codeLines": 23,
+      "commentLines": 10,
+      "blankLines": 3,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": true,
+      "isFixture": false,
+      "isConfig": false
+    },
+    {
+      "filePath": "apps/mobile-web/playwright.config.ts",
+      "language": "typescript",
+      "totalLines": 67,
+      "codeLines": 59,
+      "commentLines": 7,
+      "blankLines": 1,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": true
+    },
+    {
+      "filePath": ".github/workflows/playwright-e2e.yml",
+      "language": "yaml",
+      "totalLines": 93,
+      "codeLines": 83,
+      "commentLines": 6,
+      "blankLines": 4,
+      "hasCode": true,
+      "isPom": false,
+      "isSpec": false,
+      "isUtil": false,
+      "isFixture": false,
+      "isConfig": false
+    }
+  ]
+}

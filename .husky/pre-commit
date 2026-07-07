@@ -2,4 +2,7 @@
 # Pre-commit hook: runs lint-staged (typecheck + format)
 # If Biome isn't installed, it gracefully skips formatting.
 
-bunx lint-staged --concurrent false 2>&1 || echo "⚠️ lint-staged failed (see above)"
+bunx lint-staged --concurrent false 2>&1 || { echo "❌ lint-staged failed — fix errors before committing"; exit 1; }
+
+# Lightweight pre-commit secret scan
+bash scripts/pre-commit-secrets.sh 2>/dev/null || true

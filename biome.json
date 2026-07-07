@@ -20,6 +20,7 @@
         "noUnusedVariables": "error"
       },
       "suspicious": {
+        "noAssignInExpressions": "warn",
         "noExplicitAny": "warn"
       },
       "complexity": {
@@ -39,7 +40,7 @@
         "noLabelWithoutControl": "off"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "off",
+        "noDangerouslySetInnerHtml": "warn",
         "noGlobalEval": "error"
       }
     }
