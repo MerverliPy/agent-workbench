@@ -5,6 +5,15 @@
   "type": "module",
   "description": "Shared display formatting, theme tokens, and non-authoritative UI helpers.",
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
 }

@@ -6,7 +6,7 @@ import {
   SharedSessionManager,
   ShareManager,
 } from "@agent-workbench/collab";
-import { createAirGappedFetch, isAirGapped } from "@agent-workbench/compliance";
+import { applyRetention, createAirGappedFetch, isAirGapped } from "@agent-workbench/compliance";
 import {
   AgentRegistry,
   SessionRunner,
@@ -138,6 +138,41 @@ if (airGapped) {
 const providerRegistry = new ProviderRegistry(
   airGapped ? { fetchImpl: createAirGappedFetch() } : undefined,
 );
+
+// ── Data retention ───────────────────────────────────────────────────────
+// Phase 30: apply data retention policy every 24 hours.
+// Runs immediately on startup to clean stale entries.
+const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+(function scheduleRetention() {
+  try {
+    const entriesResult = ledgerRepository.listByCategory("audit");
+    const { result } = applyRetention(entriesResult as any);
+    if (result.deletedCount > 0) {
+      logger.info(
+        `Data retention: removed ${result.deletedCount} entries older than ${result.cutoffDate}`,
+      );
+    }
+  } catch {
+    // Best-effort — retention may fail if no audit entries exist yet
+  }
+
+  setInterval(() => {
+    try {
+      const entriesResult = ledgerRepository.listByCategory("audit");
+      const { result } = applyRetention(entriesResult as any);
+      if (result.deletedCount > 0) {
+        logger.info(
+          `Data retention: removed ${result.deletedCount} entries older than ${result.cutoffDate}`,
+        );
+      }
+    } catch {
+      // Best-effort
+    }
+  }, RETENTION_INTERVAL_MS);
+
+  logger.info("Data retention: scheduled every 24 hours (max 90 days)");
+})();
+
 const modelProvider = providerRegistry.getDefaultProvider();
 
 // ── Phase 24: Provider marketplace & smart routing ───────────────────────────
@@ -337,6 +372,7 @@ if (authManager.isTlsEnabled) {
     fetch: app.fetch,
     tls: { key, cert },
     development: process.env.NODE_ENV !== "production",
+    idleTimeout: 255,
   });
 
   logger.info(`🔒 HTTPS server ready at https://${config.host}:${config.port}`);
@@ -346,6 +382,7 @@ if (authManager.isTlsEnabled) {
     hostname: config.host,
     fetch: app.fetch,
     development: process.env.NODE_ENV !== "production",
+    idleTimeout: 255,
   });
 
   logger.info(`🔓 HTTP server ready at http://${config.host}:${config.port}`);

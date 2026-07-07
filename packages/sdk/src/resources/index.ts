@@ -5,6 +5,7 @@ export { EventResource } from "./events";
 export { FileResource } from "./files";
 export { HealthResource } from "./health";
 export { MessageResource } from "./messages";
+export { ObservabilityResource } from "./observability";
 export { PermissionResource } from "./permissions";
 export { PlanResource } from "./plans";
 export { ProviderResource } from "./providers";

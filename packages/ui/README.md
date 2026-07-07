@@ -1,26 +1,20 @@
-# 🎨 @agent-workbench/ui
+# `@agent-workbench/ui`
 
-[![Status](https://img.shields.io/badge/status-stable-blue)]()
-[![Phase](https://img.shields.io/badge/Phase-1-lightgrey)]()
+**Status: ⏳ Stub — planned, not yet implemented.**
 
-Shared UI primitives, theme tokens, display formatting, and design system constants used by the TUI, mobile-web, and dashboard apps.
+This package is declared in AGENTS.md as providing shared UI primitives.
+No runtime implementation exists yet.
 
-## Status
+Current behavior: `export {};` (empty barrel).
 
-**Stable** — Provides shared constants and formatting utilities consumed by all client applications.
+## Plan
 
-## What's Here
+- `formatTimestamp` — human-readable relative/absolute timestamps
+- `truncatePath` — path shortening for display
+- Color token utilities for consistent theming across TUI, mobile-web, and dashboard
+- Non-authoritative UI helpers (no business logic, no state)
 
-- Design tokens (colors, spacing, typography)
-- Formatting helpers (timestamps, file sizes, truncation)
-- Shared type definitions for UI components
+## Consumers
 
-## Usage
-
-```ts
-import { formatTimestamp, truncatePath } from "@agent-workbench/ui";
-```
-
-## Boundary
-
-Does **not** own: TUI rendering (apps/tui), mobile-web rendering (apps/mobile-web), dashboard rendering (apps/dashboard), or any runtime logic.
+Currently: none. When implemented, primary consumer is `apps/tui` (and potentially
+`apps/mobile-web` and `apps/dashboard`).

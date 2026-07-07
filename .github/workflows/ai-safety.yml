@@ -17,7 +17,7 @@ jobs:
       - name: Check for obvious secret patterns
         run: |
           set -e
-          if grep -RInE '(OPENAI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|TELEGRAM_BOT_TOKEN|BEGIN RSA PRIVATE KEY|BEGIN OPENSSH PRIVATE KEY)' . \
+          if grep -RInE '(OPENAI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|GITHUB_PAT|TELEGRAM_BOT_TOKEN|BEGIN RSA PRIVATE KEY|BEGIN OPENSSH PRIVATE KEY|BEGIN EC PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{36}|gho_[0-9a-zA-Z]{36}|ghu_[0-9a-zA-Z]{36}|ghs_[0-9a-zA-Z]{36}|npm_[a-z0-9]{36}|sk-[a-z0-9]{32,})' . \
             --exclude-dir=.git \
             --exclude='*.md'; then
             echo "Potential secret detected."
@@ -27,7 +27,7 @@ jobs:
       - name: Check for risky destructive shell patterns
         run: |
           set -e
-          if grep -RInE 'rm -rf /|rm -rf \$HOME|mkfs\.|dd if=|chmod -R 777|curl .*\| bash|wget .*\| bash' . \
+          if grep -RInE 'rm -rf /|rm -rf \\$HOME|mkfs\\.|dd if=|chmod -R 777|curl .*\\| bash|wget .*\\| bash' . \
             --exclude-dir=.git; then
             echo "Risky destructive pattern detected."
             exit 1

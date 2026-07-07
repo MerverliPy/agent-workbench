@@ -1,0 +1,63 @@
+{
+  "generated": "2026-07-07T11:33:55Z",
+  "skill": "playwright-e2e-testing",
+  "skill_version": "2.1.0",
+  "base_path": "/home/calvin/agent-workbench/apps/mobile-web/e2e",
+  "specs": [
+    {"file": "specs/app-shell.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/navigation.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/chat.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/settings.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/workspace.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/visual.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/network.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/auth.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/accessibility.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/performance.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/cross-app.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/error-boundary.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/security-headers.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0},
+    {"file": "specs/xss-injection.spec.ts", "status": "not-implemented", "test_count": 0, "lines": 0}
+  ],
+  "pages": [
+    {"file": "pages/base-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/chat-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/settings-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/auth-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/workspace-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/files-page.ts", "status": "not-implemented", "lines": 0},
+    {"file": "pages/activity-page.ts", "status": "not-implemented", "lines": 0}
+  ],
+  "utils": [
+    {"file": "utils/screenshot-diff.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/axe-runner.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/mock-server.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/network-conditions.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/performance.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/test-data.ts", "status": "not-implemented", "lines": 0},
+    {"file": "utils/helpers.ts", "status": "not-implemented", "lines": 0}
+  ],
+  "overall": {
+    "total_items": 28,
+    "implemented": 0,
+    "not_implemented": 28,
+    "completion_percent": 0.0
+  },
+  "existing_playwright_test": {
+    "file": "app.spec.ts",
+    "test_count": 26,
+    "lines": 275,
+    "note": "Pre-existing basic smoke test at e2e root — not part of the skill's 14 spec files"
+  },
+  "summary": {
+    "specs_total": 14,
+    "specs_implemented": 0,
+    "pages_total": 7,
+    "pages_implemented": 0,
+    "utils_total": 7,
+    "utils_implemented": 0,
+    "directories_missing": ["specs/", "pages/", "utils/"],
+    "directories_existing": [],
+    "skill_status_note": "The skill (v2.1.0) explicitly states these are aspirational templates — only app.spec.ts and playwright.config.ts exist on disk. All 28 files described in the skill architecture are not yet implemented."
+  }
+}

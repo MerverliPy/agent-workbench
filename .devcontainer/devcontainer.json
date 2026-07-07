@@ -6,6 +6,9 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
+    "ghcr.io/va-garcia/setup-bun:1": {
+      "version": "1.2"
+    },
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.12"
     },

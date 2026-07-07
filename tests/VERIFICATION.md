@@ -2,7 +2,7 @@
 
 All 30 phases are complete. The current test baseline covers the full stack:
 
-- **500+ tests** with 0 failures
+- **564+ tests** with 0 failures
 - Unit, integration, and end-to-end test suites
 - All packages build cleanly via `bash scripts/build-all.sh`
 

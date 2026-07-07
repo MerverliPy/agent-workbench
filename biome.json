@@ -39,7 +39,7 @@
         "noLabelWithoutControl": "off"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "off",
+        "noDangerouslySetInnerHtml": "warn",
         "noGlobalEval": "error"
       }
     }

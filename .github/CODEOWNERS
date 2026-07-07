@@ -20,3 +20,19 @@ config/* @MerverliPy
 packages/auth/* @MerverliPy
 packages/permissions/* @MerverliPy
 packages/storage/* @MerverliPy
+packages/compliance/* @MerverliPy
+packages/collab/* @MerverliPy
+
+# Server middleware
+apps/server/src/middleware/* @MerverliPy
+
+# Plugins
+plugins/* @MerverliPy
+
+# Apps
+apps/tui/* @MerverliPy
+apps/cli/* @MerverliPy
+apps/mobile-web/src/* @MerverliPy
+
+# Documentation
+docs/* @MerverliPy

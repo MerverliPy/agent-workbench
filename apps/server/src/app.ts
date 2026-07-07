@@ -57,6 +57,12 @@ export function createApp(options: CreateAppOptions) {
           /^https?:\/\/localhost(:\d+)?$/,
           /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
           /^https?:\/\/\[::1\](:\d+)?$/,
+          // Tailscale IPs (100.x.x.x)
+          /^https?:\/\/100\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/,
+          // WSL / Docker bridge
+          /^https?:\/\/172\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/,
+          // Local network
+          /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/,
         ];
         const envOverride = process.env.AGENT_WORKBENCH_CORS_ORIGINS;
         if (envOverride) {

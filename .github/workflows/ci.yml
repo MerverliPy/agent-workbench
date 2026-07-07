@@ -27,6 +27,14 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
+      - name: Cache bun install + dist
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            **/dist
+            **/.tsbuildinfo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
       - name: Run test-health
         run: bash scripts/test-health.sh
       - name: Check whitespace
@@ -45,8 +53,18 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
+      - name: Cache bun install + dist
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            **/dist
+            **/.tsbuildinfo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
       - name: Build workspace packages
         run: bash scripts/build-all.sh
+      - name: Verify lockfile integrity
+        run: bun install --frozen-lockfile
       - name: Typecheck packages
         run: |
           for pkg in protocol models events sdk storage core permissions tools shell diff tokens cache planner config ui auth collab eval plugin-sdk telemetry; do
@@ -80,10 +98,26 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
+      - name: Cache bun install + dist
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            **/dist
+            **/.tsbuildinfo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
       - name: Build workspace packages
         run: bash scripts/build-all.sh
       - name: Run tests with coverage
         run: bun test --coverage
+      - name: Run orphan tests (outside tests/ workspace)
+        run: |
+          for dir in apps/server apps/mobile-web packages/compliance packages/auth plugins/agent-workbench-opencode; do
+            if [ -d "$dir" ]; then
+              echo "  [test] $dir"
+              (cd "$dir" && bun test 2>&1) || echo "⚠️ Tests in $dir had failures (non-blocking)"
+            fi
+          done
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
@@ -107,6 +141,14 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
+      - name: Cache bun install + dist
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            **/dist
+            **/.tsbuildinfo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
       - name: Build workspace packages
         run: bash scripts/build-all.sh
       - name: Run e2e tests

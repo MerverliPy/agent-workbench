@@ -178,7 +178,12 @@ async function verifyIdToken(
   const data = `${headerB64}.${payloadB64}`;
 
   const algorithm =
-    alg === "RS384" ? "sha384" : alg === "RS512" ? "sha512" : "sha256";
+    alg === "RS384" ? "sha384" :
+    alg === "RS512" ? "sha512" :
+    alg === "ES256" ? "sha256" :
+    alg === "ES384" ? "sha384" :
+    alg === "ES512" ? "sha512" :
+    "sha256"; // default: RS256 / ES256
 
   const verifier = createVerify(algorithm);
   verifier.update(data);
@@ -235,35 +240,79 @@ async function verifyIdToken(
 }
 
 /**
- * Convert a JWK RSA public key to SPKI PEM format for Node's crypto.createVerify().
+ * Convert a JWK public key to SPKI PEM format for Node's crypto.createVerify().
+ * Supports RSA and EC (P-256, P-384) key types.
  */
 function jwkToSpki(jwk: Jwk): string {
-  if (jwk.kty !== "RSA") {
-    throw new Error(
-      `Unsupported JWK key type: ${jwk.kty} (only RSA is supported)`,
-    );
+  if (jwk.kty === "RSA") {
+    return rsaJwkToSpki(jwk);
   }
+  if (jwk.kty === "EC") {
+    return ecJwkToSpki(jwk);
+  }
+  throw new Error(
+    `Unsupported JWK key type: ${jwk.kty} (only RSA and EC are supported)`,
+  );
+}
 
+/**
+ * Convert an RSA JWK to SPKI PEM format.
+ */
+function rsaJwkToSpki(jwk: Jwk): string {
   const n = Buffer.from(jwk.n ?? "", "base64url");
   const e = Buffer.from(jwk.e ?? "", "base64url");
 
-  // Build the SubjectPublicKeyInfo DER structure manually for RSA keys
-  // This is an ASN.1 DER-encoded RSAPublicKey wrapped in SubjectPublicKeyInfo
   const rsaPublicKey = derSequence(derInteger(n), derInteger(e));
-
   const algorithmIdentifier = derSequence(
     derOid("1.2.840.113549.1.1.1"), // rsaEncryption
     derNull(),
   );
-
   const spki = derSequence(algorithmIdentifier, derBitString(rsaPublicKey));
 
-  return `-----BEGIN PUBLIC KEY-----\n${
-    spki
-      .toString("base64")
-      .match(/.{1,64}/g)
-      ?.join("\n") ?? spki.toString("base64")
-  }\n-----END PUBLIC KEY-----`;
+  return toPem(spki, "PUBLIC KEY");
+}
+
+/** Map EC curve names to their OIDs. */
+const EC_CURVE_OIDS: Record<string, string> = {
+  "P-256": "1.2.840.10045.3.1.7",
+  "P-384": "1.3.132.0.34",
+  "P-521": "1.3.132.0.35",
+};
+
+/**
+ * Convert an EC JWK (P-256 or P-384) to SPKI PEM format.
+ * Uses uncompressed point encoding (0x04 || x || y).
+ */
+function ecJwkToSpki(jwk: Jwk): string {
+  const crv = jwk.crv as string | undefined;
+  const curveOid = crv ? EC_CURVE_OIDS[crv] : undefined;
+  if (!curveOid) {
+    throw new Error(
+      `Unsupported EC curve: ${crv ?? "undefined"} (supported: P-256, P-384, P-521)`,
+    );
+  }
+
+  const x = Buffer.from((jwk.x as string) ?? "", "base64url");
+  const y = Buffer.from((jwk.y as string) ?? "", "base64url");
+
+  // Uncompressed point: 0x04 || x || y
+  const point = Buffer.concat([Buffer.from([0x04]), x, y]);
+
+  // AlgorithmIdentifier: ecPublicKey + named curve OID
+  const algorithmIdentifier = derSequence(
+    derOid("1.2.840.10045.2.1"), // ecPublicKey
+    derOid(curveOid),            // named curve
+  );
+
+  const spki = derSequence(algorithmIdentifier, derBitString(point));
+  return toPem(spki, "PUBLIC KEY");
+}
+
+/** Format a DER buffer as PEM. */
+function toPem(der: Buffer, label: string): string {
+  const b64 = der.toString("base64");
+  const lines = b64.match(/.{1,64}/g) ?? [b64];
+  return `-----BEGIN ${label}-----\n${lines.join("\n")}\n-----END ${label}-----`;
 }
 
 // ── ASN.1 DER encoding helpers ─────────────────────────────────────────────

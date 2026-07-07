@@ -5,6 +5,7 @@ import { EventResource } from "./resources/events";
 import { FileResource } from "./resources/files";
 import { HealthResource } from "./resources/health";
 import { MessageResource } from "./resources/messages";
+import { ObservabilityResource } from "./resources/observability";
 import { PermissionResource } from "./resources/permissions";
 import { PlanResource } from "./resources/plans";
 import { ProviderResource } from "./resources/providers";
@@ -33,6 +34,7 @@ export class WorkbenchClient {
   public readonly tokenHealth: TokenHealthResource;
   public readonly auth: AuthResource;
   public readonly plans: PlanResource;
+  public readonly observability: ObservabilityResource;
 
   private http: HttpTransport;
 
@@ -54,5 +56,6 @@ export class WorkbenchClient {
     this.tokenHealth = new TokenHealthResource(this.http);
     this.auth = new AuthResource(this.http);
     this.plans = new PlanResource(this.http);
+    this.observability = new ObservabilityResource(this.http);
   }
 }

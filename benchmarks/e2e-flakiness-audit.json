@@ -1,0 +1,729 @@
+{
+  "benchmark": "e2e-flakiness-audit",
+  "timestamp": "2026-07-07T11:38:15.711Z",
+  "targets": {
+    "skill": "playwright-e2e-testing",
+    "skill_path": "/home/calvin/.hermes/skills/software-development/playwright-e2e-testing/SKILL.md",
+    "existing_test": "/home/calvin/agent-workbench/apps/mobile-web/e2e/app.spec.ts"
+  },
+  "summary": {
+    "high_flakiness_risk_count": 8,
+    "low_flakiness_risk_count": 44,
+    "total_waits": 52,
+    "flakiness_safety_ratio": 0.8462,
+    "safety_grade": "B (good)",
+    "waitForTimeout_without_dom_assertion_count": 3,
+    "hardcoded_timeouts_total": 42,
+    "hardcoded_timeouts_over_2000ms": 28,
+    "networkidle_occurrences": 2
+  },
+  "details": {
+    "waitForTimeout_high_flakiness_risk": {
+      "skill": {
+        "count": 7,
+        "occurrences": [
+          {
+            "match": "await this.page.waitForTimeout(200)",
+            "context": "complete (localStorage persistence)     await this.page.waitForTimeout(200);   }    async getPersistedSettings(): P",
+            "lineHint": 205
+          },
+          {
+            "match": "await page.waitForTimeout(400)",
+            "context": "await chat.navigateTo(\"Settings\");     await page.waitForTimeout(400);      const result = await screenshotDi",
+            "lineHint": 248
+          },
+          {
+            "match": "await page.waitForTimeout(200)",
+            "context": "await chat.switchTab(\"Workspaces\");     await page.waitForTimeout(200);     // Select the Files sub-tab within",
+            "lineHint": 260
+          },
+          {
+            "match": "await page.waitForTimeout(300)",
+            "context": "{ name: \"Files\" })       .click();     await page.waitForTimeout(300);      const result = await screenshotDi",
+            "lineHint": 266
+          },
+          {
+            "match": "await page.waitForTimeout(2000)",
+            "context": "ait restoreNetworkConditions(page);     await page.waitForTimeout(2000);      // Should show connected again (o",
+            "lineHint": 498
+          },
+          {
+            "match": "await page.waitForTimeout(300)",
+            "context": "await chat.navigateTo(\"Settings\");     await page.waitForTimeout(300);      const result = await runAxeScan(p",
+            "lineHint": 858
+          },
+          {
+            "match": "await page.waitForTimeout(2000)",
+            "context": ";     });     await page.goto(\"/\");     await page.waitForTimeout(2000);     // The app should still be functio",
+            "lineHint": 1106
+          }
+        ]
+      },
+      "existing_test": {
+        "count": 1,
+        "occurrences": [
+          {
+            "match": "await page.waitForTimeout(200)",
+            "context": "await btn.click({ force: true });     await page.waitForTimeout(200);     const afterFirstText = await page",
+            "lineHint": 67
+          }
+        ]
+      },
+      "total": 8
+    },
+    "deterministic_waits_low_flakiness_risk": {
+      "waitForSelector": {
+        "skill": 0,
+        "existing_test": 0,
+        "total": 0,
+        "occurrences": []
+      },
+      "waitForFunction": {
+        "skill": 1,
+        "existing_test": 0,
+        "total": 1,
+        "occurrences": [
+          {
+            "match": "await this.page.waitForFunction(",
+            "context": "ssistantResponse(timeout = 15000) {     await this.page.waitForFunction(       () => {         const log = docum",
+            "lineHint": 149
+          }
+        ]
+      },
+      "toBeVisible": {
+        "skill": 16,
+        "existing_test": 14,
+        "total": 30,
+        "occurrences": [
+          {
+            "match": ".toBeVisible(",
+            "context": "Text(/connection|offline|unreachable/i)).toBeVisible({       timeout: 5000,     });   });",
+            "lineHint": 483
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "t(page.getByText(/connection|offline/i)).toBeVisible({ timeout: 5000 });      // Restore netw",
+            "lineHint": 494
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "expect(page.getByText(/offline/i)).not.toBeVisible();   });    test(\"renders correctly on s",
+            "lineHint": 503
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "age.getByRole(\"tab\", { name: \"Chats\" })).toBeVisible({       timeout: 15000,     });   }); })",
+            "lineHint": 512
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "xpect(page.getByText(\"No sessions yet\")).toBeVisible();  * });  *  * test(\"shows error page w",
+            "lineHint": 592
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "age.getByText(/internal server error/i)).toBeVisible();  * });  */  // apps/mobile-web/e2e/sp",
+            "lineHint": 600
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "en);     await expect(auth.logoutButton).toBeVisible({ timeout: 5000 });     expect(await aut",
+            "lineHint": 739
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "page.getByText(/invalid|unauthorized/i)).toBeVisible({ timeout: 5000 });   });    test(\"redir",
+            "lineHint": 751
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "ign in|token expired|re-authenticate/i)).toBeVisible({ timeout: 5000 });   });    test(\"logou",
+            "lineHint": 768
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "xpect(page.getByText(\"agent-workbench\")).toBeVisible();      // Tab through drawer items — sh",
+            "lineHint": 870
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "rror-boundary'], [role='alert']\"),     ).toBeVisible({ timeout: 8000 });   });    test(\"recov",
+            "lineHint": 1048
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "getByText(/service unavailable|error/i)).toBeVisible({ timeout: 5000 });     // Wait for reco",
+            "lineHint": 1069
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "t(page.getByText(/connected|ready|ok/i)).toBeVisible({ timeout: 5000 });   });    test(\"shows",
+            "lineHint": 1071
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "ndicator     await expect(chat.composer).toBeVisible();     await expect(       page.getByTex",
+            "lineHint": 1081
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "ction|lost|offline|unavailable/i),     ).toBeVisible();   });    test(\"handles malformed SSE",
+            "lineHint": 1084
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "e.getByPlaceholder(\"Type a message...\")).toBeVisible({ timeout: 3000 });   }); });  // apps/m",
+            "lineHint": 1111
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "tor(\".mx-auto\");     await expect(shell).toBeVisible();     const box = await shell.boundingB",
+            "lineHint": 12
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "in navigation\" });     await expect(nav).toBeVisible();     const tabs = nav.getByRole(\"tab\")",
+            "lineHint": 30
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "t) mode/i,     });     await expect(btn).toBeVisible();     const initialLabel = await btn.te",
+            "lineHint": 47
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "e sections\" });     await expect(subNav).toBeVisible();     const subTabs = subNav.getByRole(",
+            "lineHint": 99
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "message...\");     await expect(textarea).toBeVisible();   });    test(\"send button is disable",
+            "lineHint": 134
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "button\", { name: \"Attach file\" }),     ).toBeVisible();     await expect(       page.getByRol",
+            "lineHint": 155
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "button\", { name: \"Voice input\" }),     ).toBeVisible();   }); });  test.describe(\"NavDrawer\",",
+            "lineHint": 158
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "xpect(page.getByText(\"agent-workbench\")).toBeVisible();   });    test(\"drawer shows Settings",
+            "lineHint": 166
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "\"Help\" });     await expect(settingsBtn).toBeVisible();     await expect(helpBtn).toBeVisible",
+            "lineHint": 175
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "toBeVisible();     await expect(helpBtn).toBeVisible();     // Verify no Chat/Files/Git butto",
+            "lineHint": 176
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "tByRole(\"button\", { name: \"Chat\" })).not.toBeVisible();     await expect(       page.getByRol",
+            "lineHint": 178
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "n\", { name: \"File Browser\" }),     ).not.toBeVisible();   }); });  test.describe(\"Accessibili",
+            "lineHint": 181
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "r('[role=\"log\"]');     await expect(log).toBeVisible();   });    test(\"tab nav has role=tabli",
+            "lineHint": 189
+          },
+          {
+            "match": ".toBeVisible(",
+            "context": "n navigation\" });     await expect(tabs).toBeVisible();   });    test(\"tab buttons have aria-",
+            "lineHint": 195
+          }
+        ]
+      },
+      "waitFor": {
+        "skill": 5,
+        "existing_test": 0,
+        "total": 5,
+        "occurrences": [
+          {
+            "match": ".waitFor({",
+            "context": "t this.page.getByText(\"agent-workbench\").waitFor({ state: \"visible\" });   }    /** Navigat",
+            "lineHint": 79
+          },
+          {
+            "match": ".waitFor({",
+            "context": "age.locator(`text=${panelName}`).first().waitFor({ state: \"visible\", timeout: 5000 });   }",
+            "lineHint": 93
+          },
+          {
+            "match": ".waitFor({",
+            "context": ", { name: tabName, exact: true })       .waitFor({ state: \"visible\" });   }    /** Get con",
+            "lineHint": 107
+          },
+          {
+            "match": ".waitFor({",
+            "context": "ixed timeout     await this.logoutButton.waitFor({ state: \"visible\", timeout: 5000 }).catc",
+            "lineHint": 705
+          },
+          {
+            "match": ".waitFor({",
+            "context": "rm to reappear     await this.tokenInput.waitFor({ state: \"visible\", timeout: 5000 }).catc",
+            "lineHint": 711
+          }
+        ]
+      },
+      "toHaveText": {
+        "skill": 0,
+        "existing_test": 8,
+        "total": 8,
+        "occurrences": [
+          {
+            "match": ".toHaveText(",
+            "context": "eCount(5);     await expect(tabs.nth(0)).toHaveText(\"Chats\");     await expect(tabs.nth(1)).",
+            "lineHint": 33
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "(\"Chats\");     await expect(tabs.nth(1)).toHaveText(\"Workspaces\");     await expect(tabs.nth",
+            "lineHint": 34
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "kspaces\");     await expect(tabs.nth(2)).toHaveText(\"Files\");     await expect(tabs.nth(3)).",
+            "lineHint": 35
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "(\"Files\");     await expect(tabs.nth(3)).toHaveText(\"Activity\");     await expect(tabs.nth(4",
+            "lineHint": 36
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "ctivity\");     await expect(tabs.nth(4)).toHaveText(\"Settings\");   }); });  test.describe(\"T",
+            "lineHint": 37
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "unt(3);     await expect(subTabs.nth(0)).toHaveText(\"Files\");     await expect(subTabs.nth(1",
+            "lineHint": 102
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "iles\");     await expect(subTabs.nth(1)).toHaveText(\"Git\");     await expect(subTabs.nth(2))",
+            "lineHint": 103
+          },
+          {
+            "match": ".toHaveText(",
+            "context": "\"Git\");     await expect(subTabs.nth(2)).toHaveText(\"Sessions\");   });    test(\"Files tab sh",
+            "lineHint": 104
+          }
+        ]
+      }
+    },
+    "waitForTimeout_without_dom_assertion": {
+      "skill": [
+        {
+          "value": 400,
+          "context": "chat.goto(\"/\");     await chat.navigateTo(\"Settings\");     await page.waitForTimeout(400);      const result = await screenshotDiff(page, \"settings-p",
+          "lineHint": 24
+        },
+        {
+          "value": 200,
+          "context": "chat.goto(\"/\");     await chat.switchTab(\"Workspaces\");     await page.waitForTimeout(200);     // Select the Files sub-tab within Workspaces     awai",
+          "lineHint": 36
+        },
+        {
+          "value": 300,
+          "context": ".getByRole(\"tab\", { name: \"Files\" })       .click();     await page.waitForTimeout(300);      const result = await screenshotDiff(page, \"workspace-",
+          "lineHint": 42
+        }
+      ],
+      "existing_test": []
+    },
+    "hardcoded_timeout_values": {
+      "all": [
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "({ state: \"visible\", timeout: 5000 });   }    /** Switch tabs vi"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": "orAssistantResponse(timeout = 15000) {     await this.page.waitFo"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "wait this.page.waitForTimeout(200);   }    async getPersistedSe"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": ".textContent({ timeout: 5000 });     return result ?? \"\";"
+        },
+        {
+          "value": 400,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(400);      const result = await s"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(200);     // Select the Files sub"
+        },
+        {
+          "value": 300,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(300);      const result = await s"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": ".toBeVisible({       timeout: 5000,     });   });    test(\"recov"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ne/i)).toBeVisible({ timeout: 5000 });      // Restore network"
+        },
+        {
+          "value": 2000,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(2000);      // Should show connect"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": ".toBeVisible({       timeout: 15000,     });   }); });  // apps/m"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "request.get(\"http://localhost:3000/global/health\");       const"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "request.get(\"http://localhost:3000/global/health\");     const cs"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "cess.?key|token/i, { timeout: 5000 });   }); });  // apps/mobile"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "({ state: \"visible\", timeout: 5000 }).catch(() => {});   }    as"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "utton).toBeVisible({ timeout: 5000 });     expect(await auth.get"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ed/i)).toBeVisible({ timeout: 5000 });   });    test(\"redirects"
+        },
+        {
+          "value": 401,
+          "over2000ms": false,
+          "context": "await r.fulfill({ status: 401, body: JSON.stringify({ error"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "await r.fulfill({ status: 200, body: JSON.stringify({ items"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "te/i)).toBeVisible({ timeout: 5000 });   });    test(\"logout cle"
+        },
+        {
+          "value": 300,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(300);      const result = await r"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "or|disconnected/i, { timeout: 10000 });      // Send a message an"
+        },
+        {
+          "value": 20000,
+          "over2000ms": true,
+          "context": "chat.waitForAssistantResponse(20000);      const messages = await"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": "ror(\"Server start timeout\")), 15000);     const onData = (data: B"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "erverProcess.kill(\"SIGKILL\"), 3000);       try { rmSync(projectD"
+        },
+        {
+          "value": 8000,
+          "over2000ms": true,
+          "context": ").toBeVisible({ timeout: 8000 });   });    test(\"recovers f"
+        },
+        {
+          "value": 500,
+          "over2000ms": false,
+          "context": "any).__TEST_HEALTH_RETRY_MS = 500;     });      let healthCallC"
+        },
+        {
+          "value": 503,
+          "over2000ms": false,
+          "context": "await r.fulfill({ status: 503, body: JSON.stringify({ error"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "await r.fulfill({ status: 200, body: JSON.stringify({ statu"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "or/i)).toBeVisible({ timeout: 5000 });     // Wait for recovery"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ok/i)).toBeVisible({ timeout: 5000 });   });    test(\"shows degr"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "t r.fulfill({         status: 200,         headers: {"
+        },
+        {
+          "value": 2000,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(2000);     // The app should still"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "...\")).toBeVisible({ timeout: 3000 });   }); });  // apps/mobile"
+        },
+        {
+          "value": 60000,
+          "over2000ms": true,
+          "context": ",   timeout: process.env.CI ? 60000 : 30000, // Double timeouts i"
+        },
+        {
+          "value": 30000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 60000 : 30000, // Double timeouts in CI   e"
+        },
+        {
+          "value": 20000,
+          "over2000ms": true,
+          "context": "timeout: process.env.CI ? 20000 : 10000,     toHaveScreenshot"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 20000 : 10000,     toHaveScreenshot: {"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "tionTimeout: process.env.CI ? 10000 : 5000,     trace: \"retain-on"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 10000 : 5000,     trace: \"retain-on-failur"
+        },
+        {
+          "value": 30000,
+          "over2000ms": true,
+          "context": "I,     cwd: \".\",     timeout: 30000,   },   projects: [     {"
+        },
+        {
+          "value": 200,
+          "over2000ms": false,
+          "context": "await page.waitForTimeout(200);     const afterFirstText ="
+        }
+      ],
+      "over_2000ms": [
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "({ state: \"visible\", timeout: 5000 });   }    /** Switch tabs vi"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": "orAssistantResponse(timeout = 15000) {     await this.page.waitFo"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": ".textContent({ timeout: 5000 });     return result ?? \"\";"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": ".toBeVisible({       timeout: 5000,     });   });    test(\"recov"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ne/i)).toBeVisible({ timeout: 5000 });      // Restore network"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": ".toBeVisible({       timeout: 15000,     });   }); });  // apps/m"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "request.get(\"http://localhost:3000/global/health\");       const"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "request.get(\"http://localhost:3000/global/health\");     const cs"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "cess.?key|token/i, { timeout: 5000 });   }); });  // apps/mobile"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "({ state: \"visible\", timeout: 5000 }).catch(() => {});   }    as"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "utton).toBeVisible({ timeout: 5000 });     expect(await auth.get"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ed/i)).toBeVisible({ timeout: 5000 });   });    test(\"redirects"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "te/i)).toBeVisible({ timeout: 5000 });   });    test(\"logout cle"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "or|disconnected/i, { timeout: 10000 });      // Send a message an"
+        },
+        {
+          "value": 20000,
+          "over2000ms": true,
+          "context": "chat.waitForAssistantResponse(20000);      const messages = await"
+        },
+        {
+          "value": 15000,
+          "over2000ms": true,
+          "context": "ror(\"Server start timeout\")), 15000);     const onData = (data: B"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "erverProcess.kill(\"SIGKILL\"), 3000);       try { rmSync(projectD"
+        },
+        {
+          "value": 8000,
+          "over2000ms": true,
+          "context": ").toBeVisible({ timeout: 8000 });   });    test(\"recovers f"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "or/i)).toBeVisible({ timeout: 5000 });     // Wait for recovery"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "ok/i)).toBeVisible({ timeout: 5000 });   });    test(\"shows degr"
+        },
+        {
+          "value": 3000,
+          "over2000ms": true,
+          "context": "...\")).toBeVisible({ timeout: 3000 });   }); });  // apps/mobile"
+        },
+        {
+          "value": 60000,
+          "over2000ms": true,
+          "context": ",   timeout: process.env.CI ? 60000 : 30000, // Double timeouts i"
+        },
+        {
+          "value": 30000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 60000 : 30000, // Double timeouts in CI   e"
+        },
+        {
+          "value": 20000,
+          "over2000ms": true,
+          "context": "timeout: process.env.CI ? 20000 : 10000,     toHaveScreenshot"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 20000 : 10000,     toHaveScreenshot: {"
+        },
+        {
+          "value": 10000,
+          "over2000ms": true,
+          "context": "tionTimeout: process.env.CI ? 10000 : 5000,     trace: \"retain-on"
+        },
+        {
+          "value": 5000,
+          "over2000ms": true,
+          "context": "out: process.env.CI ? 10000 : 5000,     trace: \"retain-on-failur"
+        },
+        {
+          "value": 30000,
+          "over2000ms": true,
+          "context": "I,     cwd: \".\",     timeout: 30000,   },   projects: [     {"
+        }
+      ]
+    },
+    "networkidle_sse_breaking_pattern": {
+      "skill": {
+        "count": 2,
+        "matches": [
+          {
+            "match": "waitForLoadState(\"networkidle\")",
+            "context": "await chat.goto(\"/\");     await page.waitForLoadState(\"networkidle\");      const result = await screenshotDi",
+            "lineHint": 234
+          },
+          {
+            "match": "waitForLoadState(\"networkidle\")",
+            "context": "await chat.goto(\"/\");     await page.waitForLoadState(\"networkidle\");      const result = await runAxeScan(p",
+            "lineHint": 848
+          }
+        ]
+      },
+      "existing_test": {
+        "count": 0,
+        "matches": []
+      },
+      "total": 2
+    }
+  }
+}

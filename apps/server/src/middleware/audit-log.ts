@@ -1,27 +1,21 @@
+import { AuditTrail, type AuditEntry } from "@agent-workbench/compliance";
 import type { MiddlewareHandler } from "hono";
 import type { ServerAppBindings } from "../context";
 
-interface AuditEntry {
-  timestamp: string;
-  requestId: string;
-  method: string;
-  path: string;
-  statusCode: number;
-  durationMs: number;
-  sessionId?: string;
-  userId?: string;
-}
+/**
+ * Global audit trail instance used by the HTTP middleware and route handlers.
+ * SHA-256 chain-hashed entries via compliance AuditTrail.
+ */
+export const auditTrail = new AuditTrail();
 
 /**
  * Middleware that creates an immutable audit trail of all security-relevant
- * HTTP requests. Writes to an in-memory ring buffer.
+ * HTTP requests. Uses SHA-256 chain-hashed entries via compliance AuditTrail.
+ * Backed by AuditTrail.verify() for tamper detection.
  */
 export function auditLogMiddleware(
-  bufferSize?: number,
+  _bufferSize?: number,
 ): MiddlewareHandler<ServerAppBindings> {
-  const auditLog: AuditEntry[] = [];
-  const maxEntries = bufferSize ?? 1000;
-
   return async (context, next) => {
     const start = Date.now();
     const requestId = context.get("requestId");
@@ -29,29 +23,36 @@ export function auditLogMiddleware(
     try {
       await next();
     } finally {
-      const entry: AuditEntry = {
-        timestamp: new Date().toISOString(),
-        requestId,
-        method: context.req.method,
-        path: context.req.path,
-        statusCode: context.res.status,
-        durationMs: Date.now() - start,
-      };
+      const authCtx = context.get("auth");
+      const userId = authCtx?.subject ?? "anonymous";
+      // nosemgrep: type-coercion
+      const statusCode = (context.res as any)?.status ?? 0;
 
-      if (auditLog.length >= maxEntries) {
-        auditLog.shift();
-      }
-      auditLog.push(entry);
+      auditTrail.append({
+        actor: userId,
+        action: `${context.req.method} ${context.req.path}`,
+        resource: context.req.path,
+        details: {
+          requestId,
+          statusCode,
+          durationMs: Date.now() - start,
+        },
+      });
     }
   };
 }
 
-/** Get the current audit log. */
-export function getAuditLog(entries: AuditEntry[]): readonly AuditEntry[] {
-  return entries;
+/** Read the current verified audit trail. */
+export function readAuditLog(): AuditEntry[] {
+  return [...auditTrail.all()] as AuditEntry[];
 }
 
-/** Read-only accessor for the audit log from route handlers. */
-export function readAuditLog(): AuditEntry[] {
-  return [];
+/** Export the full audit trail for backup/persistence. */
+export function exportAuditTrail(): AuditEntry[] {
+  return [...auditTrail.all()] as AuditEntry[];
+}
+
+/** Verify the integrity of the entire audit chain. */
+export function verifyAuditTrail(): ReturnType<AuditTrail["verify"]> {
+  return auditTrail.verify();
 }

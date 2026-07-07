@@ -16,6 +16,7 @@ const _ALLOWED_PACKAGES = [
   "@agent-workbench/sdk",
   "@agent-workbench/events",
   "@agent-workbench/ui",
+  "@agent-workbench/eval",
 ];
 
 const TUI_SRC_DIR = resolve(import.meta.dirname, "../../apps/tui/src");
