@@ -109,7 +109,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@agent-workbench/protocol": "*",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -134,7 +134,7 @@
         "@agent-workbench/events": "*",
         "@agent-workbench/protocol": "*",
         "@agent-workbench/storage": "*",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -166,7 +166,7 @@
         "@agent-workbench/storage": "*",
         "@agent-workbench/tokens": "*",
         "@agent-workbench/tools": "*",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -178,7 +178,7 @@
       "dependencies": {
         "@agent-workbench/protocol": "*",
         "diff": "^9.0.0",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -188,12 +188,12 @@
       "name": "@agent-workbench/eval",
       "version": "0.0.0",
       "dependencies": {
-        "@agent-workbench/events": "workspace:*",
-        "@agent-workbench/protocol": "workspace:*",
-        "@agent-workbench/storage": "workspace:*",
+        "@agent-workbench/events": "*",
+        "@agent-workbench/protocol": "*",
+        "@agent-workbench/storage": "*",
         "drizzle-orm": "^0.45.2",
         "promptfoo": "^0.121.17",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -224,7 +224,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@agent-workbench/protocol": "*",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -307,7 +307,7 @@
         "@agent-workbench/protocol": "*",
         "@agent-workbench/shell": "*",
         "@agent-workbench/storage": "*",
-        "ulid": "^2.3.0",
+        "ulid": "^3.0.2",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -2497,7 +2497,7 @@
 
     "uint8array-extras": ["uint8array-extras@1.5.0", "", {}, "sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A=="],
 
-    "ulid": ["ulid@2.4.0", "", { "bin": { "ulid": "bin/cli.js" } }, "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg=="],
+    "ulid": ["ulid@3.0.2", "", { "bin": { "ulid": "dist/cli.js" } }, "sha512-yu26mwteFYzBAot7KVMqFGCVpsF6g8wXfJzQUHvu1no3+rRRSFcSV2nKeYvNPLD2J4b08jYBDhHUjeH0ygIl9w=="],
 
     "unbox-primitive": ["unbox-primitive@1.1.0", "", { "dependencies": { "call-bound": "^1.0.3", "has-bigints": "^1.0.2", "has-symbols": "^1.1.0", "which-boxed-primitive": "^1.1.1" } }, "sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw=="],
 
@@ -2630,6 +2630,12 @@
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
     "zod-to-json-schema": ["zod-to-json-schema@3.25.2", "", { "peerDependencies": { "zod": "^3.25.28 || ^4" } }, "sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA=="],
+
+    "@agent-workbench/cache/ulid": ["ulid@2.4.0", "", { "bin": { "ulid": "bin/cli.js" } }, "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg=="],
+
+    "@agent-workbench/server/ulid": ["ulid@2.4.0", "", { "bin": { "ulid": "bin/cli.js" } }, "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg=="],
+
+    "@agent-workbench/tests/ulid": ["ulid@2.4.0", "", { "bin": { "ulid": "bin/cli.js" } }, "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg=="],
 
     "@ai-sdk/provider-utils/eventsource-parser": ["eventsource-parser@3.1.0", "", {}, "sha512-kJezFj9YFAMLeORyi7aCLxLbD5/qWMQnoMVlVPyHIll7lgRJCc3JVln9Vgl9nwQi0YkMnhdGTMNn7CkRRAptMg=="],
 
