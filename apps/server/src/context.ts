@@ -92,6 +92,8 @@ export interface ServerServices {
   readonly presenceManager: PresenceManager;
   // Phase 27: collaborative code review
   readonly reviewQueue: ReviewQueue;
+  // Phase 30: raw Drizzle DB for data-management operations (GDPR export/delete)
+  readonly rawDb: any;
 }
 
 export type ServerAppBindings = {

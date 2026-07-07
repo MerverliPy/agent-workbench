@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import type { ServerConfig } from "./config";
 import type { ServerAppBindings, ServerServices } from "./context";
 import { ApiError } from "./errors";
+import { auditLogMiddleware } from "./middleware/audit-log";
 import { complianceHeaders } from "./middleware/compliance-headers";
 import { handleAppError } from "./middleware/error-handler";
 import { metricsMiddleware } from "./middleware/metrics-middleware";
@@ -14,6 +15,7 @@ import { tracingMiddleware } from "./middleware/tracing";
 import { registerAgentRoutes } from "./routes/agent-routes";
 import { registerAuthRoutes } from "./routes/auth-routes";
 import { registerCollabRoutes } from "./routes/collab-routes";
+import { registerDataRoutes } from "./routes/data-routes";
 import { registerFileRoutes } from "./routes/file-routes";
 import { registerGitRoutes } from "./routes/git-routes";
 import { registerGlobalRoutes } from "./routes/global";
@@ -43,6 +45,7 @@ export function createApp(options: CreateAppOptions) {
   const { tracer, metricsExporter } = options.services;
 
   app.use("*", requestIdMiddleware);
+  app.use("*", auditLogMiddleware(5000));
   app.use("*", complianceHeaders());
   app.use("*", rateLimitMiddleware());
   app.use("*", metricsMiddleware(metricsExporter));
@@ -131,6 +134,7 @@ export function createApp(options: CreateAppOptions) {
   registerCollabRoutes(app, options.services);
   registerShareRoutes(app, options.services);
   registerReviewRoutes(app, options.services);
+  registerDataRoutes(app, options.services);
   registerGlobalRoutes(app, {
     config: options.config,
     startedAt,

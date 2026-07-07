@@ -143,42 +143,6 @@ const providerRegistry = new ProviderRegistry(
   airGapped ? { fetchImpl: createAirGappedFetch() } : undefined,
 );
 
-// ── Data retention ───────────────────────────────────────────────────────
-// Phase 30: apply data retention policy every 24 hours.
-// Runs immediately on startup to clean stale entries.
-const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
-(function scheduleRetention() {
-  try {
-    const entriesResult = ledgerRepository.listByCategory("audit");
-    // biome-ignore lint/suspicious/noExplicitAny: LedgerRow[] → AuditEntry[] cast for retention
-    const { result } = applyRetention(entriesResult as any);
-    if (result.deletedCount > 0) {
-      logger.info(
-        `Data retention: removed ${result.deletedCount} entries older than ${result.cutoffDate}`,
-      );
-    }
-  } catch {
-    // Best-effort — retention may fail if no audit entries exist yet
-  }
-
-  setInterval(() => {
-    try {
-      const entriesResult = ledgerRepository.listByCategory("audit");
-      // biome-ignore lint/suspicious/noExplicitAny: LedgerRow[] → AuditEntry[] cast for retention
-      const { result } = applyRetention(entriesResult as any);
-      if (result.deletedCount > 0) {
-        logger.info(
-          `Data retention: removed ${result.deletedCount} entries older than ${result.cutoffDate}`,
-        );
-      }
-    } catch {
-      // Best-effort
-    }
-  }, RETENTION_INTERVAL_MS);
-
-  logger.info("Data retention: scheduled every 24 hours (max 90 days)");
-})();
-
 const modelProvider = providerRegistry.getDefaultProvider();
 
 // ── Phase 24: Provider marketplace & smart routing ───────────────────────────
@@ -189,6 +153,44 @@ const providerHealthMonitor = new ProviderHealthMonitor(providerMarketplace, {
   checkIntervalMs: 60_000, // Check every minute
 });
 providerHealthMonitor.start();
+
+// ── Phase 30: Data retention — auto-delete old sessions every 24h ──
+const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const RETENTION_MAX_DAYS = 90;
+setInterval(() => {
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - RETENTION_MAX_DAYS);
+    const cutoffStr = cutoff.toISOString();
+
+    // Find sessions older than the cutoff
+    const oldSessions = sessionRepository.listPaginated({ limit: 100 });
+    const toDelete = oldSessions.filter(
+      (s) => s.updatedAt < cutoffStr,
+    );
+
+    if (toDelete.length > 0) {
+      const sqlite = storage.sqlite;
+      for (const session of toDelete) {
+        sqlite.run("DELETE FROM messages WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM tool_calls WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM plans WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM summaries WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM run_ledger WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM permission_requests WHERE session_id = ?", [session.id]);
+        sqlite.run("DELETE FROM sessions WHERE id = ?", [session.id]);
+      }
+      logger.info(
+        `Data retention: deleted ${toDelete.length} sessions older than ${cutoffStr}`,
+      );
+    }
+  } catch (err) {
+    logger.error(
+      `Data retention check failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}, RETENTION_INTERVAL_MS);
+logger.info(`Data retention active — auto-deleting sessions older than ${RETENTION_MAX_DAYS} days`);
 
 // ── Phase 11: Agent registry ──────────────────────────────────────────────────
 const agentRegistry = new AgentRegistry();
@@ -310,6 +312,7 @@ const app = createApp({
     shareManager,
     presenceManager,
     reviewQueue,
+    rawDb: storage.sqlite,
   },
 });
 
