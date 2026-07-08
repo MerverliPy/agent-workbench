@@ -322,13 +322,24 @@ textarea {
 }
 
 /* When iOS virtual keyboard is open — use visualViewport height */
+html.keyboard-open,
+html.keyboard-open body {
+  overflow: hidden;
+  height: 100%;
+}
+
 html.keyboard-open .h-dvh {
-  height: var(--vh, 100dvh);
+  height: var(--vh, 100dvh) !important;
+}
+
+/* Hide tab bar when keyboard is open to give more space */
+html.keyboard-open nav[aria-label="Main navigation"] {
+  display: none;
 }
 
 /* Ensure the composer has bottom room when keyboard is open */
 html.keyboard-open [data-composer] {
-  padding-bottom: max(var(--safe-bottom), var(--kb-height, 0px));
+  padding-bottom: max(var(--safe-bottom), var(--kb-height, 0px)) !important;
 }
 
 /* ── Backdrop-filter fallback ──────────────────── */
