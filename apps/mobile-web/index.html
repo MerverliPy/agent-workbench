@@ -32,31 +32,33 @@
     <script>
       (() => {
         if (!window.visualViewport) return;
-        var root = document.getElementById('root') || document.body;
+        var root = document.documentElement;
         var restoreKeyboard = () => {
+          if (!window.visualViewport) return;
           var vh = window.visualViewport.height;
           var full = window.screen.height;
           var keyboardHeight = full - vh;
           if (keyboardHeight > 100) {
-            // Keyboard is open — push the composer into the remaining viewport
             root.style.setProperty('--kb-height', `${keyboardHeight}px`);
             root.style.setProperty('--vh', `${vh}px`);
-            document.documentElement.classList.add('keyboard-open');
+            root.classList.add('keyboard-open');
           } else {
-            // Keyboard is closed
             root.style.removeProperty('--kb-height');
             root.style.removeProperty('--vh');
-            document.documentElement.classList.remove('keyboard-open');
+            root.classList.remove('keyboard-open');
           }
         };
+        // Run once on load and on resize
+        restoreKeyboard();
         window.visualViewport.addEventListener('resize', restoreKeyboard);
-        window.visualViewport.addEventListener('scroll', () => {
-          // iOS Safari scrolls the viewport when the keyboard opens — snap back
+        window.visualViewport.addEventListener('scroll', function () {
           if (window.visualViewport.offsetTop !== 0) {
             window.scrollTo(0, 0);
           }
         });
-        // Also check on orientation change
+        window.addEventListener('orientationchange', function () {
+          setTimeout(restoreKeyboard, 300);
+        });
         window.addEventListener('orientationchange', () => {
           setTimeout(restoreKeyboard, 300);
         });
