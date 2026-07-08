@@ -321,6 +321,16 @@ textarea {
   height: 100dvh;
 }
 
+/* When iOS virtual keyboard is open — use visualViewport height */
+html.keyboard-open .h-dvh {
+  height: var(--vh, 100dvh);
+}
+
+/* Ensure the composer has bottom room when keyboard is open */
+html.keyboard-open [data-composer] {
+  padding-bottom: max(var(--safe-bottom), var(--kb-height, 0px));
+}
+
 /* ── Backdrop-filter fallback ──────────────────── */
 /* Safari <15 / low-power mode may not support backdrop-filter.
    The .frost class is applied by <TopBar> and <TabBar>.
