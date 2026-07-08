@@ -89,8 +89,16 @@ export function PromptInput(): JSX.Element {
 
   const hasText = () => inputText().trim().length > 0;
 
+  function handleFocus(): void {
+    // Small delay to let the keyboard open and layout settle
+    setTimeout(() => {
+      textareaRef?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 300);
+  }
+
   return (
     <div
+      data-composer
       class="flex-shrink-0 safe-bottom"
       style="padding: 8px 10px calc(8px + var(--safe-bottom)); border-top: 1px solid var(--border); background: var(--surface);"
     >
@@ -136,6 +144,7 @@ export function PromptInput(): JSX.Element {
             placeholder="Type a message..."
             rows={1}
             value={inputText()}
+            onFocus={handleFocus}
             onInput={(e) => {
               setInputText((e.target as HTMLTextAreaElement).value);
               queueMicrotask(() => autoResize());
