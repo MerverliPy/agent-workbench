@@ -328,7 +328,7 @@ These are speculative directions that may become formal phases based on communit
 1. **Pick a phase** from phases 19–30
 2. **Read the exit gates** — they define what "done" means
 3. **Follow the architecture boundaries** in `AGENTS.md`
-4. **Write tests first** — 602 existing tests must continue to pass
+4. **Write tests first** — 900+ existing tests must continue to pass
 5. **Open a PR** with a phase plan doc in `docs/`
 6. **Get community review** before implementation
 

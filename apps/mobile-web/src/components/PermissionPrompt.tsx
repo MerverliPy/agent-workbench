@@ -62,6 +62,52 @@ export function PermissionPrompt(): JSX.Element {
     notifiedForRequestId = undefined;
   });
 
+  // ── Focus Trap Logic ────────────────────────────────────────────────
+  let modalRef: HTMLDivElement | undefined;
+  let denyBtnRef: HTMLButtonElement | undefined;
+
+  createEffect(() => {
+    if (permissionModalOpen() && req() && modalRef) {
+      // Focus the modal or the first button when it opens
+      requestAnimationFrame(() => {
+        denyBtnRef?.focus();
+      });
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          respond(false);
+          return;
+        }
+
+        if (e.key === "Tab") {
+          const focusableElements = modalRef?.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          ) as NodeListOf<HTMLElement>;
+
+          if (!focusableElements || focusableElements.length === 0) return;
+
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              lastElement?.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement?.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+      onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
+    }
+  });
+
   async function respond(allowed: boolean): Promise<void> {
     const r = req();
     if (!r) return;
@@ -85,6 +131,7 @@ export function PermissionPrompt(): JSX.Element {
         aria-labelledby="permission-title"
       >
         <div
+          ref={modalRef}
           class="w-full max-w-md bg-slate-800 rounded-t-2xl px-5 pt-6 pb-8 safe-bottom shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
@@ -131,13 +178,14 @@ export function PermissionPrompt(): JSX.Element {
 
           <div class="flex gap-3">
             <button
-              class="flex-1 h-14 rounded-xl bg-red-600 active:bg-red-700 text-white font-semibold text-base transition-colors"
+              ref={denyBtnRef}
+              class="flex-1 h-14 rounded-xl bg-red-600 active:bg-red-700 text-white font-semibold text-base transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-800"
               onClick={() => respond(false)}
             >
               ✕ Deny
             </button>
             <button
-              class="flex-1 h-14 rounded-xl bg-green-600 active:bg-green-700 text-white font-semibold text-base transition-colors"
+              class="flex-1 h-14 rounded-xl bg-green-600 active:bg-green-700 text-white font-semibold text-base transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-800"
               onClick={() => respond(true)}
             >
               ✓ Approve

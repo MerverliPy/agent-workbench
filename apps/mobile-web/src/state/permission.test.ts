@@ -1,9 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 
 const STATE_PATH = path.resolve(import.meta.dirname, "./app.ts");
 const APP_PATH = path.resolve(import.meta.dirname, "../App.tsx");
+const EVENT_DISPATCHER_PATH = path.resolve(import.meta.dirname, "../lib/event-dispatcher.ts");
 const TOOLBAR_PATH = path.resolve(
   import.meta.dirname,
   "../components/TopBar.tsx",
@@ -15,6 +16,7 @@ const APPROVAL_CARD_PATH = path.resolve(
 
 const stateApp = readFileSync(STATE_PATH, "utf-8");
 const appTsx = readFileSync(APP_PATH, "utf-8");
+const eventDispatcherText = existsSync(EVENT_DISPATCHER_PATH) ? readFileSync(EVENT_DISPATCHER_PATH, "utf-8") : appTsx;
 const topBar = readFileSync(TOOLBAR_PATH, "utf-8");
 const approvalCard = readFileSync(APPROVAL_CARD_PATH, "utf-8");
 
@@ -54,27 +56,27 @@ describe("Phase 6 — Permission UX", () => {
     });
   });
 
-  describe("handleEvent (App.tsx)", () => {
+  describe("handleEvent (event-dispatcher / App.tsx)", () => {
     it("increments pendingApprovalCount on permission.requested", () => {
-      expect(appTsx).toContain("incrementPendingApprovals()");
+      expect(eventDispatcherText).toContain("incrementPendingApprovals()");
     });
 
     it("decrements on permission.decided, denied, and expired", () => {
-      expect(appTsx).toContain("decrementPendingApprovals()");
+      expect(eventDispatcherText).toContain("decrementPendingApprovals()");
       // Count occurrences — should be 3 (decided, denied, expired)
-      const matches = appTsx.match(/decrementPendingApprovals\(\)/g);
+      const matches = eventDispatcherText.match(/decrementPendingApprovals\(\)/g);
       expect(matches?.length).toBe(3);
     });
 
     it("tracks sequenceNumber and totalCount for stacking", () => {
-      expect(appTsx).toContain("pendingApprovalCount() + 1");
-      expect(appTsx).toContain("sequenceNumber: seq");
-      expect(appTsx).toContain("totalCount: total");
+      expect(eventDispatcherText).toContain("pendingApprovalCount() + 1");
+      expect(eventDispatcherText).toContain("sequenceNumber: seq");
+      expect(eventDispatcherText).toContain("totalCount: total");
     });
 
     it("auto-scrolls canvas on permission.requested", () => {
-      expect(appTsx).toContain("querySelector('[role=\"log\"]')");
-      expect(appTsx).toContain("scrollTop = canvas.scrollHeight");
+      expect(eventDispatcherText).toContain("querySelector('[role=\"log\"]')");
+      expect(eventDispatcherText).toContain("scrollTop = canvas.scrollHeight");
     });
 
     it("renders PermissionPrompt conditionally based on fallbackMode", () => {

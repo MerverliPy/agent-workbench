@@ -1,7 +1,7 @@
 # Docs/ Directory Audit Report
 
 **Date:** 2026-07-06
-**Audit scope:** All 33 `.md` files in `/home/calvin/agent-workbench/docs/` (including `compliance/`)
+**Audit scope:** All 33 `.md` files in ```REPO_ROOT``/docs/` (including `compliance/`)
 **Method:** Read first 20+ lines of each file; categorized by content type, stated document type, status, and user-facing value.
 
 ---

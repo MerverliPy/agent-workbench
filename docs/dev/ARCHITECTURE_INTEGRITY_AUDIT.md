@@ -30,9 +30,9 @@ However, **5 new HIGH-severity issues** emerged: two dead packages (`packages/co
 ### H1 — `packages/config` is a dead shell with zero consumers  🔴
 
 **Files:**
-- `/home/calvin/agent-workbench/packages/config/src/index.ts` (line 1-2): `// Scaffold-only — no runtime implementation yet.` / `export {};`
-- `/home/calvin/agent-workbench/packages/config/package.json`: Has `typecheck` script, no build script, no dependencies
-- `/home/calvin/agent-workbench/packages/config/src/.gitkeep`: Empty marker file
+- ```REPO_ROOT``/packages/config/src/index.ts` (line 1-2): `// Scaffold-only — no runtime implementation yet.` / `export {};`
+- ```REPO_ROOT``/packages/config/package.json`: Has `typecheck` script, no build script, no dependencies
+- ```REPO_ROOT``/packages/config/src/.gitkeep`: Empty marker file
 
 **Evidence:**
 - Zero `import ... from "@agent-workbench/config"` occurrences in any `.ts` file across the entire repo
@@ -50,15 +50,15 @@ However, **5 new HIGH-severity issues** emerged: two dead packages (`packages/co
 ### H2 — `packages/ui` is a dead shell with zero consumers  🔴
 
 **Files:**
-- `/home/calvin/agent-workbench/packages/ui/src/index.ts` (line 1-2): `// Scaffold-only — no runtime implementation yet.` / `export {};`
-- `/home/calvin/agent-workbench/packages/ui/package.json`: Only has `typecheck`, no dependencies
+- ```REPO_ROOT``/packages/ui/src/index.ts` (line 1-2): `// Scaffold-only — no runtime implementation yet.` / `export {};`
+- ```REPO_ROOT``/packages/ui/package.json`: Only has `typecheck`, no dependencies
 
 **Evidence:**
 - Zero `import ... from "@agent-workbench/ui"` occurrences in any `.ts` file across the entire repo (the only hit is in `tests/e2e/boundary-tui-imports.test.ts` line 18 which lists it in an allowed-packages array — not an actual import)
 - AGENTS.md (line 42): "packages/ui: shared UI primitives only."
 - `scripts/build-all.sh` does NOT build it
 - The TUI app (`apps/tui`) does NOT import from `@agent-workbench/ui` — it imports directly from `@agent-workbench/eval`, `@agent-workbench/sdk`, `@agent-workbench/protocol`
-- The README at `/home/calvin/agent-workbench/packages/ui/README.md` shows hypothetical usage (`import { formatTimestamp, truncatePath } from "@agent-workbench/ui"`) that doesn't exist
+- The README at ```REPO_ROOT``/packages/ui/README.md` shows hypothetical usage (`import { formatTimestamp, truncatePath } from "@agent-workbench/ui"`) that doesn't exist
 
 **Impact:** Same as H1 — documentation promises shared UI primitives that don't exist. The TUI app had to implement its own UI rendering without shared abstractions.
 
@@ -68,7 +68,7 @@ However, **5 new HIGH-severity issues** emerged: two dead packages (`packages/co
 
 ### H3 — `apps/dashboard` does NOT connect via SDK (contradicts AGENTS.md)  🔴
 
-**File:** `/home/calvin/agent-workbench/apps/dashboard/package.json` (lines 13-14)
+**File:** ```REPO_ROOT``/apps/dashboard/package.json` (lines 13-14)
 ```
 "dependencies": {
     "solid-js": "^1.9.12"
@@ -89,7 +89,7 @@ However, **5 new HIGH-severity issues** emerged: two dead packages (`packages/co
 
 ### H4 — Boundary TUI import test disagrees with AGENTS.md (`eval` not allowed)  🔴
 
-**File:** `/home/calvin/agent-workbench/tests/e2e/boundary-tui-imports.test.ts` (lines 14-19)
+**File:** ```REPO_ROOT``/tests/e2e/boundary-tui-imports.test.ts` (lines 14-19)
 ```typescript
 const _ALLOWED_PACKAGES = [
   "@agent-workbench/protocol",
@@ -113,7 +113,7 @@ const _ALLOWED_PACKAGES = [
 
 ### H5 — `docs/02_ARCHITECTURE.md` is stale (Phase 0 header, missing Phase 29/30 details)  🔴
 
-**File:** `/home/calvin/agent-workbench/docs/dev/02_ARCHITECTURE.md`
+**File:** ```REPO_ROOT``/docs/dev/02_ARCHITECTURE.md`
 
 **Evidence:**
 - Line 3: `Status: Phase 0 — Planning Docs` — **Incorrect.** Phases 0–30 are complete.
@@ -133,7 +133,7 @@ const _ALLOWED_PACKAGES = [
 
 ### M1 — Dockerfile doesn't copy `apps/mobile-web/` but `build-all.sh` tries to build it  🟡
 
-**File:** `/home/calvin/agent-workbench/Dockerfile` (lines 4-7)
+**File:** ```REPO_ROOT``/Dockerfile` (lines 4-7)
 ```
 COPY packages/ packages/
 COPY apps/server/ apps/server/
@@ -141,7 +141,7 @@ COPY apps/cli/ apps/cli/
 COPY scripts/ scripts/
 ```
 
-**File:** `/home/calvin/agent-workbench/scripts/build-all.sh` (lines 46-47)
+**File:** ```REPO_ROOT``/scripts/build-all.sh` (lines 46-47)
 ```
 echo "  [build] apps/mobile-web"
 (cd "$ROOT/apps/mobile-web" && bun run build 2>&1) || exit 1
@@ -180,7 +180,7 @@ echo "  [build] apps/mobile-web"
 
 ### M3 — `plugin-sdk` uses `zod "^4.0.0"` while other packages use `"^4.4.3"`  🟡
 
-**File:** `/home/calvin/agent-workbench/packages/plugin-sdk/package.json` (line 20)
+**File:** ```REPO_ROOT``/packages/plugin-sdk/package.json` (line 20)
 ```json
 "zod": "^4.0.0"
 ```
@@ -198,7 +198,7 @@ echo "  [build] apps/mobile-web"
 
 ### M4 — `scripts/build-all.sh` doesn't build `config` or `ui` (still missing from prior audit)  🟡
 
-**File:** `/home/calvin/agent-workbench/scripts/build-all.sh` (lines 10-13)
+**File:** ```REPO_ROOT``/scripts/build-all.sh` (lines 10-13)
 ```
 # Level 0: no @agent-workbench dependencies
 for pkg in protocol models storage tokens diff telemetry plugin-sdk auth compliance; do
@@ -232,7 +232,7 @@ for pkg in protocol models storage tokens diff telemetry plugin-sdk auth complia
 
 ### M6 — `apps/dashboard` has no `@agent-workbench` dependencies despite AGENTS.md claiming SDK connectivity  🟡
 
-**File:** `/home/calvin/agent-workbench/apps/dashboard/package.json` (lines 13-15)
+**File:** ```REPO_ROOT``/apps/dashboard/package.json` (lines 13-15)
 
 **Evidence:**
 - Dashboard's `package.json` only depends on `solid-js`
@@ -248,7 +248,7 @@ for pkg in protocol models storage tokens diff telemetry plugin-sdk auth complia
 
 ### M7 — `docs/06_SECURITY_MODEL.md` uses future tense for already-shipped capabilities  🟡
 
-**File:** `/home/calvin/agent-workbench/docs/06_SECURITY_MODEL.md` (lines 5-8)
+**File:** ```REPO_ROOT``/docs/06_SECURITY_MODEL.md` (lines 5-8)
 ```
 The system executes in a local developer environment and may eventually read files,
 edit files, run shell commands, and call model providers. These capabilities are
@@ -272,7 +272,7 @@ powerful and must be constrained by default.
 
 ### L1 — `docs/27_PROJECT_ROADMAP.md` says "Phase 30 next" but Phase 30 is complete  🟢
 
-**File:** `/home/calvin/agent-workbench/docs/27_PROJECT_ROADMAP.md` (line 3)
+**File:** ```REPO_ROOT``/docs/27_PROJECT_ROADMAP.md` (line 3)
 ```
 Status: Phase 29 complete — Phase 30 (enterprise readiness) next
 ```
@@ -289,7 +289,7 @@ Status: Phase 29 complete — Phase 30 (enterprise readiness) next
 
 ### L2 — Architecture Acceptance Criteria in `docs/02_ARCHITECTURE.md` are entirely unchecked  🟢
 
-**File:** `/home/calvin/agent-workbench/docs/dev/02_ARCHITECTURE.md` (lines 499-509)
+**File:** ```REPO_ROOT``/docs/dev/02_ARCHITECTURE.md` (lines 499-509)
 ```
 [ ] TUI cannot execute tools directly.
 [ ] TUI cannot write files directly.
@@ -310,7 +310,7 @@ Status: Phase 29 complete — Phase 30 (enterprise readiness) next
 
 ### L3 — `apps/cli` import depth suggests potential design debt (heavy Node.js `fs` usage vs. plugin-sdk)  🟢
 
-**File:** `/home/calvin/agent-workbench/apps/cli/src/index.ts`
+**File:** ```REPO_ROOT``/apps/cli/src/index.ts`
 
 **Evidence:**
 - CLI imports `PluginManifest` type and `PluginRegistry` from `@agent-workbench/plugin-sdk`
@@ -326,7 +326,7 @@ Status: Phase 29 complete — Phase 30 (enterprise readiness) next
 
 ### L4 — `packages/telemetry` has empty `exports` section despite being a built package  🟢
 
-**File:** `/home/calvin/agent-workbench/packages/telemetry/package.json` (lines 7-11)
+**File:** ```REPO_ROOT``/packages/telemetry/package.json` (lines 7-11)
 ```json
 "exports": {
     ".": {
@@ -355,7 +355,7 @@ Actually wait — I confirmed telemetry exists in Level 0 of build-all.sh and is
 
 ### DI Pattern (CoreDependencies) — 🟢 Excellent
 
-**File:** `/home/calvin/agent-workbench/packages/core/src/types.ts` (lines 88-112)
+**File:** ```REPO_ROOT``/packages/core/src/types.ts` (lines 88-112)
 
 The `CoreDependencies` interface defines a clean dependency injection contract:
 - 11 dependencies injected: 7 storage repositories, event bus, tool registry, model provider, permission engine/gate, shell runner, and internal services
@@ -368,7 +368,7 @@ The `CoreDependencies` interface defines a clean dependency injection contract:
 
 ### Protocol Route Contracts — 🟢 Excellent
 
-**File:** `/home/calvin/agent-workbench/packages/protocol/src/routes/` (15 route files)
+**File:** ```REPO_ROOT``/packages/protocol/src/routes/` (15 route files)
 
 The single-source-of-truth pattern is holding up well:
 - 15 route contract files under `packages/protocol/src/routes/`

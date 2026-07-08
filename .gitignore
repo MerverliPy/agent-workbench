@@ -52,6 +52,15 @@ audit-report.txt
 apps/mobile-web/e2e/pages/
 apps/mobile-web/e2e/specs/
 apps/mobile-web/e2e/utils/
+apps/mobile-web/e2e/*.spec.ts
+
+# Postinstall symlink artifacts
+packages/auth/auth
+packages/cache/cache
+packages/compliance/compliance
+packages/eval/eval
+packages/planner/planner
+packages/tools/tools
 
 # Benchmark test artifacts (pre-existing lint issues)
 benchmarks/e2e-flakiness-audit.mjs
