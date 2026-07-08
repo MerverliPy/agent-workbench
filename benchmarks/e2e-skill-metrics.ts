@@ -14,6 +14,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { homedir } from "os";
 
 // ── Cross-runtime __dirname ─────────────────────────────────────────────────
 const scriptDir = (() => {
@@ -27,7 +28,7 @@ const scriptDir = (() => {
 
 const _ROOT = resolve(scriptDir, "..");
 const SKILL_PATH = resolve(
-  process.env.HOME ?? "/home/calvin",
+  process.env.HOME ?? homedir(),
   ".hermes/skills/software-development/playwright-e2e-testing/SKILL.md",
 );
 const OUTPUT_PATH = resolve(scriptDir, "e2e-skill-metrics.json");

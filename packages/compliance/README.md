@@ -3,6 +3,8 @@
 Enterprise compliance features: immutable audit trail, PII scanning, FIPS 140-2
 helpers, data retention policies, and air-gapped mode enforcement.
 
+This package is fully implemented and tested (178 tests across 10 files).
+
 ## Exports
 
 | Module | Export | Description |

@@ -24,7 +24,7 @@ This is a **well-maintained, actively developed** TypeScript monorepo with stron
 
 ### FINDING 1 — HIGH 🔴: Root-level `typecheck` script missing (breaks lint-staged)
 
-**File:** `/home/calvin/agent-workbench/package.json`, lines 56-62
+**File:** ```REPO_ROOT``/package.json`, lines 56-62
 
 The `lint-staged` config runs `bun run typecheck --noEmit` on `*.{ts,tsx}` files (line 58), but there is no `"typecheck"` script defined at the monorepo root level in `package.json` scripts (line 12-25). Each package/app has `typecheck` in its own `package.json`, but lint-staged runs from the root, so this will fail with `error: missing script "typecheck"`.
 

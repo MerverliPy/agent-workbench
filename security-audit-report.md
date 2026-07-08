@@ -2,7 +2,7 @@
 
 **Date:** July 7, 2026  
 **Scope:** Full-stack security audit covering CVE posture, dependency vulnerabilities, secret scanning, code injection, permission model, CI/CD, audit trail, PII scanning, SSO, RBAC, FIPS, SBOM, and supply chain security.  
-**Repo Path:** `/home/calvin/agent-workbench`  
+**Repo Path:** ```REPO_ROOT```  
 **Previous Audit:** July 3, 2026 (Phase 30 landing — 12 exit gates)
 
 ---

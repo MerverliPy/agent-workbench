@@ -3,7 +3,7 @@
 **Date:** 2026-07-03  
 **Methodology:** Mixture of Agents (3 parallel subagents)  
 **GitHub:** [MerverliPy/agent-workbench](https://github.com/MerverliPy/agent-workbench)  
-**Local Path:** `/home/calvin/agent-workbench`  
+**Local Path:** ```REPO_ROOT```  
 
 ---
 
