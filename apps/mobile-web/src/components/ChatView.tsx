@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show, onMount, onCleanup } from "solid-js";
 import {
   isStreaming,
   messages,
@@ -18,26 +18,43 @@ const SUGGESTED_PROMPTS = [
 
 export function ChatView(): JSX.Element {
   let scrollRef: HTMLDivElement | undefined;
+  let bottomAnchorRef: HTMLDivElement | undefined;
+  let observer: IntersectionObserver | undefined;
   const [isNearBottom, setIsNearBottom] = createSignal(true);
 
   function scrollToBottom(smooth = false): void {
-    if (scrollRef) {
-      scrollRef.scrollTo({
-        top: scrollRef.scrollHeight,
+    if (bottomAnchorRef) {
+      bottomAnchorRef.scrollIntoView({
         behavior: smooth ? "smooth" : "instant",
+        block: "end",
       });
     }
   }
 
-  function checkNearBottom(): void {
-    if (scrollRef) {
-      const threshold = 80;
-      setIsNearBottom(
-        scrollRef.scrollHeight - scrollRef.scrollTop - scrollRef.clientHeight <
-          threshold,
-      );
+  onMount(() => {
+    observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry) {
+          // If the bottom anchor is intersecting (or very close), we are near bottom
+          setIsNearBottom(entry.isIntersecting);
+        }
+      },
+      {
+        root: scrollRef ?? null,
+        rootMargin: "80px 0px 0px 0px", // Trigger when within 80px of the bottom
+        threshold: 0,
+      }
+    );
+
+    if (bottomAnchorRef) {
+      observer.observe(bottomAnchorRef);
     }
-  }
+  });
+
+  onCleanup(() => {
+    observer?.disconnect();
+  });
 
   // Auto-scroll on new messages/streaming — but only if user is near bottom
   createEffect(() => {
@@ -56,7 +73,6 @@ export function ChatView(): JSX.Element {
       <div
         ref={scrollRef}
         class="absolute inset-0 overflow-y-auto px-3 py-2"
-        onScroll={() => checkNearBottom()}
         role="log"
         aria-live="polite"
         aria-label="Chat messages"
@@ -81,6 +97,8 @@ export function ChatView(): JSX.Element {
             </div>
           )}
         </Show>
+        {/* Intersection anchor for infinite scrolling logic */}
+        <div ref={bottomAnchorRef} class="h-4 w-full" aria-hidden="true" />
       </div>
 
       {/* Floating scroll-to-bottom button */}
