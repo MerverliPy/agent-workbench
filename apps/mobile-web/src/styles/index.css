@@ -321,14 +321,17 @@ textarea {
   height: 100dvh;
 }
 
-/* When iOS virtual keyboard is open — use visualViewport height */
+/* When iOS virtual keyboard is open — pin shell to visual viewport height.
+   --vh is set in px by the inline script (e.g. "550px"), so use it directly. */
 html.keyboard-open .h-dvh {
   height: var(--vh, 100dvh);
+  max-height: var(--vh, 100dvh);
 }
 
-/* Ensure the composer has bottom room when keyboard is open */
+/* Ensure the composer does NOT add extra bottom padding when the keyboard is
+   open — the visual viewport already excludes the keyboard area. */
 html.keyboard-open [data-composer] {
-  padding-bottom: max(var(--safe-bottom), var(--kb-height, 0px));
+  padding-bottom: 8px;
 }
 
 /* ── Backdrop-filter fallback ──────────────────── */

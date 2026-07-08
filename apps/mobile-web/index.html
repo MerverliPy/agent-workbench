@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual" />
     <meta name="theme-color" content="#141418" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f7f7fa" media="(prefers-color-scheme: light)" />
     <meta name="description" content="Mobile companion for agent-workbench — touch-optimized chat + panels" />
@@ -32,33 +32,38 @@
     <script>
       (() => {
         if (!window.visualViewport) return;
-        var root = document.getElementById('root') || document.body;
+        // Capture the full layout height before any keyboard interaction
+        var fullHeight = window.innerHeight;
         var restoreKeyboard = () => {
-          var vh = window.visualViewport.height;
-          var full = window.screen.height;
-          var keyboardHeight = full - vh;
-          if (keyboardHeight > 100) {
-            // Keyboard is open — push the composer into the remaining viewport
-            root.style.setProperty('--kb-height', `${keyboardHeight}px`);
-            root.style.setProperty('--vh', `${vh}px`);
-            document.documentElement.classList.add('keyboard-open');
+          var vvHeight = window.visualViewport.height;
+          var vvOffsetTop = window.visualViewport.offsetTop;
+          // Update full height when keyboard is not open (orientation changes etc.)
+          var keyboardHeight = Math.max(0, window.innerHeight - vvOffsetTop - vvHeight);
+          var html = document.documentElement;
+          if (keyboardHeight > 80) {
+            // Keyboard is open — constrain the shell to the visual viewport height
+            html.style.setProperty('--kb-height', keyboardHeight + 'px');
+            html.style.setProperty('--vh', vvHeight + 'px');
+            html.classList.add('keyboard-open');
           } else {
-            // Keyboard is closed
-            root.style.removeProperty('--kb-height');
-            root.style.removeProperty('--vh');
-            document.documentElement.classList.remove('keyboard-open');
+            // Keyboard is closed — restore normal sizing
+            html.style.removeProperty('--kb-height');
+            html.style.removeProperty('--vh');
+            html.classList.remove('keyboard-open');
           }
         };
         window.visualViewport.addEventListener('resize', restoreKeyboard);
         window.visualViewport.addEventListener('scroll', () => {
-          // iOS Safari scrolls the viewport when the keyboard opens — snap back
-          if (window.visualViewport.offsetTop !== 0) {
-            window.scrollTo(0, 0);
-          }
+          restoreKeyboard();
+          // iOS Safari scrolls the body when the keyboard opens — snap back
+          if (window.scrollY !== 0) window.scrollTo(0, 0);
         });
-        // Also check on orientation change
         window.addEventListener('orientationchange', () => {
-          setTimeout(restoreKeyboard, 300);
+          // Re-capture full height after orientation settles
+          setTimeout(() => {
+            fullHeight = window.innerHeight;
+            restoreKeyboard();
+          }, 400);
         });
       })();
     </script>

@@ -90,10 +90,13 @@ export function PromptInput(): JSX.Element {
   const hasText = () => inputText().trim().length > 0;
 
   function handleFocus(): void {
-    // Small delay to let the keyboard open and layout settle
+    // Wait for the keyboard to open and the visualViewport resize event to fire,
+    // then scroll the composer into view so it sits just above the keyboard.
     setTimeout(() => {
-      textareaRef?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 300);
+      textareaRef?.scrollIntoView({ behavior: "instant", block: "nearest" });
+      // Also scroll the page to 0 in case iOS pushed it down
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }, 350);
   }
 
   return (
