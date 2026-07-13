@@ -28,7 +28,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - name: Cache bun install + dist
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -54,7 +54,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - name: Cache bun install + dist
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -99,7 +99,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - name: Cache bun install + dist
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -142,7 +142,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - name: Cache bun install + dist
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
